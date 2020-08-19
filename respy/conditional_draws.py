@@ -286,7 +286,7 @@ def calculate_conditional_draws(
     """Calculate the conditional draws from base draws, updated means and updated chols.
 
     We need to pass ``max_log_float`` to the function, because the global variables
-    ``MAX_LOG_FLOAT`` cannot be used directly withing the guvectorize.
+    ``MAX_LOG_FLOAT`` cannot be used directly within the guvectorize.
 
     Parameters
     ----------
@@ -330,7 +330,7 @@ def make_cholesky_unique(chol):
 
     Cholesky factors are only unique with the additional requirement that all diagonal
     elements are positive. This is done automatically by np.linalg.cholesky.
-    Since we calucate cholesky factors by QR decompositions we have to do it manually.
+    Since we calculate cholesky factors by QR decompositions we have to do it manually.
 
     It is obvious from that this is admissible because:
 

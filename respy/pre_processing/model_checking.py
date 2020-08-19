@@ -19,10 +19,10 @@ def validate_options(o):
         or o["interpolation_points"] == -1
     )
     assert _is_positive_nonzero_integer(o["simulation_agents"])
-    assert isinstance(o["core_state_space_filters"], list) and all(
+    assert isinstance(o["core_state_space_filters"], list) and all(  # noqa: PT018
         isinstance(filter_, str) for filter_ in o["core_state_space_filters"]
     )
-    assert isinstance(o["negative_choice_set"], dict) and all(
+    assert isinstance(o["negative_choice_set"], dict) and all(  # noqa: PT018
         isinstance(key, str)
         and isinstance(val, list)
         and all(isinstance(condition, str) for condition in val)

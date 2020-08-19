@@ -79,9 +79,19 @@ releases are available on `Anaconda.org
   random, moved to Github Actions, and more badges.
 - :gh:`323` adds an informative message if simulated individuals cannot be mapped to
   states in the state space (:ghuser:`mo2561057`, :ghuser:`tobiasraabe`).
+- :gh:`325` adds an how-to guide on numerical integration techniques
+  (:ghuser:`rafaelsuchy`).
 - :gh:`331` better parsing for observables (and exogenous processes) and better model
   tests and docstrings (:ghuser:`tobiasraabe`).
+- :gh:`342` partitions the state space to parts which are specific to the period, choice
+  set and dense values (:ghuser:`mo2561057`, :ghuser:`tobiasraabe`).
+- :gh:`344` redesigns the documentation. The foundation are four categories of
+  documents, tutorials, explanations, how-to guides, and reference guides
+  (:ghuser:`tobiasraabe`).
+- :gh:`347` allows to specify models with hyperbolic discounting
+  (:ghuser:`SofiaBadini`).
 - :gh:`356` adds how-to guide for estimation of parameters with msm (:ghuser:`amageh`).
+- :gh:`357` adds a tutorial explaining the basic interface (:ghuser:`SofiaBadini`).
 - :gh:`359` fixes a Numba deprecation warning and some errors in the constraints of
   pre-defined models.
 - :gh:`361` adds standard deviations of parameters for example models
@@ -90,12 +100,13 @@ releases are available on `Anaconda.org
   use with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_
   (:ghuser:`amageh`).
 - :gh:`369` adds second set of parameters for kw_97 models (:ghuser:`amageh`).
-- :gh:`373` refactors the law of motion and simplifies the collection of child indices
-  (:ghuser:`tobiasraabe`).
 - :gh:`371` changes the names of the criterion functions for maximum likelihood and msm
   estimation. Makes replacement functions optional for estimation with
   msm and sets identity matrix as default weighting matrix (:ghuser:`amageh`).
-- :gh:`374` renames caching options to ``"cache_path"`` and ``"cache_compression"``.
+- :gh:`373` refactors the law of motion and simplifies the collection of child indices
+  (:ghuser:`tobiasraabe`).
+- :gh:`374` renames caching options to ``"cache_path"`` and ``"cache_compression"``
+  (:ghuser:`tobiasraabe`).
 
 *Releases prior to the second version were published on PyPI, but later deleted. You can
 still checkout the following releases using the corresponding tags in the repository.*

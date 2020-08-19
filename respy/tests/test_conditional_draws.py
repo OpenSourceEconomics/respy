@@ -12,7 +12,7 @@ from respy.config import MAX_LOG_FLOAT
 from respy.config import TEST_RESOURCES_DIR
 
 
-@pytest.fixture
+@pytest.fixture()
 def kalman_results():
     """The inputs and outputs were generated using a well tested Kalman filter."""
     with open(TEST_RESOURCES_DIR / "conditional_draws_fixture.pickle", "rb") as p:
