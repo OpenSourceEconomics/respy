@@ -42,11 +42,6 @@ jobs:
         shell: bash -l {0}
         run: conda install -c conda-forge -c opensourceeconomics conda-build estimagic matplotlib python-snappy
 
-      - name: Validate codecov.yml
-        if: runner.os == 'Linux' && matrix.python-version == '3.8'
-        shell: bash -l {0}
-        run: cat codecov.yml | curl --data-binary @- https://codecov.io/validate
-
       ###############
       # Test Matrix #
       ###############
@@ -83,6 +78,15 @@ jobs:
         if: runner.os == 'Linux' && matrix.python-version == '3.8'
         shell: bash -l {0}
         run: bash <(curl -s https://codecov.io/bash) -F end_to_end -c
+
+      ##################################
+      # Validate codecov configuration #
+      ##################################
+
+      - name: Validate codecov.yml
+        if: runner.os == 'Linux' && matrix.python-version == '3.8'
+        shell: bash -l {0}
+        run: cat codecov.yml | curl --data-binary @- https://codecov.io/validate
 
 
   pre-commit:

@@ -44,7 +44,7 @@ Train, K. (2009). `Discrete Choice Methods with Simulation
 <https://eml.berkeley.edu/books/choice2.html>`_. *Cambridge: Cambridge University
 Press.*
 
-Stachurski, J. (2009). `Economic Dynamics: Theory and Compuation
+Stachurski, J. (2009). `Economic Dynamics: Theory and Computation
 <https://johnstachurski.net/edtc.html>`_. *MIT Press Books, The MIT Press, edition 1,
 volume 1, number 0262012774, March.*
 
