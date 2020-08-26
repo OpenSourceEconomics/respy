@@ -37,7 +37,7 @@ beliefs about the future agree with the objective transition probabilities of th
    Figure 1
 
  Individuals face uncertainty and discount future per-period utilities by an exponential discount factor :math:` 0 < \delta < 1` that parameterizes their time preference.
- Given an initial state :math: `s_1` individuals implement the policy :math:`\pi` from the set of all feasible policies :math:`\Pi` that maximizes the expected total discounted utilities over all :math:`T` periods
+ Given an initial state :math:`s_1` individuals implement the policy :math:`\pi` from the set of all feasible policies :math:`\Pi` that maximizes the expected total discounted utilities over all :math:`T` periods
 
  .. math::
 
