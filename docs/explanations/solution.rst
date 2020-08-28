@@ -1,7 +1,7 @@
 .. _solution_model:
 
-Solution of the Model
-=====================
+Mathematical Framework
+======================
 
 .. role:: boldblue
 

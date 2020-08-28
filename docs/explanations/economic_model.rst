@@ -1,7 +1,7 @@
 .. _economic_model:
 
-The Economic Framework
-======================
+Economic Model
+==============
 
 
 .. role:: boldblue
@@ -20,7 +20,7 @@ capital model conceptualized in Keane and Wolpin (1997, :cite:`Keane.1997`).
 --------------------------------------------------------------------------------
 
 At time t = 1,...,T each individual observes the state of the economic environment
-:math:`s_{t} \in \mathcal{S}_t` and chooses an action :math:`a` from the set of
+:math:`s_{t} \in \mathcal{S}_t` and chooses an action :math:`a_t` from the set of
 admissible actions :math:`\mathcal{A}`. The decision has two consequences:
 
   - Individuals receive per-period utility :math:`u(\cdot)` associated with the

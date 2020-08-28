@@ -1,34 +1,33 @@
 Notation
 ========
 
+The following table summarizes the notation in order of their appearance.
 
-.. csv-table:: Table of Notation 
-   :header: "OSE Notation", "KW97 Notation", "Explanation"
+.. csv-table:: Table of Notation
+   :header: "Symbol", "Explanation"
+   :widths: 30, 70
 
 
-   ":math:`t_{it}`", ":math:`a`", "age of individual
-   :math:`i` in period :math:`t`"
-   ":math:`t \in \{1, \dots, T \}`", ":math:`a \in \{1, \dots, A \}`"
-   , "periods"
-   ":math:`a_{it} \in \{1, \dots, 5 \}`", ":math:`d_m(a)`
-   ", "alternative at time :math:`t`"
-   ":math:`W_{it}(a)`", ":math:`W_m(a)`
-   ", "wage"
-   ":math:`r_a`", ":math:`r_m`
-   ", "occupation-specific market \ (equilibrium) rental price"
-   ":math:`h_{it}`", ":math:`g(a)`", "years spent in school"
-   ":math:`k_{it}(a)`", ":math:`x_m(a)`", "
-   cumulated work experience \ in a certain occupation"
-   ":math:`x_{it}(a)`", ":math:`e_m(a)`", "
-   occupation-specific skill level"
-   ":math:`s_{it}`", "S(a)", "vector of observable state variables"
-   ":math:`S_{it}`", "S(a)", "
-   vector of unobservable and \ observable state variables"
-   ":math:`S_a \in \mathcal{A} = \{1, \dots, 5\}`", "
-   :math:`S_m \in \{1, \dots, 5 \}`", "available alternatives"
-   ":math:`a_{it} \in \mathcal{A}`", ":math:`d_m(a)`", "
-   choice of alternative by individual at time :math:`t`"
-   ":math:`\mathcal{A}`", ":math:`\{1, \dots, 5 \}`", "
-   set of admissible actions"
-   ":math:`\theta`", "\-", "vector of structural parameters"
-   ":math:`\Theta`", "\-", "parameter space"
+   ":math:`s_t`", "state space at time :math:`t`"
+   ":math:`s_t`", "state space at time :math:`t`"
+   ":math:`\mathcal{S}_t`", "set of admissible states at time :math:`t`"
+   ":math:`a_t`", "chosen alternative at time :math:`t`"
+   ":math:`\mathcal{A}`", "set of feasible alternatives"
+   ":math:`\pi`", "particular policy"
+   ":math:`\Pi`", "set of implementable policies"
+   ":math:`a_t^{\pi}(\cdot)`", "state-dependent decision rule under :math:`\pi`"
+   ":math:`p_t(\cdot)`", "transition probability distribution for state :math:`s_{t+1}`"
+   ":math:`\mathbb{E}_{p}[\cdot]`", "expectation under probability measure p"
+   ":math:`\mathcal{J}`", "set of types"
+   ":math:`e_{j,a}`", "skill endowment of type j in alternative a"
+   ":math:`h_t`", "years of completed schooling at :math:`t`"
+   ":math:`\bf{k}_{t}`", "vector of work-experience at :math:`t`"
+   ":math:`\bf{\epsilon}`", "vector of productivity shocks"
+   ":math:`r_a`", "market equilibrium rental price in alternative a"
+   ":math:`x_a(\cdot)`", "occupation-specific skill level"
+   ":math:`\Gamma_a(\cdot)`", "deterministic component of occupation-specific skill level"
+   ":math:`\bar{u}_a`", "observable part per-period utility"
+   ":math:`\bar{s}_t`", "observable part state-space"
+   ":math:`\mathcal{D}`", "data structure"
+   ":math:`M_D`", "moments of observed data"
+   ":math:`M_S(\theta)`", "moments of simulated data under :math:`\theta`"

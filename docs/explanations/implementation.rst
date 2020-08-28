@@ -2,14 +2,19 @@
 
 Computational Implementation
 ============================
- We follow individuals over their working life from young adulthood at age 16
- to retirement at age 65. The decision period :math:`t = 16, \dots, 65`  is
- a school year and individuals decide :math:`a\in\mathcal{A}` whether to
- work in a blue-collar or white-collar occupation (:math:`a = 1, 2`),
- to serve in the military :math:`(a = 3)`, to attend school :math:`(a = 4)`,
- or to stay at home :math:`(a = 5)`.
+We will present the computational implementation of the model.
+A list of the parameter-covariates combination as implemented in ``respy``
+is presented in :ref:`parameterization`.
 
-.. figure:: ../_static/images/even_tree.png
+We follow individuals over their working life from young adulthood at age 16
+to retirement at age 65. The decision period :math:`t = 16, \dots, 65`  is
+a school year and individuals decide :math:`a\in\mathcal{A}` whether to
+work in a blue-collar or white-collar occupation (:math:`a = 1, 2`),
+to serve in the military :math:`(a = 3)`, to attend school :math:`(a = 4)`,
+or to stay at home :math:`(a = 5)`.
+
+.. figure:: ../_static/images/event_tree.pdf
+  :width: 650
 
 
 Individuals are initially heterogeneous. They differ with respect to their
@@ -17,6 +22,16 @@ initial level of completed schooling :math:`h_{16}` and have one of four
 different :math:`\mathcal{J} = \{1, \dots, 4\}` alternative-specific skill
 endowments
 :math:`\boldsymbol{e} = \left(e_{j,a}\right)_{\mathcal{J} \times \mathcal{A}}`.
+
+--------------------------------------------------------------------------------
+
+.. rst-class:: centerblue
+
+        An explanation how to set and change initial conditions in ``respy``
+        is provided in `Initial Conditions <https://respy.readthedocs.io/en/
+        latest/how_to_guides/initial_conditions.html>`_.
+
+--------------------------------------------------------------------------------
 
 The immediate utility :math:`u_a(\cdot)` of each alternative consists of a
 non-pecuniary utility :math:`\zeta_a(\cdot)` and, at least for the working
@@ -36,11 +51,12 @@ as well. Their general form is given by:
     \zeta_a(\boldsymbol{k_t}, h_t, t, a_{t -1})  + w_a(\boldsymbol{k_t}, h_t,
      t, a_{t -1}, e_{j, a}, \epsilon_{a,t})
      & \text{if}\, a \in \{1, 2, 3\}  \\
-    \zeta_a(\boldsymbol{k_t}, h_t, t, a_{t-1}, e_{j,a}, \epsilon_{a,t})                                                  &  \text{if}\, a \in \{4, 5\}.
+    \zeta_a(\boldsymbol{k_t}, h_t, t, a_{t-1}, e_{j,a}, \epsilon_{a,t})
+    &  \text{if}\, a \in \{4, 5\}.
     \end{cases}
 
-Work experience :math:`\boldsymbol{k_t}`  and years of completed schooling :
-math:`h_t` evolve deterministically.
+Work experience :math:`\boldsymbol{k_t}`  and years of completed schooling
+:math:`h_t` evolve deterministically.
 
 .. math::
    k_{a,t+1} =
@@ -68,7 +84,7 @@ Blue-collar
 Equation :eq:`NonWageBlueCollar` shows the parameterization of the
 non-pecuniary utility from working in a blue-collar occupation.
 
-.. math:: 
+.. math::
    :label: NonWageBlueCollar
 
 
@@ -91,7 +107,7 @@ The non-pecuniary utility from working in a white-collar occupation is
 specified analogously. Equation :eq:`UtilityWhiteCollar` shows its
 parameterization.
 
-.. math:: 
+.. math::
    :label: UtilityWhiteCollar
 
    \zeta_{2}( \boldsymbol{k_t}, h_t, a_{t-1} ) = \,\alpha_2 & + c_{2,1}
@@ -105,9 +121,9 @@ Military
 Equation :eq:`UtilityMilitary` shows the parameterization of the
 non-pecuniary utility from working in the military.
 
-.. math:: 
+.. math::
    :label: UtilityMilitary
-   
+
    \zeta_{3}( k_{3.t}, h_t)  = c_{3,2} \cdot \mathbb{1}[k_{3,t} = 0] +
    \vartheta_1 \cdot \mathbb{1}[h_t \geq 12] + \vartheta_2 \cdot
    \mathbb{1}[h_t \geq 16]
@@ -124,7 +140,7 @@ School
 Equation :eq:`UtilitySchooling` shows the parameterization of the
 non-pecuniary utility from schooling.
 
-.. math:: 
+.. math::
    :label: UtilitySchooling
 
    \zeta_4(k_{3,t}, h_t, t, a_{t-1}, e_{j,4}, \epsilon_{4,t})  = e_{j,4} & +
@@ -154,7 +170,7 @@ Home
 Equation :eq:`UtilityHome` shows the parameterization of the non-pecuniary
 utility from staying at home.
 
-.. math:: 
+.. math::
    :label: UtilityHome
 
    \zeta_5(k_{3,t}, h_t, t, e_{j,5}, \epsilon_{5,1}) =  e_{j,5} & +
@@ -178,7 +194,7 @@ occupation-specific skill level :math:`x_{a}(\cdot)`. The latter is determined
 by the overall level of human capital.
 
 .. math::
-   
+
    w_{a}(\cdot) = r_{a} \, x_{a}(\cdot)
 
 This specification leads to a standard logarithmic wage equation in which the c
@@ -201,7 +217,7 @@ Blue-collar
 Equation :eq:`SkillLevelBlueCollar` shows the parameterization of the
 deterministic component of the skill production function.
 
-.. math:: 
+.. math::
    :label: SkillLevelBlueCollar
 
     \Gamma_1(\boldsymbol{k_t}, h_t, t, a_{t-1}, e_{j, 1}) = e_{j,1} & +
@@ -209,7 +225,7 @@ deterministic component of the skill production function.
     \beta_{1,3} \cdot \mathbb{1}[h_t\geq 16]\\
     & + \gamma_{1, 1} \cdot  k_{1,t} + \gamma_{1,2} \cdot  (k_{1,t})^2 +
     \gamma_{1,3} \cdot  \mathbb{1}[k_{1,t} > 0] \\
-    & + \gamma_{1,4} \cdot  t + \gamma_{1,5} \cdot \mathbb{1}[t < 18]\\ 
+    & + \gamma_{1,4} \cdot  t + \gamma_{1,5} \cdot \mathbb{1}[t < 18]\\
     & + \gamma_{1,6} \cdot \mathbb{1}[a_{t-1} = 1] + \gamma_{1,7} \cdot
     k_{2,t} + \gamma_{1,8} \cdot  k_{3,t}
 
@@ -233,7 +249,7 @@ The wage component from working in a white-collar occupation is specified
 analogously. Equation :eq:`SkillLevelWhiteCollar` shows the parameterization
 of the deterministic component of the skill production function.
 
-.. math:: 
+.. math::
    :label: SkillLevelWhiteCollar
 
     \Gamma_2(\boldsymbol{k_t}, h_t, t, a_{t-1}, e_{j,2}) = e_{j,2} & +
@@ -251,7 +267,7 @@ Military
 Equation :eq:`SkillLevelMilitary` shows the parameterization of the
 deterministic component of the skill production function.
 
-.. math:: 
+.. math::
    :label: SkillLevelMilitary
 
    \Gamma_3( k_{3,t}, h_t, t, e_{j,3}) = e_{j,3} & + \beta_{3,1} \cdot h_t \\

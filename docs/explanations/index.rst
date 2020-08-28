@@ -14,6 +14,6 @@ Explanations help you to deepen your knowledge on the concepts and topics behind
    solution
    implementation
    estimation
-   notation
    parameterization
+   notation
    bib
