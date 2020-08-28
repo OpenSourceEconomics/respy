@@ -98,14 +98,14 @@ has no analytical solution, and so numerical methods have to be applied.
 Keane and Wolpin impose two assumptions in order to provide a simplification of
 the expression:
 
-   - Stochastic shocks :math:`\epsilon_{t}` are independently and identically
-   distributed over individuals and time (serially uncorrelated), conditional on
-   :math:`s_{t}`. We will denote their probability density function
-   :math:`\phi_{\mu, \Sigma}(\epsilon_{t})`.
-   
-   - State variables are independent of the realizations of :math:`\epsilon_{t}`,
-   conditional on decisions. This is the reason we can write
-   :math:`p(s_t, \epsilon_t, a_t) = p(s_t, a_t)`.
+  - Stochastic shocks :math:`\epsilon_{t}` are independently and identically
+    distributed over individuals and time (serially uncorrelated), conditional on
+    :math:`s_{t}`. We will denote their probability density function
+    :math:`\phi_{\mu, \Sigma}(\epsilon_{t})`.
+
+  - State variables are independent of the realizations of :math:`\epsilon_{t}`,
+    conditional on decisions. This is the reason we can write
+    :math:`p(s_t, \epsilon_t, a_t) = p(s_t, a_t)`.
 
 We can reformulate parts of the integrated value function
 
