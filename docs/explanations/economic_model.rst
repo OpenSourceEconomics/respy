@@ -10,10 +10,14 @@ To illustrate the usage of ``respy`` in solving finite-horizon discrete choice
 dynamic programming (DCDP) problems we will present the basic setup of the human
 capital model conceptualized in Keane and Wolpin (1997, :cite:`Keane.1997`).
 
+--------------------------------------------------------------------------------
+
 .. rst-class:: centerblue
 
    The promise: ``respy`` will become your preferred tool
    to develop, solve, estimate, and explore models within the EKW framework
+
+--------------------------------------------------------------------------------
 
 At time t = 1,...,T each individual observes the state of the economic environment
 :math:`s_{t} \in \mathcal{S}_t` and chooses an action :math:`a` from the set of
@@ -64,4 +68,4 @@ the probability measure :math:`p^{\pi}`. The decision problem is dynamic in the
 sense that expected inter-temporal per-period utilities at a certain period
 :math:`t` are influenced by past choices.
 
-We will present the solution procedure for economic models alike in LINK TO SOLUTION_MODEL
+We will present the solution procedure for economic models alike in :ref:`solution_model`.
