@@ -15,4 +15,5 @@ Explanations help you to deepen your knowledge on the concepts and topics behind
    implementation
    estimation
    notation
+   parameterization
    bib
