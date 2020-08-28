@@ -192,8 +192,8 @@ skill production function, which includes a deterministic component
 
 .. math::
    x_{a}(\boldsymbol{k_t}, h_t, t, a_{t-1}, e_{j, a}, \epsilon_{a,t}) = \exp
-  \big( \Gamma_{a}(\boldsymbol{k_t},  h_t, t, a_{t-1}, e_{j,a}) \cdot
-\epsilon_{a,t} \big)
+   \big( \Gamma_{a}(\boldsymbol{k_t},  h_t, t, a_{t-1}, e_{j,a}) \cdot
+   \epsilon_{a,t} \big)
 
 
 Blue-collar
