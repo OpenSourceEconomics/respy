@@ -32,14 +32,14 @@ for any possible state :math:`s_t`. The implementation of a policy generates a
 sequence of per-period utilities that depends on the objective transition
 probability distribution :math:`p_t(s_t, a_t)` for the evolution of state
 :math:`s_{t}` to :math:`s_{t+1}` induced by the model. Individuals entertain
-rational expectations (Muth, 1961, :cite:`Muth.1961`) so their subjective beliefs about the
-future agree with the objective transition probabilities of the model.
+rational expectations (Muth, 1961, :cite:`Muth.1961`) so their subjective beliefs
+about the future agree with the objective transition probabilities of the model.
 
-:ref:`timing_events` depicts the timing of events in the model for two generic periods.
-At the beginning of period t, an individual fully learns about the immediate
-per-period utility of each alternative, chooses one of them, and receives its
-immediate utility. Then the state evolves from :math:`s_t` to :math:`s_{t+1}`
-and the process is repeated in :math:`t+1`.
+:ref:`timing_events` depicts the timing of events in the model for two generic
+periods. At the beginning of period t, an individual fully learns about the
+immediate per-period utility of each alternative, chooses one of them, and
+receives its immediate utility. Then the state evolves from :math:`s_t` to
+:math:`s_{t+1}` and the process is repeated in :math:`t+1`.
 
 .. _timing_events:
 
@@ -57,11 +57,13 @@ maximizes the expected total discounted utilities over all :math:`T` periods
 
  .. math::
 
-    \underset{\pi \in \Pi}{\max} \, \mathbb{E}_{p^{\pi}} \left[ \sum_{t = 1}^T \delta^{t - 1} u(s_t, a_t^{\pi}(s_t)) \right],
+    \underset{\pi \in \Pi}{\max} \, \mathbb{E}_{p^{\pi}} \left[ \sum_{t = 1}^T
+    \delta^{t - 1} u(s_t, a_t^{\pi}(s_t)) \right],
 
 where :math:`\mathbb{E}_{p^{\pi}}[\cdot]` denotes the expectation operator under
 the probability measure :math:`p^{\pi}`. The decision problem is dynamic in the
 sense that expected inter-temporal per-period utilities at a certain period
 :math:`t` are influenced by past choices.
 
-We will present the solution procedure for economic models alike in :ref:`solution_model`.
+We will present the solution procedure for economic models alike in
+:ref:`solution_model`.

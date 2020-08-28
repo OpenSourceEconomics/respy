@@ -80,17 +80,19 @@ The objective function takes the following form:
 
 --------------------------------------------------------------------------------
 
-:boldblue:`Simulation-based calibration` seeks to find the parameterization :math:`\hat{\theta}`
-that yields a simulated data set :math:`M_S(\theta)` from the model that closest
-resembles the observed data. More precisely, the goal is to minimize the weighted squared
-distance between a set of moments :math:`M_{\mathcal{D}}` computed on the observed data
-and the same set of moments computed on the simulated data :math:`M_{\mathcal{S}}(\theta)`.
-The objective function takes the following form:
+:boldblue:`Simulation-based calibration` seeks to find the parameterization
+:math:`\hat{\theta}` that yields a simulated data set :math:`M_S(\theta)` from
+the model that closest resembles the observed data. More precisely, the goal is
+to minimize the weighted squared distance between a set of moments
+:math:`M_{\mathcal{D}}` computed on the observed data and the same set of
+moments computed on the simulated data :math:`M_{\mathcal{S}}(\theta)`. The
+objective function takes the following form:
 
 .. math::
    :label: eq:likelihood_function
 
-   \hat{\theta} \equiv \underset{\theta \in \Theta}{{\arg \min}} \big( M_{\mathcal{D}} - M_{\mathcal{S}}(\theta) \big)' \,
+   \hat{\theta} \equiv \underset{\theta \in \Theta}{{\arg \min}}
+   \big( M_{\mathcal{D}} - M_{\mathcal{S}}(\theta) \big)' \,
    W \, \big( M_{\mathcal{D}} - M_{\mathcal{S}}(\theta) \big).
 
 --------------------------------------------------------------------------------
@@ -125,8 +127,9 @@ the authors provide a comparison of alternative weighting matrices.
 
 --------------------------------------------------------------------------------
 
-We have explained the economic model, its solution, one particular specification, and the
-calibration procedure. The `Robinson Crusoe tutorial <https://respy.readthedocs.io/en/latest/tutorials/robinson_crusoe.html>`_
+We have explained the economic model, its solution, one particular specification,
+and the calibration procedure. The
+`Robinson Crusoe tutorial <https://respy.readthedocs.io/en/latest/tutorials/robinson_crusoe.html>`_
 provides a great applied resource to familiarize with the main functionalities
 of ``respy``. Reading through will help you to set-up and calibrate your own
 DCDP model.
