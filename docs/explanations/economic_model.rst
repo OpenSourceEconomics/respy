@@ -7,6 +7,10 @@ The Economic Framework
 .. role:: boldblue
 
 To illustrate the usage of ``respy`` in solving finite-horizon discrete choice
+dynamic programming (DCDP) problems we will present the basic setup of the human
+capital model conceptualized in Keane and Wolpin (1997, :cite:`Keane.1997`).
+
+--------------------------------------------------------------------------------
 
 .. rst-class:: centerblue
 
