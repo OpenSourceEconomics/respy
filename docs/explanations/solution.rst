@@ -102,6 +102,7 @@ the expression:
    distributed over individuals and time (serially uncorrelated), conditional on
    :math:`s_{t}`. We will denote their probability density function
    :math:`\phi_{\mu, \Sigma}(\epsilon_{t})`.
+   
    - State variables are independent of the realizations of :math:`\epsilon_{t}`,
    conditional on decisions. This is the reason we can write
    :math:`p(s_t, \epsilon_t, a_t) = p(s_t, a_t)`.
