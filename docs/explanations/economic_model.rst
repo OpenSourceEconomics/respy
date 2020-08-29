@@ -56,10 +56,11 @@ receives its immediate utility. Then the state evolves from :math:`s_t` to
 
 Individuals face :boldblue:`uncertainty` (Gilboa, 2009, :cite:`Gilboa.2009`)
 and discount future per-period utilities by an exponential discount factor
-:math:`0 < \delta < 1` that parameterizes their time preference. Given an
-initial state :math:`s_1` individuals implement the policy :math:`\pi` from the
-set of all feasible policies :math:`\Pi` that :boldblue:`maximizes the expected
-total discounted utilities` over all :math:`T` periods
+:math:`0 < \delta < 1` that parameterizes their time preference. Per-period
+utilities are time-separable (Samuelson, 1937, :cite:`Samuelson.1937`).
+Given an initial state :math:`s_1` individuals implement the policy :math:`\pi`
+from the set of all feasible policies :math:`\Pi` that :boldblue:`maximizes the
+expected total discounted utilities` over all :math:`T` periods.
 
  .. math::
 

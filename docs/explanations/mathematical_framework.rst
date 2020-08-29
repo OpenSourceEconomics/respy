@@ -7,7 +7,7 @@ Mathematical Framework
 
 Mathematically, the class of EKW models (so the flagship model in Keane and Wolpin
 (1997, :cite:`Keane.1997`)) is set up as a :boldblue:`standard Markov decision
-process` (Puterman, 1994, :cite:`Puterman.1994`; White, 1993, :cite:`White.1993`).
+process` (White, 1993, :cite:`White.1993`; Puterman, 1994, :cite:`Puterman.1994`).
 Individuals make sequential decisions under uncertainty and aim to implement an
 optimal policy :math:`\pi^* \in \Pi`, given the state of the world.
 
@@ -83,8 +83,9 @@ Solving the Integrated Value Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As already suggested, the state space contains a stochastic component
-:math:`\epsilon_t`. Equation (2) constitutes the major reason for the
-computational complexity of DCDP. The integrated value function
+:math:`\epsilon_t`. Equation :eq:`bellman_optimality_equations` constitutes the
+major reason for the computational complexity of DCDP. The integrated value
+function
 
 .. math::
   :label: emax
