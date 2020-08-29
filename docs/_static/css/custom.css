@@ -57,27 +57,27 @@ a#index-link {
     box-shadow: 0px -10px 0px #b2ff80f3 inset;
 }
 
-.blue { color: darkblue; }
+.blue { color: #130654; }
 
 .boldblue {
   font-weight: bold;
-  color: darkblue;
+  color: #130654;
 }
 
 .centerblue {
   text-align: center;
-  color: darkblue;
+  color: #130654;
 }
 
 .orange { color: orange; }
 
 .verbatimblue {
   font-weight: verbatim;
-  color: darkblue;
+  color: #130654;
 }
 
 .boldcenterblue {
   font-weight: bold;
   text-align: center;
-  color: darkblue;
+  color: #130654;
 }
