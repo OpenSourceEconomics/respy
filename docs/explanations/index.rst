@@ -11,9 +11,9 @@ Explanations help you to deepen your knowledge on the concepts and topics behind
 
    recommended_reading
    economic_model
-   solution
-   implementation
-   estimation
+   mathematical_framework
+   computational_implementation
+   calibration
    parameterization
    notation
    bib
