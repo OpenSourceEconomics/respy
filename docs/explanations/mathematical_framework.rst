@@ -160,7 +160,8 @@ the authors enrich the model with a dummy variable that captures a binary
 characteristic of the individual decision-maker. This binary state option
 increases the state space from initially 52 million states to 104 million states
 in Keane and Wolpin (2000, :cite:`Keane.2000`) . For a given parameterization of
-the model it is necessary to evaluate Equation :eq:`emax_reformulated` at each of the points.
+the model it is necessary to evaluate Equation :eq:`emax_reformulated` at each
+of the points.
 
 We present the specification of Keane and Wolpin (1997, :cite:`Keane.1997`)
 in :ref:`computational_implementation`.

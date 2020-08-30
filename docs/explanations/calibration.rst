@@ -9,10 +9,11 @@ EKW models are calibrated to data on observed individual decisions and
 experiences, given the assumption that individuals behave according to the
 behavioral model. For example, the Keane and Wolpin (1997, :cite:`Keane.1997`)
 model is calibrated  to a subsample of young men from the National Longitudinal
-Survey 1979 (NLSY79). The :boldblue:`goal` is to back out information on utility functions,
-preference parameters, and transition probabilities. This requires to fully
-parameterize the model. We denote :math:`\theta` the vector of structural
-parameters out of an admissible parameter space :math:`\Theta`.
+Survey 1979 (NLSY79). The :boldblue:`goal` is to back out information on
+utility functions, preference parameters, and transition probabilities.
+This requires to fully parameterize the model. We denote :math:`\theta`
+the vector of structural parameters out of an admissible parameter space
+:math:`\Theta`.
 
 --------------------------------------------------------------------------------
 
@@ -70,8 +71,10 @@ The objective function takes the following form:
 .. math::
    :label: eq:likelihood_function
 
-   \hat{\theta} \equiv \underset{\theta \in \Theta}{{\arg \max}} \underbrace{\prod_{i=1}^N \prod_{t = 1}^{T_i}
-   p_{it}(a_{it}, \bar{u}_{it} \,|\, \bar{s}_{it}, \theta)}_{\mathcal{L}(\theta \,|\, \mathcal{D})}.
+   \hat{\theta} \equiv \underset{\theta \in \Theta}{{\arg \max}}
+   \underbrace{\prod_{i=1}^N \prod_{t = 1}^{T_i}
+   p_{it}(a_{it}, \bar{u}_{it} \,|\, \bar{s}_{it}, \theta)}_{\mathcal{L}
+   (\theta \,|\, \mathcal{D})}.
 
 --------------------------------------------------------------------------------
 
@@ -97,14 +100,6 @@ objective function takes the following form:
    \big( M_{\mathcal{D}} - M_{\mathcal{S}}(\theta) \big)' \,
    W \, \big( M_{\mathcal{D}} - M_{\mathcal{S}}(\theta) \big).
 
---------------------------------------------------------------------------------
-
-.. rst-class:: centerblue
-
-   The weighting matrix in ``respy`` consists of
-   the inverse bootstrap variances of the observed sample moments.
-
---------------------------------------------------------------------------------
 
 The work by Eisenhauer, Heckman, and Mosso (2015, :cite:`Eisenhauer.2015`)
 :boldblue:`compares the performance` of the MSM estimator against a standard
@@ -125,13 +120,13 @@ the authors provide a comparison of alternative weighting matrices.
    <https://respy.readthedocs.io/en/latest/how_to_guides/msm.html>`_
    and the tutorial on `How to Estimate Model Parameters with MSM
    <https://respy.readthedocs.io/en/latest/how_to_
-   guides/msm_estimation_exercise.html>`_
+   guides/msm_estimation_exercise.html>`_.
 
 --------------------------------------------------------------------------------
 
 We have explained the economic model, its solution, one particular specification,
-and the calibration procedure. The
-`Robinson Crusoe tutorial <https://respy.readthedocs.io/en/latest/tutorials/robinson_crusoe.html>`_
+and the calibration procedure. The `Robinson Crusoe tutorial <https://
+respy.readthedocs.io/en/latest/tutorials/robinson_crusoe.html>`_
 provides a great applied resource to familiarize with the main functionalities
 of ``respy``. Reading through will help you to set-up and calibrate your own
 DCDP model.
