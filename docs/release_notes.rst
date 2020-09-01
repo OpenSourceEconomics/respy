@@ -99,8 +99,8 @@ releases are available on `Anaconda.org
 - :gh:`363` enables msm function to return simulated moments or comparison plot data for
   use with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_
   (:ghuser:`amageh`).
-- :gh:`366` adds comprehensive, exemplary explanation of model from Keane and Wolpin (1997) 
-  to documentation (:ghuser:`bekauf`, :ghuser:`rafaelsuchy`). 
+- :gh:`366` adds comprehensive, exemplary explanation of model from 
+  Keane and Wolpin (1997) to documentation (:ghuser:`bekauf`, :ghuser:`rafaelsuchy`). 
 - :gh:`369` adds second set of parameters for kw_97 models (:ghuser:`amageh`).
 - :gh:`371` changes the names of the criterion functions for maximum likelihood and msm
   estimation. Makes replacement functions optional for estimation with
