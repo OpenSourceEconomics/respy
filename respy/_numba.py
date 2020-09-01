@@ -1,6 +1,8 @@
 """Special functions for using numba."""
 import warnings
 
+import numba as nb
+import numpy as np
 from numba import NumbaDeprecationWarning
 from numba import types
 from numba.extending import intrinsic
@@ -74,3 +76,19 @@ def array_to_tuple(tyctx, array_or_dict, indexer_array):  # noqa: U100
         return tup
 
     return function_signature, codegen
+
+
+@nb.njit
+def sum_over_numba_boolean_unituple(tuple_):
+    """Compute the sum over a boolean :class:`numba.types.UniTuple`.
+
+    Parameters
+    ----------
+    tuple_ : numba.types.UniTuple[bool]
+
+    Returns
+    -------
+    sum_ : Union[float, int]
+
+    """
+    return np.sum(np.array([1 for i in tuple_ if i]))

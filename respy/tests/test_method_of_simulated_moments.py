@@ -21,7 +21,7 @@ def msm_args(worker_id):
 
     # Give each pytest worker another directory, so that they do not clean the directory
     # for the other workers.
-    options["state_space_path"] = f".respy-{worker_id}"
+    options["cache_path"] = f".respy-{worker_id}"
 
     simulate = get_simulate_func(params, options)
     df = simulate(params)

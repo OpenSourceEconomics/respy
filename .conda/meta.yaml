@@ -33,7 +33,7 @@ requirements:
     - pyyaml
     - scipy
 test:
-  reqires:
+  requires:
     - pytest
     - pytest-xdist
   commands:

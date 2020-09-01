@@ -59,7 +59,7 @@ DEFAULT_OPTIONS = {
     "core_state_space_filters": [],
     "negative_choice_set": {},
     "monte_carlo_sequence": "sobol",
-    "state_space_compression": "snappy",
+    "cache_compression": "snappy",
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]

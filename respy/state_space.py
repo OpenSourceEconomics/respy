@@ -6,8 +6,9 @@ import numpy as np
 import pandas as pd
 from numba.typed import Dict
 
-from respy._numba import array_to_tuple
+from respy._numba import sum_over_numba_boolean_unituple
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.shared import apply_law_of_motion_for_core
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
@@ -15,6 +16,8 @@ from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import dump_states
+from respy.shared import load_states
+from respy.shared import map_states_to_core_key_and_core_index
 from respy.shared import prepare_cache_directory
 from respy.shared import return_core_dense_key
 
@@ -67,6 +70,8 @@ class StateSpace:
         core dimensions. A core dimension is a dimension whose value is uniquely
         determined by past choices and time. Core dimensions include choices,
         experiences, lagged choices and periods.
+    dense_key_to_core_indices : Dict[int, Array[int]]
+        A mapping from dense keys to ``.loc`` locations in the ``core``.
 
     """
 
@@ -111,6 +116,7 @@ class StateSpace:
         self.core_key_to_complex = core_key_to_complex
         self.core_key_to_core_indices = core_key_to_core_indices
         self.optim_paras = optim_paras
+        self.options = options
         self.n_periods = options["n_periods"]
         self._create_conversion_dictionaries()
         self.child_indices = self.collect_child_indices()
@@ -235,6 +241,10 @@ class StateSpace:
     def collect_child_indices(self):
         """Collect for each state the indices of its child states.
 
+        To collect continuation values, one needs to find the child state. This function
+        searches for all states except for the last period their possible successors by
+        taking every possible combination defined by the law of motion.
+
         See also
         --------
         _collect_child_indices
@@ -246,23 +256,21 @@ class StateSpace:
             child_indices = None
 
         else:
-            limited_index_to_indices = {
+            dense_key_to_complex_except_last_period = {
                 k: v
-                for k, v in self.dense_key_to_core_indices.items()
-                if self.dense_key_to_complex[k][0] < self.n_periods - 1
+                for k, v in self.dense_key_to_complex.items()
+                if v[0] < self.n_periods - 1
             }
-
-            limited_index_to_choice_set = {
-                k: v
-                for k, v in self.dense_key_to_choice_set.items()
-                if self.dense_key_to_complex[k][0] < self.n_periods - 1
+            dense_key_to_choice_set_except_last_period = {
+                k: self.dense_key_to_choice_set[k]
+                for k in dense_key_to_complex_except_last_period
             }
             child_indices = _collect_child_indices(
-                self.core,
-                limited_index_to_indices,
-                limited_index_to_choice_set,
+                dense_key_to_complex_except_last_period,
+                dense_key_to_choice_set_except_last_period,
                 self.indexer,
                 self.optim_paras,
+                self.options,
             )
 
         return child_indices
@@ -742,64 +750,6 @@ def _create_dense_period_choice(
     return dense_period_choice
 
 
-@nb.njit
-def _insert_indices_of_child_states(
-    states, indexer, choice_set, n_choices, n_choices_w_exp, n_lagged_choices,
-):
-    """Collect indices of child states for each parent state.
-
-    Parameters
-    ----------
-    states : pandas.DataFrame
-        Subset of :ref:`core state space <core_state_space>` containing all core
-        dimensions that arise within a particular dense period choice core.
-    n_choices : int
-        Number of admissible choices within a particular dense period choice core.
-    n_choices_w_exp : int
-        Number of total choices with experience accumulation.
-    n_lagged_choices : int
-        Number of lagged choices to be kept accounted for in the core.
-
-    Returns
-    -------
-    indices: numpy.ndarray
-        Array with shape ``(n_states, n_choices * 2)``. Represents the mapping
-        (core_index, choice) -> (dense_key, core_index).
-
-    """
-    indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)
-
-    for i in range(states.shape[0]):
-        j = 0
-        for choice, is_available in enumerate(choice_set):
-            if is_available:
-                child = states[i].copy()
-
-                # Adjust period.
-                child[0] += 1
-
-                # Increment experience if it is a choice with experience
-                # accumulation.
-                if choice < n_choices_w_exp:
-                    child[choice + 1] += 1
-
-                # Change lagged choice by shifting all existing lagged choices by
-                # one period and inserting the current choice in first position.
-                if n_lagged_choices:
-                    child[
-                        n_choices_w_exp + 2 : n_choices_w_exp + n_lagged_choices + 1
-                    ] = child[n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices]
-                    child[n_choices_w_exp + 1] = choice
-
-                # Get the position of the continuation value.
-                idx_future = indexer[array_to_tuple(indexer, child)]
-                indices[i, j] = idx_future
-
-                j += 1
-
-    return indices
-
-
 @parallelize_across_dense_dimensions
 @nb.njit
 def _get_continuation_values(
@@ -830,8 +780,7 @@ def _get_continuation_values(
         period, choice_set = dense_complex_index
         dense_idx = 0
 
-    # Sum over UniTuple.
-    n_choices = np.sum(np.array([1 for i in choice_set if i]))
+    n_choices = sum_over_numba_boolean_unituple(choice_set)
 
     n_states = core_indices.shape[0]
 
@@ -848,23 +797,24 @@ def _get_continuation_values(
 
 
 @parallelize_across_dense_dimensions
-def _collect_child_indices(core, core_indices, choice_set, indexer, optim_paras):
-    """Collect child indices for one particular dense choice core.
+def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
+    """Collect child indices for states.
 
-    Particularly creates some auxiliary objects to call _insert_indices_of_child_state
-    thereafter.
+    The function takes the states of one dense key, applies the law of motion for each
+    available choice and maps the resulting states to core keys and core indices.
 
     Parameters
     ----------
-    core : pandas.DataFrame
-        :ref:`core state space <core_state_space>`
-
-    core_indices : numpy.ndarray
-        Indices of core positions belonging to a particular
-        dense period choice core.
-
+    complex_ : tuple
+        See :ref:`complex`.
     choice_set : tuple
         Tuple representing admissible choices
+    indexer : numba.typed.Dict
+        A dictionary with core states as keys and the core key and core index as values.
+    optim_paras : dict
+        Contains model parameters.
+    options : dict
+        Contains model options.
 
     Returns
     -------
@@ -873,18 +823,23 @@ def _collect_child_indices(core, core_indices, choice_set, indexer, optim_paras)
         (core_index, choice) -> (dense_key, core_index).
 
     """
-    n_choices = sum(choice_set)
-
     core_columns = create_core_state_space_columns(optim_paras)
-    states = core.loc[core_indices, ["period"] + core_columns].to_numpy()
+    states = load_states(complex_, options)
 
-    indices = _insert_indices_of_child_states(
-        states,
-        indexer,
-        choice_set,
-        n_choices,
-        len(optim_paras["choices_w_exp"]),
-        optim_paras["n_lagged_choices"],
-    )
+    n_choices = sum(choice_set)
+    indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)
+
+    indices_valid_choices = [i for i, is_valid in enumerate(choice_set) if is_valid]
+    for i, choice in enumerate(indices_valid_choices):
+        states_ = states.copy(deep=True)
+
+        states_["choice"] = choice
+        states_ = apply_law_of_motion_for_core(states_, optim_paras)
+
+        states_ = states_[["period"] + core_columns]
+
+        indices[:, i, 0], indices[:, i, 1] = map_states_to_core_key_and_core_index(
+            states_.to_numpy(), indexer
+        )
 
     return indices
