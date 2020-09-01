@@ -113,14 +113,17 @@ the authors provide a comparison of alternative weighting matrices.
 
 --------------------------------------------------------------------------------
 
-.. rst-class:: centerblue
+.. raw:: html
 
-   The implementation of MSM estimation in ``respy`` is extensively
-   described in the tutorial on `Methods of Simulated Moments (MSM)
-   <https://respy.readthedocs.io/en/latest/how_to_guides/msm.html>`_
-   and the tutorial on `How to Estimate Model Parameters with MSM
-   <https://respy.readthedocs.io/en/latest/how_to_
-   guides/msm_estimation_exercise.html>`_.
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To How-to guide</span></p>
+    <p>The implementation of MSM estimation in <b><i>respy</i></b> is extensively
+       described in the tutorial on<a href="../how_to_guides/msm.html">Methods
+       of Simulated Moments (MSM)</a> and the tutorial on<a
+       href="../how_to_guides/msm_estimation_exercise.html">How to Estimate
+       Model Parameters with MSM</a></p>
+   </div>
 
 --------------------------------------------------------------------------------
 
@@ -130,6 +133,19 @@ respy.readthedocs.io/en/latest/tutorials/robinson_crusoe.html>`_
 provides a great applied resource to familiarize with the main functionalities
 of ``respy``. Reading through will help you to set-up and calibrate your own
 DCDP model.
+
+
+.. raw:: html
+
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To Tutorials</span></p>
+    <p>We have explained the economic model, its solution, one particular specification,
+       and the calibration procedure. The<a href="../tutorials/robinson_crusoe.html">Robinson Crusoe tutorial
+       </a> provides a great applied resource to familiarize with the main functionalities
+       of <b><i>respy</i></b>. Reading through will help you to set-up and calibrate your own
+       DCDP model.</p>
+   </div>
 
 
 .. rubric:: Footnotes

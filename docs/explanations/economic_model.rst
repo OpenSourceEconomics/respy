@@ -72,8 +72,15 @@ the probability measure :math:`p^{\pi}`. The decision problem is dynamic in the
 sense that expected inter-temporal per-period utilities at a certain period
 :math:`t` are influenced by past choices.
 
-We will present the solution procedure for economic models alike in
-:ref:`mathematical_framework`.
+.. raw:: html
+
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To section on the mathematical framework</span></p>
+    <p>The operationalization of the model allows to proceed with the calibration as
+       described in<a href="mathematical_framework.html">
+       Mathematical Framework</a> </p>
+   </div>
 
 
 .. rubric:: Footnotes

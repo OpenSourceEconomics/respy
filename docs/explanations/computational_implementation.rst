@@ -6,8 +6,16 @@ Computational Implementation
 .. role:: boldblue
 
 We will present the :boldblue:`computational implementation` of the model.
-A list of the parameter-covariates combination as implemented in ``respy``
-is presented in :ref:`parameterization`.
+
+.. raw:: html
+
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To section on model parameterization</span></p>
+    <p>A list of the parameter-covariates combination as implemented in <b><i>respy</i></b>
+       is presented in<a href="parameterization.html">
+       Parameterization</a> </p>
+   </div>
 
 We follow individuals over their working life from young adulthood at age 16
 to retirement at age 65. The decision period :math:`t = 16, \dots, 65`  is
@@ -28,11 +36,15 @@ endowments
 
 --------------------------------------------------------------------------------
 
-.. rst-class:: centerblue
+.. raw:: html
 
-        An explanation how to set and change initial conditions in ``respy``
-        is provided in `Initial Conditions <https://respy.readthedocs.io/en/
-        latest/how_to_guides/initial_conditions.html>`_.
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To How-to guide</span></p>
+    <p>An explanation how to set and change initial conditions in <b><i>
+    respy</i></b> is provided in<a href="../how_to_guides/initial_conditions.html">
+    Initial Conditions</a> </p>
+   </div>
 
 --------------------------------------------------------------------------------
 
@@ -76,11 +88,16 @@ utility functions and the distribution of the shocks, the state at time
 
 --------------------------------------------------------------------------------
 
-.. rst-class:: centerblue
+.. raw:: html
 
-  A sophisticated account of the complete state space is integrated in ``respy``.
-  The particular implementation is described in
-  `respy.state_space <https://respy.readthedocs.io/en/latest/autoapi/respy/state_space/index.html>`_
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To state space description</span></p>
+    <p>A sophisticated account of the complete state space is integrated in
+       <b><i>respy</i></b>. The particular implementation is described in
+       <a href="../autoapi/respy/state_space/index.html">respy.state_space</a></p>
+   </div>
+
 
 --------------------------------------------------------------------------------
 
@@ -303,5 +320,12 @@ the precise nature of the relationship. Equation (C3) (p.521) also indicates
 no productivity shock :math:`\epsilon_{a,t}` in the wage component.
 Table 7 (p.500) reports such estimates.
 
-The operationalization of the model allows to proceed with the calibration as
-described in :ref:`calibration`.
+.. raw:: html
+
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To section on model calibration</span></p>
+    <p>The operationalization of the model allows to proceed with the calibration as
+       described in<a href="calibration.html">
+       Calibration</a> </p>
+   </div>

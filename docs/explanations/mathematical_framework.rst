@@ -58,7 +58,7 @@ implemented in all subsequent periods.
 
 .. rst-class:: centerblue
 
-  In `respy` the value functions can be retrieved as part of any model solution.
+  In ``respy`` the value functions can be retrieved as part of any model solution.
   In the case of our Keane and Wolpin (1997) exposition the value functions are
   indexed via ``Value_Function_{Alternative}``.
 
@@ -129,15 +129,19 @@ resulting numerical errors and computational instabilities.
 
 --------------------------------------------------------------------------------
 
-.. rst-class:: centerblue
+.. raw:: html
 
-   The EMax calculation in ``respy`` relies on advanced methods. The use of
-   quasi Monte-Carlo methods mitigates numerical errors and dramatically reduces
-   the time to solve the model.
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To How-to guide</span></p>
+    <p>The EMax calculation in <b><i>respy</i></b> relies on advanced methods.
+       The use of quasi Monte-Carlo methods mitigates numerical errors and
+       dramatically reduces the time to solve the model.
 
-   A How-to guide is provided in `Improving Numerical Integration Methods
-   <https://respy.readthedocs.io/en/latest/how_to_guides/numerical_
-   integration.html>`_.
+       A How-to guide is provided in <a href="../how_to_guides/numerical_
+       integration.html">Improving Numerical Integration Methods</a>.
+   </div>
+
 
 --------------------------------------------------------------------------------
 
@@ -163,8 +167,16 @@ in Keane and Wolpin (2000, :cite:`Keane.2000`) . For a given parameterization of
 the model it is necessary to evaluate Equation :eq:`emax_reformulated` at each
 of the points.
 
-We present the specification of Keane and Wolpin (1997, :cite:`Keane.1997`)
-in :ref:`computational_implementation`.
+.. raw:: html
+
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To section on the computational
+        implementation</span></p>
+    <p>We present the specification of Keane and Wolpin (1997)
+       in<a href="computational_implementation.html">
+       Computational Implementation</a> </p>
+   </div>
 
 .. rubric:: Footnotes
 

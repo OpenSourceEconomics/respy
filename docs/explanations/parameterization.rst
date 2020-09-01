@@ -3,9 +3,18 @@
 Parameterization
 ================
 
-The following table keeps track of the parameterization for the computational
-implementation introduced in :ref:`computational_implementation`. The wildcard
-{civilian} means either "blue" or "white".
+.. raw:: html
+
+   <div
+    <p class="d-flex flex-row gs-torefguide">
+        <span class="badge badge-info">To section on the computational
+        implementation</span></p>
+    <p>The following table keeps track of the parameterization for the computational
+       implementation introduced in<a href="computational_implementation.html">
+       Computational Implementation</a> </p>
+   </div>
+
+The wildcard {civilian} means either "blue" or "white".
 
 .. csv-table:: Table of Parameterization
    :header: "Parameter", "State variable in ``respy``", "Explanation"
