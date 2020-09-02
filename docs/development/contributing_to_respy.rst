@@ -4,8 +4,16 @@ Contributing to respy
 Contributions are always welcome. Everything ranging from small extensions of the
 documentation to implementing new features of the model is appreciated. Of course, the
 bigger the change, the more it is recommended to reach out to us in advance for a
-discussion. You can post an issue or use the email contact details under
-:ref:`about_us`.
+discussion.
+
+.. raw:: html
+
+         <div
+          <p class="d-flex flex-row gs-torefguide">
+              <span class="badge badge-info">To information about us</span></p>
+          <p>You can post an issue or use the email contact details under<a
+             href="../about_us.html">About us</a> </p>
+         </div>
 
 
 Where to start?
@@ -15,8 +23,8 @@ In general, you can take a look at our `issue tracker <https://github.com/
 OpenSourceEconomics/respy/issues>`_ or at our :ref:`roadmap <roadmap>` to find
 opportunities to contribute to the project.
 
-If you are new to **respy**, you might want to check out issues labeled as
-`good-first-issue <https://github.com/OpenSourceEconomics/respy/issues?q=is%3Aissue+is
+If you are new to respy, you might want to check out issues labeled as `good-first-issue
+<https://github.com/OpenSourceEconomics/respy/issues?q=is%3Aissue+is
 %3Aopen+label%3Agood-first-issue>`_.
 
 
@@ -34,7 +42,7 @@ Workflow
 
 3. We validate contributions in three ways.
 
-   1. We have a test suite to check the implementation of **respy**.
+   1. We have a test suite to check the implementation of respy.
    2. We correct for stylistic errors in code and documentation using linters.
    3. We test whether the documentation builds successfully.
 
@@ -103,7 +111,14 @@ The structure is inspired by Daniele Procida who shared his approach in `text an
    explanation. Provide some links to related explanations or how-to guides, but do
    overdo it and create confusion.
 
-   Here is a :ref:`template_for_tutorials`.
+   .. raw:: html
+
+         <div
+          <p class="d-flex flex-row gs-torefguide">
+              <span class="badge badge-info">To tutorial template</span></p>
+          <p>Here is a<a
+             href="template_for_tutorials.html">Template for tutorials</a> </p>
+         </div>
 
 2. Explanations are understanding-oriented. They provide context, discuss alternatives,
    but most importantly, nothing is done nor is the code discussed directly.
@@ -130,7 +145,7 @@ Styleguide for the documentation
 
 - The correct code formatting in ``.rst`` files is ensured by ``blacken-docs``. To
   correctly format the code inside notebooks, use the `jupyterlab-code-formatter
-  <jupyterlab-code-formatter.readthedocs.io>`_ with the black formatter.
+  <https://jupyterlab-code-formatter.readthedocs.io>`_ with the black formatter.
 
 - Use the following order of headings
 
@@ -143,18 +158,69 @@ Styleguide for the documentation
 - Between the end of a section and the following heading are two empty lines.
 
 - The documentation is formatted with a line length of 88 characters. To wrap the text
-  use `AutoWrap <https://github.com/randy3k/AutoWrap>` for Sublime Text, and `this
+  use `AutoWrap <https://github.com/randy3k/AutoWrap>`_ for Sublime Text, and `this
   setting <https://stackoverflow.com/a/39011656>`_ plus the fill-paragraph command with
   PyCharm.
 
 - For rather self-contained functions with few arguments, a doctest can serve as a unit
   test while providing documentation at the same time.
 
+- Cross-references which do not hurt the reading flow are highly recommended to prevent
+  the same information spread over various parts of the documentation and to provide
+  further insights.
+
+  We make use of the following HTML object to produce cross-references which stand out,
+  but can be skipped quickly.
+
+  .. code-block:: html
+
+      <div class="d-flex flex-row gs-torefguide">
+          <span class="badge badge-info">To how-to guide</span>
+
+          Find out more about numerical integration in <a
+          href="../how_to_guides/numerical_integration.ipynb">How to
+          improve numerical integration</a>.
+      </div>
+
+  with renders like
+
+  .. raw:: html
+
+         <div
+          <p class="d-flex flex-row gs-torefguide">
+              <span class="badge badge-info">To how-to guide</span></p>
+          <p>Find out more about numerical integration in <a
+             href="../how_to_guides/numerical_integration.ipynb">How
+             to improve numerical integration</a> </p>
+         </div>
+
+  Note that, the path is the same, but the file extension has to be changed to
+  ``.html``.
+
+  In notebooks, the HTML has to be placed in a separate cell which must not be a
+  markdown but a raw cell in HTML format. The `nbsphinx documentation
+  <https://nbsphinx.readthedocs.io/en/latest/raw-cells.html>`_ explains this nicely.
+
+  In normal RST files, insert
+
+  .. code-block:: restructuredtext
+
+      .. raw:: html
+
+         <div
+          <p class="d-flex flex-row gs-torefguide">
+              <span class="badge badge-info">To how-to guide</span></p>
+          <p>Find out more about numerical integration in <a
+             href="../how_to_guides/how_to_improve_numerical_integration.html">How
+             to improve numerical integration</a> </p>
+         </div>
+
+
 
 Guidelines for docstrings
 -------------------------
 
-Docstrings in **respy** are written in `NumPy Docstring Standard
+Docstrings in respy are written in `NumPy Docstring Standard
 <https://numpydoc.readthedocs.io/en/latest/format.html>`_. Here is an `example
 <https://numpydoc.readthedocs.io/en/latest/example.html#example>`_.
 
@@ -206,30 +272,30 @@ text.
 
 - **Intuitive code structures**
 
-We strive to use intuitive and efficient code structures. This may require you to revise
-your code contribution multiple times but will ensure that it is useful and
-comprehensible for all future users and contributors. See below for an example of an
-easy switch that can commonly be made.
+  We strive to use intuitive and efficient code structures. This may require you to
+  revise your code contribution multiple times but will ensure that it is useful and
+  comprehensible for all future users and contributors. See below for an example of an
+  easy switch that can commonly be made.
 
-   .. code-block:: python
+     .. code-block:: python
 
-       # Bad
-       dict_names = []
-       for name in dictionary:
-           dict_names.append(name)
+         # Bad
+         dict_names = []
+         for name in dictionary:
+             dict_names.append(name)
 
-       # Good
-       dict_names = [name for name in dictionary]
+         # Good
+         dict_names = [name for name in dictionary]
 
-   1. The loop covers three lines which automatically produces visual noise and the code
-      seems to carry some weight, although, almost nothing has been done.
+     1. The loop covers three lines which automatically produces visual noise and the code
+        seems to carry some weight, although, almost nothing has been done.
 
-   2. The list comprehension hides the operation in a single line and I might be able to
-      read the code while only looking at the variable name.
+     2. The list comprehension hides the operation in a single line and I might be able to
+        read the code while only looking at the variable name.
 
-   Other preferred syntaxes are
+     Other preferred syntaxes are
 
-   - `list and dict comprehensions and related concepts
-     <https://realpython.com/list-comprehension-python/>`_
-   - `ternary operators or conditional expressions
-     <https://stackoverflow.com/a/394814>`_ like ``a = 1 if b > 2 else 4``.
+     - `list and dict comprehensions and related concepts
+       <https://realpython.com/list-comprehension-python/>`_
+     - `ternary operators or conditional expressions
+       <https://stackoverflow.com/a/394814>`_ like ``a = 1 if b > 2 else 4``.
