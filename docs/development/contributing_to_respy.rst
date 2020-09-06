@@ -84,8 +84,8 @@ Workflow
    their remarks in your changes.
 
 6. If the changes should be merged, add yourself to the list of contributors and
-   depending on the size of the changes, add a note to ``CHANGES.rst``. The final PR
-   will be merged by one of the main contributors.
+   depending on the size of the changes, add a note to ``release_noters.rst``.
+   The final PR will be merged by one of the main contributors.
 
 
 Guidelines for the documentation

@@ -9,6 +9,7 @@ Explanations help you to deepen your knowledge on the concepts and topics behind
 .. toctree::
    :maxdepth: 1
 
+   introduction
    recommended_reading
    economic_model
    mathematical_framework
