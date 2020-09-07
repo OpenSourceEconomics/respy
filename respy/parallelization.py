@@ -92,7 +92,7 @@ def weight_dense_cores(func):
         continuation_values = func(*args, **kwargs) 
         if exogenous:
             weighted_continuation_values = continuation_values.copy()
-        
+
             for dense_key, transition_df in transition.items():
                 weighted_columns = \
                 [transition_df[ftr_key].values.reshape((transition_df.shape[0],1))*continuation_values[ftr_key] for ftr_key in transition_df.columns]

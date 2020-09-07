@@ -142,9 +142,10 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             state_space.dense_key_to_core_key,
             state_space.dense_key_to_complex,
             state_space.dense_covariates_to_dense_index,
-            state_space.dense_index_and_core_key_to_dense_key,
+            state_space.core_key_and_dense_index_to_dense_key,
             state_space.optim_paras,
             state_space.options)
+        print(list(transition_probabilities))
         
         # See docstring for note on interpolation.
         any_interpolated = options[

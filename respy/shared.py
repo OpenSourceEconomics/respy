@@ -775,26 +775,31 @@ def apply_law_of_motion_for_core(df, optim_paras):
 def compute_transition_probabilities(core_key,
                                      complex_,
                                      dense_covariates_to_dense_index,
-                                     dense_index_and_core_key_to_dense_key,
-                                     optim_paras
+                                     core_key_and_dense_index_to_dense_key,
+                                     optim_paras,
+                                     options
                                      ):
     """Insert Docstring Here!"""
-    states = load_states(complex_)
-    
+    states = load_states(complex_, options)
     exogenous_processes = optim_paras["exogenous_processes"]
     
     # How does the accounting work here again? Would that actually work?
     dense_columns = create_dense_state_space_columns(optim_paras) 
     static_dense_columns = [x for x in dense_columns if x not in exogenous_processes]
 
-    static_dense = list(states.loc[0,static_dense_columns].values())
-    
+    if static_dense_columns != []:
+        static_dense = list(states.groupby(static_dense_columns).groups)[0]
+        static_dense = (static_dense,) if type(static_dense) is int else static_dense
+    else:
+        static_dense = []
+
     levels_of_processes = [range(len(i)) for i in exogenous_processes.values()]
     comb_exog_procs = itertools.product(*levels_of_processes)
     
     # Needs to be created in here since that is dense-period-choice-core specific. 
     dense_index_to_exogenous = {dense_covariates_to_dense_index[(*static_dense, *exog)]:exog for exog in comb_exog_procs}
-    dense_key_to_exogenous = {dense_index_and_core_key_to_dense_key[(core_key,key)]:value for key,value in dense_index_to_exogenous.items()}
+    dense_key_to_exogenous = {
+        core_key_and_dense_index_to_dense_key[(core_key,key)]:value for key,value in dense_index_to_exogenous.items()}
     
     # Compute the probabilities for every exogenous process.
     probabilities = []
@@ -810,10 +815,9 @@ def compute_transition_probabilities(core_key,
         probabilities.append(probs)
     
     # Prepare full Dataframe. If issues arrise we might want to switch typed dicts 
-    df = pd.Dataframe(index=states.index)
-    for dense in dense_index_to_exogenous:
-        array = np.product.reduce(probs[proc][:,val] for proc,val in enumerate(dense_key_to_exogenous[dense]))
+    df = pd.DataFrame(index=states.index)
+    print(dense_key_to_exogenous)
+    for dense in dense_key_to_exogenous:
+        array = np.multiply.reduce(probs[proc][:,val] for proc,val in enumerate(dense_key_to_exogenous[dense]))
         df[dense] = array
-    
-
     return df

@@ -134,7 +134,7 @@ class StateSpace:
             i: k for i, k in enumerate(self.dense_period_cores)
         }
 
-        dense_key_to_core_key = {
+        self.dense_key_to_core_key = {
             i: self.dense_period_cores[self.dense_key_to_complex[i]]
             for i in self.dense_key_to_complex
         }
@@ -144,7 +144,7 @@ class StateSpace:
         }
 
         self.dense_key_to_core_indices = {
-            i: np.array(self.core_key_to_core_indices[dense_key_to_core_key[i]])
+            i: np.array(self.core_key_to_core_indices[self.dense_key_to_core_key[i]])
             for i in self.dense_key_to_complex
         }
 
@@ -155,7 +155,7 @@ class StateSpace:
         for i in self.dense_key_to_complex:
             self.core_key_and_dense_index_to_dense_key[
                 return_core_dense_key(
-                    dense_key_to_core_key[i], *self.dense_key_to_complex[i][2:],
+                    self.dense_key_to_core_key[i], *self.dense_key_to_complex[i][2:],
                 )
             ] = i
 
@@ -239,7 +239,7 @@ class StateSpace:
                 self.get_attribute_from_period("dense_key_to_complex", period),
                 child_indices,
                 self.core_key_and_dense_index_to_dense_key,
-                transition,
+                transition=transition,
                 bypass={"expected_value_functions": subset_expected_value_functions},
             )
         return continuation_values
