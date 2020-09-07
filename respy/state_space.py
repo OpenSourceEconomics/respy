@@ -8,6 +8,7 @@ from numba.typed import Dict
 
 from respy._numba import sum_over_numba_boolean_unituple
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.parallelization import weight_dense_cores
 from respy.shared import apply_law_of_motion_for_core
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
@@ -186,13 +187,17 @@ class StateSpace:
         for index, indices in self.dense_key_to_core_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
 
-    def get_continuation_values(self, period):
+    def get_continuation_values(self, period, transition):
         """Get continuation values.
 
         The function takes the expected value functions from the previous periods and
         then uses the indices of child states to put these expected value functions in
         the correct format. If period is equal to self.n_periods - 1 the function
-        returns arrays of zeros since we are in terminal states. Otherwise we retrieve
+        returns arrays of zeros si        self.expected_value_functions = Dict.empty(
+            key_type=nb.types.int64, value_type=nb.types.float64[:]
+        )
+        for index, indices in self.dense_key_to_core_indices.items():
+            self.expected_value_functions[index] = np.zeros(len(indices))nce we are in terminal states. Otherwise we retrieve
         expected value functions for next period and call
         :func:`_get_continuation_values` to assign continuation values to all choices
         within a period. (The object `subset_expected_value_functions` is required
@@ -234,9 +239,11 @@ class StateSpace:
                 self.get_attribute_from_period("dense_key_to_complex", period),
                 child_indices,
                 self.core_key_and_dense_index_to_dense_key,
+                transition,
                 bypass={"expected_value_functions": subset_expected_value_functions},
             )
         return continuation_values
+
 
     def collect_child_indices(self):
         """Collect for each state the indices of its child states.
@@ -750,6 +757,7 @@ def _create_dense_period_choice(
     return dense_period_choice
 
 
+@weight_dense_cores
 @parallelize_across_dense_dimensions
 @nb.njit
 def _get_continuation_values(

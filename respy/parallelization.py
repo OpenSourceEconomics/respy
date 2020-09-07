@@ -3,6 +3,7 @@ import functools
 
 import joblib
 import pandas as pd
+import numpy as np
 
 
 def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
@@ -81,6 +82,28 @@ def split_and_combine_df(func):
         return df
 
     return wrapper_distribute_and_combine_df
+
+
+def weight_dense_cores(func):
+    """Wrapper around get continuation values"""
+    @functools.wraps(func)
+    def decorator_weight_dense_cores(*args, transition, **kwargs):
+        exogenous = False if transition is None else True
+        continuation_values = func(*args, **kwargs) 
+        if exogenous:
+            weighted_continuation_values = continuation_values.copy()
+        
+            for dense_key, transition_df in transition.items():
+                weighted_columns = \
+                [transition_df[ftr_key].values.reshape((transition_df.shape[0],1))*continuation_values[ftr_key] for ftr_key in transition_df.columns]
+
+                weighted_continuation_values[dense_key] = np.sum.reduce(weighted_columns)
+        
+            return weighted_continuation_values
+        
+        else:
+            return continuation_values
+    return decorator_weight_dense_cores
 
 
 def _infer_dense_keys_from_arguments(args, kwargs):

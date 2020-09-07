@@ -5,11 +5,13 @@ import from respy itself. This is to prevent circular imports.
 
 """
 import shutil
+import itertools
 
 import chaospy as cp
 import numba as nb
 import numpy as np
 import pandas as pd
+from scipy import special
 
 from respy._numba import array_to_tuple
 from respy.config import MAX_LOG_FLOAT
@@ -766,5 +768,52 @@ def apply_law_of_motion_for_core(df, optim_paras):
         df.insert(position, "lagged_choice_1", df["choice"])
 
     df["period"] = df["period"] + 1
+
+    return df
+
+@parallelize_across_dense_dimensions
+def compute_transition_probabilities(core_key,
+                                     complex_,
+                                     dense_covariates_to_dense_index,
+                                     dense_index_and_core_key_to_dense_key,
+                                     optim_paras
+                                     ):
+    """Insert Docstring Here!"""
+    states = load_states(complex_)
+    
+    exogenous_processes = optim_paras["exogenous_processes"]
+    
+    # How does the accounting work here again? Would that actually work?
+    dense_columns = create_dense_state_space_columns(optim_paras) 
+    static_dense_columns = [x for x in dense_columns if x not in exogenous_processes]
+
+    static_dense = list(states.loc[0,static_dense_columns].values())
+    
+    levels_of_processes = [range(len(i)) for i in exogenous_processes.values()]
+    comb_exog_procs = itertools.product(*levels_of_processes)
+    
+    # Needs to be created in here since that is dense-period-choice-core specific. 
+    dense_index_to_exogenous = {dense_covariates_to_dense_index[(*static_dense, *exog)]:exog for exog in comb_exog_procs}
+    dense_key_to_exogenous = {dense_index_and_core_key_to_dense_key[(core_key,key)]:value for key,value in dense_index_to_exogenous.items()}
+    
+    # Compute the probabilities for every exogenous process.
+    probabilities = []
+    for exog_proc in exogenous_processes:
+
+        # Create the dot product of covariates and parameters.
+        x_betas = []
+        for params in exogenous_processes[exog_proc].values():
+            x_beta = pandas_dot(states[params.index],params)
+            x_betas.append(x_beta)
+
+        probs = special.softmax(np.column_stack(x_betas), axis=1)
+        probabilities.append(probs)
+    
+    # Prepare full Dataframe. If issues arrise we might want to switch typed dicts 
+    df = pd.Dataframe(index=states.index)
+    for dense in dense_index_to_exogenous:
+        array = np.product.reduce(probs[proc][:,val] for proc,val in enumerate(dense_key_to_exogenous[dense]))
+        df[dense] = array
+    
 
     return df

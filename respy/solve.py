@@ -11,6 +11,7 @@ from respy.shared import load_states
 from respy.shared import pandas_dot
 from respy.shared import select_valid_choices
 from respy.shared import transform_base_draws_with_cholesky_factor
+from respy.shared import compute_transition_probabilities
 from respy.state_space import create_state_space_class
 
 
@@ -136,6 +137,15 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             len(state_space.dense_key_to_core_indices[dense_index])
             for dense_index in dense_indices_in_period
         )
+
+        transition_probabilities = compute_transition_probabilities(
+            state_space.dense_key_to_core_key,
+            state_space.dense_key_to_complex,
+            state_space.dense_covariates_to_dense_index,
+            state_space.dense_index_and_core_key_to_dense_key,
+            state_space.optim_paras,
+            state_space.options)
+        
         # See docstring for note on interpolation.
         any_interpolated = options[
             "interpolation_points"
@@ -143,7 +153,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             dense_indices_in_period
         )
 
-        # Handle myopic individuals.
+        # Handle myopic individuals. Check interpolation!
         if optim_paras["delta"] == 0:
             period_expected_value_functions = {k: 0 for k in dense_indices_in_period}
 
@@ -156,7 +166,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
             wages = state_space.get_attribute_from_period("wages", period)
             nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-            continuation_values = state_space.get_continuation_values(period)
+            continuation_values = state_space.get_continuation_values(period, transition_probabilities)
 
             period_expected_value_functions = _full_solution(
                 wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras
