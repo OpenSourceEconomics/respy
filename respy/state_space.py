@@ -7,8 +7,8 @@ import pandas as pd
 from numba.typed import Dict
 
 from respy._numba import sum_over_numba_boolean_unituple
+from respy.exogenous_processes import weight_continuation_values
 from respy.parallelization import parallelize_across_dense_dimensions
-from respy.parallelization import weight_dense_cores
 from respy.shared import apply_law_of_motion_for_core
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
@@ -16,8 +16,8 @@ from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
-from respy.shared import dump_states
-from respy.shared import load_states
+from respy.shared import dump_objects
+from respy.shared import load_objects
 from respy.shared import map_states_to_core_key_and_core_index
 from respy.shared import prepare_cache_directory
 from respy.shared import return_core_dense_key
@@ -187,17 +187,13 @@ class StateSpace:
         for index, indices in self.dense_key_to_core_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
 
-    def get_continuation_values(self, period, transition):
+    def get_continuation_values(self, period):
         """Get continuation values.
 
         The function takes the expected value functions from the previous periods and
         then uses the indices of child states to put these expected value functions in
         the correct format. If period is equal to self.n_periods - 1 the function
-        returns arrays of zeros si        self.expected_value_functions = Dict.empty(
-            key_type=nb.types.int64, value_type=nb.types.float64[:]
-        )
-        for index, indices in self.dense_key_to_core_indices.items():
-            self.expected_value_functions[index] = np.zeros(len(indices))nce we are in terminal states. Otherwise we retrieve
+        returns arrays of zeros since we are in terminal states. Otherwise we retrieve
         expected value functions for next period and call
         :func:`_get_continuation_values` to assign continuation values to all choices
         within a period. (The object `subset_expected_value_functions` is required
@@ -235,13 +231,20 @@ class StateSpace:
                 subset_expected_value_functions[key] = value
 
             continuation_values = _get_continuation_values(
-                self.get_attribute_from_period("dense_key_to_core_indices", period),
                 self.get_attribute_from_period("dense_key_to_complex", period),
+                self.get_attribute_from_period("dense_key_to_core_indices", period),
                 child_indices,
                 self.core_key_and_dense_index_to_dense_key,
-                transition=transition,
                 bypass={"expected_value_functions": subset_expected_value_functions},
             )
+            if type(self.transition) is str:
+                weight_continuation_values(
+                    self.get_attribute_from_period("dense_key_to_complex", period),
+                    self.options,
+                    bypass={"continuation_values":continuation_values}
+
+                )
+
         return continuation_values
 
 
@@ -723,7 +726,11 @@ def _create_dense_period_choice(
     """
     if not dense:
         for key, complex_ in core_key_to_complex.items():
-            dump_states(core.loc[core_key_to_core_indices[key]], complex_, options)
+            dump_objects(
+                core.loc[core_key_to_core_indices[key]],
+                "states",
+                complex_,
+                options)
         dense_period_choice = {k: i for i, k in core_key_to_complex.items()}
     else:
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
@@ -750,14 +757,16 @@ def _create_dense_period_choice(
 
                 dense_period_choice = {**dense_period_choice, **period_choice}
                 idx = list(grouper.keys())[0]
-                dump_states(
-                    df, (core_key_to_complex[core_idx][0], idx, dense_idx), options
+                dump_objects(
+                    df,
+                    "states",
+                    (core_key_to_complex[core_idx][0], idx, dense_idx),
+                    options
                 )
 
     return dense_period_choice
 
 
-@weight_dense_cores
 @parallelize_across_dense_dimensions
 @nb.njit
 def _get_continuation_values(
@@ -832,7 +841,7 @@ def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
 
     """
     core_columns = create_core_state_space_columns(optim_paras)
-    states = load_states(complex_, options)
+    states = load_objects("states", complex_, options)
 
     n_choices = sum(choice_set)
     indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)
