@@ -126,37 +126,36 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     )
 
     for period in reversed(range(n_periods)):
-        dense_indices_in_period = state_space.get_dense_keys_from_period(period)
+        dense_keys_in_period = state_space.get_dense_keys_from_period(period)
 
         period_draws_emax_risk = {
             dense_index: draws_emax_risk[dense_index]
-            for dense_index in dense_indices_in_period
+            for dense_index in dense_keys_in_period
         }
 
         n_states_in_period = sum(
             len(state_space.dense_key_to_core_indices[dense_index])
-            for dense_index in dense_indices_in_period
+            for dense_index in dense_keys_in_period
         )
 
         transition_probabilities = compute_transition_probabilities(
-            state_space.dense_key_to_core_key,
-            state_space.dense_key_to_complex,
+            state_space.get_attribute_from_period("dense_key_to_core_key", period),
+            state_space.get_attribute_from_period("dense_key_to_complex", period),
             state_space.dense_covariates_to_dense_index,
             state_space.core_key_and_dense_index_to_dense_key,
             state_space.optim_paras,
             state_space.options)
-        print(list(transition_probabilities))
         
         # See docstring for note on interpolation.
         any_interpolated = options[
             "interpolation_points"
         ] < n_states_in_period and options["interpolation_points"] >= 2 * len(
-            dense_indices_in_period
+            dense_keys_in_period
         )
 
         # Handle myopic individuals. Check interpolation!
         if optim_paras["delta"] == 0:
-            period_expected_value_functions = {k: 0 for k in dense_indices_in_period}
+            period_expected_value_functions = {k: 0 for k in dense_keys_in_period}
 
         elif any_interpolated:
             period_expected_value_functions = kw_94_interpolation(

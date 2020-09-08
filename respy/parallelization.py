@@ -95,9 +95,10 @@ def weight_dense_cores(func):
 
             for dense_key, transition_df in transition.items():
                 weighted_columns = \
-                [transition_df[ftr_key].values.reshape((transition_df.shape[0],1))*continuation_values[ftr_key] for ftr_key in transition_df.columns]
+                [transition_df[ftr_key].values.reshape((transition_df.shape[0],1))\
+                 *continuation_values[ftr_key] for ftr_key in transition_df.columns]
 
-                weighted_continuation_values[dense_key] = np.sum.reduce(weighted_columns)
+                weighted_continuation_values[dense_key] = functools.reduce(np.add,weighted_columns)
         
             return weighted_continuation_values
         

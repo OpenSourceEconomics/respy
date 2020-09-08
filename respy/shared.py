@@ -6,6 +6,7 @@ import from respy itself. This is to prevent circular imports.
 """
 import shutil
 import itertools
+import functools
 
 import chaospy as cp
 import numba as nb
@@ -817,7 +818,10 @@ def compute_transition_probabilities(core_key,
     # Prepare full Dataframe. If issues arrise we might want to switch typed dicts 
     df = pd.DataFrame(index=states.index)
     print(dense_key_to_exogenous)
+
     for dense in dense_key_to_exogenous:
-        array = np.multiply.reduce(probs[proc][:,val] for proc,val in enumerate(dense_key_to_exogenous[dense]))
+        array = functools.reduce(np.multiply,
+            [probabilities[proc][:,val] \
+             for proc,val in enumerate(dense_key_to_exogenous[dense])])
         df[dense] = array
     return df
