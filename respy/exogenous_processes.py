@@ -11,15 +11,14 @@ from respy.shared import create_dense_state_space_columns
 from respy.shared import pandas_dot
 
 @parallelize_across_dense_dimensions
-def compute_transition_probabilities(core_key,
-                                     complex_,
-                                     dense_covariates_to_dense_index,
-                                     core_key_and_dense_index_to_dense_key,
-                                     optim_paras,
-                                     options
+def compute_transition_probabilities(
+        states,
+        core_key,
+        dense_covariates_to_dense_index,
+        core_key_and_dense_index_to_dense_key,
+        optim_paras,
                                      ):
     """Insert Docstring Here!"""
-    states = load_objects("states", complex_, options)
     exogenous_processes = optim_paras["exogenous_processes"]
 
     # How does the accounting work here again? Would that actually work?
@@ -65,7 +64,7 @@ def compute_transition_probabilities(core_key,
                                  [probabilities[proc][:, val] \
                                   for proc, val in
                                   enumerate(dense_key_to_exogenous[dense])])
-        df[dense] = array
+        df[str(dense)] = array
     return df
 
 @parallelize_across_dense_dimensions
@@ -77,7 +76,7 @@ def weight_continuation_values(
 
     weighted_columns = \
         [transition_df[ftr_key].values.reshape((transition_df.shape[0], 1)) \
-         * continuation_values[ftr_key] for ftr_key in transition_df.columns]
+         * continuation_values[int(ftr_key)] for ftr_key in transition_df.columns]
 
     continuation_values = functools.reduce(np.add,weighted_columns)
     return continuation_values

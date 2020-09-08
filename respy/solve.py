@@ -56,11 +56,12 @@ def solve(params, options, state_space):
     """Solve the model."""
     optim_paras, options = process_params_and_options(params, options)
 
-    wages, nonpecs, transition = _create_choice_rewards(
+    wages, nonpecs, transition = _create_param_specific_objects(
         state_space.dense_key_to_complex,
         state_space.dense_key_to_core_key,
         state_space.dense_key_to_choice_set,
-        state_space.dense_index_and_core_key_to_dense_key,
+        state_space.dense_covariates_to_dense_index,
+        state_space.core_key_and_dense_index_to_dense_key,
         optim_paras,
         options,
     )
@@ -91,18 +92,16 @@ def _create_param_specific_objects(
     For objects that we store on disk we will just return the prefix of the location.
     """
     states = load_objects("states", complex_, options)
-    wages, nonpecs = _create_choice_rewards(complex_, choice_set, optim_paras, options)
+    wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
 
     transition = False
     if "exogenous_processes" in optim_paras:
         transition_probabilities = compute_transition_probabilities(
             states,
             core_key,
-            complex_,
             dense_covariates_to_dense_index,
             dense_index_and_core_key_to_dense_key,
-            optim_paras,
-            options
+            optim_paras
         )
         transition = "transition"
         dump_objects(transition_probabilities, transition, complex_, options)
@@ -199,10 +198,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
             wages = state_space.get_attribute_from_period("wages", period)
             nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-            continuation_values = state_space.get_continuation_values(
-            period,
-            state_space.transition
-            )
+            continuation_values = state_space.get_continuation_values(period)
 
             period_expected_value_functions = _full_solution(
                 wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras

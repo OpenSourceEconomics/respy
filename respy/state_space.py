@@ -770,8 +770,8 @@ def _create_dense_period_choice(
 @parallelize_across_dense_dimensions
 @nb.njit
 def _get_continuation_values(
-    core_indices,
     dense_complex_index,
+    core_indices,
     child_indices,
     core_index_and_dense_vector_to_dense_index,
     expected_value_functions,

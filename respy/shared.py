@@ -672,7 +672,7 @@ def dump_objects(objects, topic, complex_, options):
     )
 
 
-def load_objects(complex_, topic, options):
+def load_objects(topic, complex_, options):
     """Load states."""
     file_name = _create_file_name_from_complex_index(topic, complex_)
     directory = options["cache_path"]
