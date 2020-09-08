@@ -11,7 +11,7 @@ We will present the :boldblue:`computational implementation` of the model.
 
    <div
     <p class="d-flex flex-row gs-torefguide">
-        <span class="badge badge-info">To section on model parameterization</span></p>
+        <span class="badge badge-info">To Explanation</span></p>
     <p>A list of the parameter-covariates combination as implemented in <b><i>respy</i></b>
        is presented in<a href="parameterization.html">
        Parameterization</a> </p>
@@ -324,7 +324,7 @@ Table 7 (p.500) reports such estimates.
 
    <div
     <p class="d-flex flex-row gs-torefguide">
-        <span class="badge badge-info">To section on model calibration</span></p>
+        <span class="badge badge-info">To Explanation</span></p>
     <p>The operationalization of the model allows to proceed with the calibration as
        described in<a href="calibration.html">
        Calibration</a> </p>

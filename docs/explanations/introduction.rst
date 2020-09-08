@@ -11,7 +11,7 @@ that agents are forward-looking and maximize expected intertemporal payoffs.
 Over the last decades, finite-horizon DCDP models have become a popular tool to
 answer research questions in areas of economics such as
 labor economics, industrial organization, economic demography, health economics,
-development economics, political economy and marketing.
+development economics, political economy, and marketing.
 
 What makes ``respy`` powerful is that it allows to build and solve structural
 models in weeks or months whose development previously took years. The design
@@ -29,7 +29,7 @@ her model.
   (1997, :cite:`Keane.1997`).
 - Any number of time-constant observed state variables (e.g., ability measures
   (Bhuller et al., 2020, :cite:`Bhuller.2020`), race (Keane and Wolpin, 2000,
-  :cite:`Keane.2000`),demographic variables) found in the data.
+  :cite:`Keane.2000`), demographic variables) found in the data.
 - Correct the estimation for measurement error in wages, either using a Kalman
   filter in maximum likelihood estimation or by adding the measurement error
   in simulation based approaches.
@@ -56,7 +56,7 @@ DCDP modeling by relaxing at least one of the following assumptions:
    state variables do not have to be independently and identically distributed
    over agent and over time. As an example, the seminal work of Keane and Wolpin
    (1997, :cite:`Keane.1997`) introduces permanent unobserved heterogeneity by
-   assigning each individual to one of four type.
+   assigning each individual to one of four types.
 
 4. Unobservables may be *correlated across choice alternatives*, i. e. unobserved
    state variables do not have to be independent across alternatives.

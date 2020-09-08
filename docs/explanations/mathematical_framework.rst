@@ -171,8 +171,7 @@ of the points.
 
    <div
     <p class="d-flex flex-row gs-torefguide">
-        <span class="badge badge-info">To section on the computational
-        implementation</span></p>
+        <span class="badge badge-info">To Explanation</span></p>
     <p>We present the specification of Keane and Wolpin (1997)
        in<a href="computational_implementation.html">
        Computational Implementation</a> </p>

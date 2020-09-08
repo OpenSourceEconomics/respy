@@ -7,8 +7,7 @@ Parameterization
 
    <div
     <p class="d-flex flex-row gs-torefguide">
-        <span class="badge badge-info">To section on the computational
-        implementation</span></p>
+        <span class="badge badge-info">To Explanation</span></p>
     <p>The following table keeps track of the parameterization for the computational
        implementation introduced in<a href="computational_implementation.html">
        Computational Implementation</a> </p>
