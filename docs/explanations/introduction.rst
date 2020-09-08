@@ -65,7 +65,7 @@ DCDP modeling by relaxing at least one of the following assumptions:
 
    <div
     <p class="d-flex flex-row gs-torefguide">
-        <span class="badge badge-info">To recommended readings</span></p>
+        <span class="badge badge-info">To Explanation</span></p>
     <p>To learn more about DCDP models and related topics, check out
        <a href="recommended_reading.html">
        Recommended Reading</a> </p>

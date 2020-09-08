@@ -76,7 +76,7 @@ sense that expected inter-temporal per-period utilities at a certain period
 
    <div
     <p class="d-flex flex-row gs-torefguide">
-        <span class="badge badge-info">To section on the mathematical framework</span></p>
+        <span class="badge badge-info">To Explanation</span></p>
     <p>The operationalization of the model allows to proceed with the calibration as
        described in<a href="mathematical_framework.html">
        Mathematical Framework</a> </p>

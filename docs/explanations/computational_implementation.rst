@@ -92,7 +92,7 @@ utility functions and the distribution of the shocks, the state at time
 
    <div
     <p class="d-flex flex-row gs-torefguide">
-        <span class="badge badge-info">To state space description</span></p>
+        <span class="badge badge-info">To Reference guide</span></p>
     <p>A sophisticated account of the complete state space is integrated in
        <b><i>respy</i></b>. The particular implementation is described in
        <a href="../autoapi/respy/state_space/index.html">respy.state_space</a></p>
