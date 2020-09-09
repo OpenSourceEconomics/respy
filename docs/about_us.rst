@@ -41,8 +41,8 @@ Contributors
 - `Sofia Badini <https://github.com/SofiaBadini>`_ (Hyperbolic discounting)
 - `Linda Maokomatanda <https://github.com/lindamaok899>`_ (Robust OLS)
 - `Tim Mensinger <https://github.com/timmens>`_ (Recommended reading)
-- `Rafael Suchy <https://github.com/rafaelsuchy>`_ (Quasi-Monte Carlo simulation)
-
+- `Rafael Suchy <https://github.com/rafaelsuchy>`_ (Quasi-Monte Carlo simulation, Explanations)
+- `Benedikt Kauf <https://github.com/bekauf>`_ (Explanations)
 
 Acknowledgments
 ---------------
