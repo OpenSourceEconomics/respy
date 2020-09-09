@@ -24,7 +24,7 @@ work in a blue-collar or white-collar occupation (:math:`a = 1, 2`),
 to serve in the military :math:`(a = 3)`, to attend school :math:`(a = 4)`,
 or to stay at home :math:`(a = 5)`.
 
-.. figure:: ../_static/images/event_tree.pdf
+.. figure:: ../_static/images/event_tree.svg
   :width: 600
 
 

@@ -48,7 +48,7 @@ receives its immediate utility. Then the state evolves from :math:`s_t` to
 
 .. _timing_events:
 
-.. figure:: ../_static/images/timing_events.pdf
+.. figure:: ../_static/images/timing_events.svg
   :width: 650
   :alt: Illustration timing of events
 

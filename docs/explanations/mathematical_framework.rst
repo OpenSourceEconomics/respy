@@ -72,7 +72,7 @@ in each states. The preceding decision rules are determined recursively.
 
 .. _algorithm_value_function_iteration:
 
-.. figure:: ../_static/images/algorithm_value_function_iteration.pdf
+.. figure:: ../_static/images/algorithm_value_function_iteration.svg
   :width: 650
   :alt: Algorithm value function iteration
 
