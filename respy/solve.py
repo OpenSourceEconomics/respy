@@ -3,17 +3,16 @@ import functools
 
 import numpy as np
 
+from respy.exogenous_processes import compute_transition_probabilities
 from respy.interpolate import kw_94_interpolation
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_expected_value_functions
-from respy.shared import load_objects
 from respy.shared import dump_objects
-
+from respy.shared import load_objects
 from respy.shared import pandas_dot
 from respy.shared import select_valid_choices
 from respy.shared import transform_base_draws_with_cholesky_factor
-from respy.exogenous_processes import compute_transition_probabilities
 from respy.state_space import create_state_space_class
 
 
@@ -74,6 +73,7 @@ def solve(params, options, state_space):
 
     return state_space
 
+
 @parallelize_across_dense_dimensions
 def _create_param_specific_objects(
     complex_,
@@ -82,7 +82,8 @@ def _create_param_specific_objects(
     dense_covariates_to_dense_index,
     dense_index_and_core_key_to_dense_key,
     optim_paras,
-    options):
+    options,
+):
     """
     This function creates objects that are not fixed for a given model.
     Depending on their size they are either kept in working memory such
@@ -95,13 +96,14 @@ def _create_param_specific_objects(
     wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
 
     transition = False
-    if "exogenous_processes" in optim_paras:
+
+    if optim_paras["exogenous_processes"] != {}:
         transition_probabilities = compute_transition_probabilities(
             states,
             core_key,
             dense_covariates_to_dense_index,
             dense_index_and_core_key_to_dense_key,
-            optim_paras
+            optim_paras,
         )
         transition = "transition"
         dump_objects(transition_probabilities, transition, complex_, options)
@@ -113,7 +115,6 @@ def _create_choice_rewards(states, choice_set, optim_paras):
     """Create wage and non-pecuniary reward for each state and choice."""
     n_choices = sum(choice_set)
     choices = select_valid_choices(optim_paras["choices"], choice_set)
-
 
     n_states = states.shape[0]
 
