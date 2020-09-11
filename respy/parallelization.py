@@ -4,6 +4,7 @@ import functools
 import joblib
 import pandas as pd
 
+
 def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
     """Parallelizes decorated function across dense state space dimensions.
 
@@ -109,8 +110,10 @@ def _infer_dense_keys_from_arguments(args, kwargs):
 
 def _is_dictionary_with_integer_keys(candidate):
     """Infer whether the argument is a dictionary with integer keys."""
-    return isinstance(candidate, dict) and all(
-        isinstance(key, int) for key in candidate
+    return (
+        isinstance(candidate, dict)
+        and len(candidate) > 0
+        and all(isinstance(key, int) for key in candidate)
     )
 
 

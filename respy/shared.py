@@ -4,15 +4,12 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
-import functools
-import itertools
 import shutil
 
 import chaospy as cp
 import numba as nb
 import numpy as np
 import pandas as pd
-from scipy import special
 
 from respy._numba import array_to_tuple
 from respy.config import MAX_LOG_FLOAT
@@ -681,10 +678,7 @@ def load_objects(topic, complex_, options):
 
 def _create_file_name_from_complex_index(topic, complex_):
     """Create a file name from a complex index."""
-    try:
-        choice = "".join([str(int(x)) for x in complex_[1]])
-    except TypeError:
-        breakpoint()
+    choice = "".join([str(int(x)) for x in complex_[1]])
     if len(complex_) == 3:
         file_name = f"{topic}_{complex_[0]}_{choice}_{complex_[2]}.parquet"
     elif len(complex_) == 2:
