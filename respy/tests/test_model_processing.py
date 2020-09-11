@@ -14,6 +14,7 @@ from respy.pre_processing.model_processing import _convert_labels_in_formulas_to
 from respy.pre_processing.model_processing import _parse_initial_and_max_experience
 from respy.pre_processing.model_processing import _parse_measurement_errors
 from respy.pre_processing.model_processing import _parse_observables
+from respy.pre_processing.model_processing import _parse_exogenous_processes
 from respy.pre_processing.model_processing import _parse_shocks
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.tests.random_model import generate_random_model
@@ -156,7 +157,8 @@ def test_parse_observables():
         ),
         index_col=["category", "name"],
     )["value"]
-    optim_paras = _parse_observables({}, params)
+    optim_paras = _parse_exogenous_processes({}, params)
+    optim_paras = _parse_observables(optim_paras, params)
 
     expected = {
         "fishing_grounds": {

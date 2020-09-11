@@ -59,10 +59,12 @@ def solve(params, options, state_space):
         state_space.dense_key_to_complex,
         state_space.dense_key_to_core_key,
         state_space.dense_key_to_choice_set,
-        state_space.dense_covariates_to_dense_index,
         state_space.core_key_and_dense_index_to_dense_key,
         optim_paras,
         options,
+        bypass={
+            "dense_covariates_to_dense_index":\
+                state_space.dense_covariates_to_dense_index}
     )
 
     state_space.wages = wages
@@ -79,10 +81,11 @@ def _create_param_specific_objects(
     complex_,
     core_key,
     choice_set,
-    dense_covariates_to_dense_index,
     dense_index_and_core_key_to_dense_key,
     optim_paras,
     options,
+    dense_covariates_to_dense_index,
+
 ):
     """
     This function creates objects that are not fixed for a given model.
@@ -92,6 +95,8 @@ def _create_param_specific_objects(
     on disk directly!
     For objects that we store on disk we will just return the prefix of the location.
     """
+    if type(complex_) is dict:
+        breakpoint()
     states = load_objects("states", complex_, options)
     wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
 
