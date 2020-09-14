@@ -237,16 +237,14 @@ class StateSpace:
                 self.core_key_and_dense_index_to_dense_key,
                 bypass={"expected_value_functions": subset_expected_value_functions},
             )
-            if type(self.transition) is str:
-                weight_continuation_values(
+            if len(self.optim_paras["exogenous_processes"]) > 0:
+                continuation_values = weight_continuation_values(
                     self.get_attribute_from_period("dense_key_to_complex", period),
                     self.options,
-                    bypass={"continuation_values":continuation_values}
-
+                    bypass={"continuation_values": continuation_values},
                 )
 
         return continuation_values
-
 
     def collect_child_indices(self):
         """Collect for each state the indices of its child states.
@@ -727,10 +725,8 @@ def _create_dense_period_choice(
     if not dense:
         for key, complex_ in core_key_to_complex.items():
             dump_objects(
-                core.loc[core_key_to_core_indices[key]],
-                "states",
-                complex_,
-                options)
+                core.loc[core_key_to_core_indices[key]], "states", complex_, options
+            )
         dense_period_choice = {k: i for i, k in core_key_to_complex.items()}
     else:
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
@@ -761,7 +757,7 @@ def _create_dense_period_choice(
                     df,
                     "states",
                     (core_key_to_complex[core_idx][0], idx, dense_idx),
-                    options
+                    options,
                 )
 
     return dense_period_choice

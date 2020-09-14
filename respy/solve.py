@@ -55,7 +55,7 @@ def solve(params, options, state_space):
     """Solve the model."""
     optim_paras, options = process_params_and_options(params, options)
 
-    wages, nonpecs, transition = _create_param_specific_objects(
+    wages, nonpecs = _create_param_specific_objects(
         state_space.dense_key_to_complex,
         state_space.dense_key_to_core_key,
         state_space.dense_key_to_choice_set,
@@ -67,7 +67,6 @@ def solve(params, options, state_space):
 
     state_space.wages = wages
     state_space.nonpecs = nonpecs
-    state_space.transition = transition
 
     state_space = _solve_with_backward_induction(state_space, optim_paras, options)
 
@@ -96,8 +95,6 @@ def _create_param_specific_objects(
     states = load_objects("states", complex_, options)
     wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
 
-    transition = False
-
     if len(optim_paras["exogenous_processes"]) > 0:
         transition_probabilities = compute_transition_probabilities(
             states,
@@ -106,10 +103,9 @@ def _create_param_specific_objects(
             dense_index_and_core_key_to_dense_key,
             optim_paras,
         )
-        transition = "transition"
-        dump_objects(transition_probabilities, transition, complex_, options)
+        dump_objects(transition_probabilities, "transition", complex_, options)
 
-    return wages, nonpecs, transition
+    return wages, nonpecs
 
 
 def _create_choice_rewards(states, choice_set, optim_paras):
