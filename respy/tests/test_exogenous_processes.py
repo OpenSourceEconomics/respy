@@ -102,8 +102,24 @@ def test_weight_continuation_values_for_two_exog_processes(model_with_two_exog_p
 
 
 def test_weight_continuation_values_with_inadmissible_choices():
+    """What do we try to cover."""
     params, options = model_with_two_exog_proc
-    options["inadmissible_choices"] = {"fishing": "illness == 'sick'"}
+    options["negative_choice_set"] = {"fishing": ["sick == 1"]}
 
     solve = get_solve_func(params, options)
     state_space = solve(params)
+
+    for period in range(5):
+        state_space.expected_value_functions[period][:] = 1
+        state_space.expected_value_functions[period + 5][:] = 2
+        state_space.expected_value_functions[period + 10][:] = 3
+        state_space.expected_value_functions[period + 15][:] = 4
+
+    # The weighted continuation value should be
+    # 0.9 * 0.8 * 1 + 0.9 * 0.2 * 2 + 0.1 * 0.8 * 3 + 0.1 * 0.2 * 4 = 1.4.
+    for period in range(options["n_periods"] - 1):
+        continuation_values = state_space.get_continuation_values(period=period)
+        assert np.allclose(continuation_values[period], 1.4)
+        assert np.allclose(continuation_values[period + 5], 1.4)
+        assert np.allclose(continuation_values[period + 10], 1.4)
+        assert np.allclose(continuation_values[period + 15], 1.4)

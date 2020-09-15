@@ -229,7 +229,8 @@ class StateSpace:
             )
             for key, value in expected_value_functions.items():
                 subset_expected_value_functions[key] = value
-
+            if period == 3:
+                breakpoint()
             continuation_values = _get_continuation_values(
                 self.get_attribute_from_period("dense_key_to_complex", period),
                 self.get_attribute_from_period("dense_key_to_core_indices", period),
@@ -237,6 +238,7 @@ class StateSpace:
                 self.core_key_and_dense_index_to_dense_key,
                 bypass={"expected_value_functions": subset_expected_value_functions},
             )
+
             if len(self.optim_paras["exogenous_processes"]) > 0:
                 continuation_values = weight_continuation_values(
                     self.get_attribute_from_period("dense_key_to_complex", period),
@@ -734,6 +736,7 @@ def _create_dense_period_choice(
         for dense_idx, (_, dense_vec) in enumerate(dense.items()):
             states = core.copy().assign(**dense_vec)
             states = compute_covariates(states, options["covariates_all"])
+
             states = create_is_inadmissible(states, optim_paras, options)
             for core_idx, indices in core_key_to_core_indices.items():
                 df = states.copy().loc[indices].assign(**dense_vec)
@@ -856,3 +859,8 @@ def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
         )
 
     return indices
+
+
+def _map_static_to_exogenous(state_space):
+    """Map static choices."""
+    pass

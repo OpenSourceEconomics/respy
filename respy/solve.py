@@ -197,7 +197,6 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             wages = state_space.get_attribute_from_period("wages", period)
             nonpecs = state_space.get_attribute_from_period("nonpecs", period)
             continuation_values = state_space.get_continuation_values(period)
-
             period_expected_value_functions = _full_solution(
                 wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras
             )
