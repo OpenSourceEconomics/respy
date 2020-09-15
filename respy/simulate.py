@@ -16,6 +16,7 @@ from respy.shared import compute_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
+from respy.shared import load_objects
 from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
 from respy.shared import rename_labels_from_internal
@@ -205,18 +206,19 @@ def simulate(
 
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-        index_to_choice_set = state_space.get_attribute_from_period(
-            "dense_key_to_choice_set", period
+        index_to_complex = state_space.get_attribute_from_period(
+            "dense_key_to_complex", period
         )
         continuation_values = state_space.get_continuation_values(period=period)
 
         current_df_extended = _simulate_single_period(
             current_df,
-            index_to_choice_set,
+            index_to_complex,
             wages,
             nonpecs,
             continuation_values,
             optim_paras=optim_paras,
+            options=options,
         )
 
         data.append(current_df_extended.copy(deep=True))
@@ -307,7 +309,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 @split_and_combine_df
 @parallelize_across_dense_dimensions
 def _simulate_single_period(
-    df, choice_set, wages, nonpecs, continuation_values, optim_paras
+    df, complex_tuple, wages, nonpecs, continuation_values, optim_paras, options
 ):
     """Simulate individuals in a single period.
 
@@ -321,6 +323,7 @@ def _simulate_single_period(
     See docs for more information!
 
     """
+    choice_set = complex_tuple[1]
     valid_choices = select_valid_choices(optim_paras["choices"], choice_set)
 
     n_wages_raw = len(optim_paras["choices_w_wage"])
@@ -381,7 +384,22 @@ def _simulate_single_period(
         df[f"value_function_{choice}"] = value_functions[:, i]
         df[f"continuation_value_{choice}"] = continuation_values[:, i]
 
+    df["dense_key_next_period"] = apply_law_of_motion_for_dense(
+        complex_tuple, df["core_index"], options
+    )
     return df
+
+
+def apply_law_of_motion_for_dense(complex_tuple, core_index, options):
+    """Insert docstring here."""
+    transition_mat = load_objects("transition", complex_tuple, options)
+    core_index_counts = core_index.value_counts()
+    for index, count in core_index_counts.items():
+        draws = np.random.choice(
+            transition_mat.columns.values, size=count, p=transition_mat.loc[index, :]
+        )
+        core_index.loc[core_index == index] = draws
+    return core_index
 
 
 def _sample_characteristic(states_df, options, level_dict, use_keys):

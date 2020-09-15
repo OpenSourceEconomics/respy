@@ -1,24 +1,26 @@
+"""This module is for exogenous processes."""
 import functools
 import itertools
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from scipy import special
 
 from respy.parallelization import parallelize_across_dense_dimensions
-from respy.shared import load_objects
 from respy.shared import create_dense_state_space_columns
+from respy.shared import load_objects
 from respy.shared import pandas_dot
+
 
 @parallelize_across_dense_dimensions
 def compute_transition_probabilities(
-        states,
-        core_key,
-        dense_covariates_to_dense_index,
-        core_key_and_dense_index_to_dense_key,
-        optim_paras,
-                                     ):
-    """Insert Docstring Here!"""
+    states,
+    core_key,
+    dense_covariates_to_dense_index,
+    core_key_and_dense_index_to_dense_key,
+    optim_paras,
+):
+    """Insert Docstring Here."""
     exogenous_processes = optim_paras["exogenous_processes"]
 
     # How does the accounting work here again? Would that actually work?
@@ -36,11 +38,13 @@ def compute_transition_probabilities(
 
     # Needs to be created in here since that is dense-period-choice-core specific.
     dense_index_to_exogenous = {
-        dense_covariates_to_dense_index[(*static_dense, *exog)]: exog for exog in
-        comb_exog_procs}
+        dense_covariates_to_dense_index[(*static_dense, *exog)]: exog
+        for exog in comb_exog_procs
+    }
     dense_key_to_exogenous = {
-        core_key_and_dense_index_to_dense_key[(core_key, key)]: value for key, value in
-        dense_index_to_exogenous.items()}
+        core_key_and_dense_index_to_dense_key[(core_key, key)]: value
+        for key, value in dense_index_to_exogenous.items()
+    }
 
     # Compute the probabilities for every exogenous process.
     probabilities = []
@@ -57,26 +61,29 @@ def compute_transition_probabilities(
 
     # Prepare full Dataframe. If issues arrise we might want to switch typed dicts
     df = pd.DataFrame(index=states.index)
-    print(dense_key_to_exogenous)
 
     for dense in dense_key_to_exogenous:
-        array = functools.reduce(np.multiply,
-                                 [probabilities[proc][:, val] \
-                                  for proc, val in
-                                  enumerate(dense_key_to_exogenous[dense])])
+        array = functools.reduce(
+            np.multiply,
+            [
+                probabilities[proc][:, val]
+                for proc, val in enumerate(dense_key_to_exogenous[dense])
+            ],
+        )
         df[str(dense)] = array
     return df
 
+
 @parallelize_across_dense_dimensions
-def weight_continuation_values(
-        complex,
-        options,
-        continuation_values):
-    transition_df = load_objects("transition", complex, options)
+def weight_continuation_values(complex_tuple, options, continuation_values):
+    """Insert docstring here."""
+    transition_df = load_objects("transition", complex_tuple, options)
 
-    weighted_columns = \
-        [transition_df[ftr_key].values.reshape((transition_df.shape[0], 1)) \
-         * continuation_values[int(ftr_key)] for ftr_key in transition_df.columns]
+    weighted_columns = [
+        transition_df[ftr_key].values.reshape((transition_df.shape[0], 1))
+        * continuation_values[int(ftr_key)]
+        for ftr_key in transition_df.columns
+    ]
 
-    continuation_values = functools.reduce(np.add,weighted_columns)
+    continuation_values = functools.reduce(np.add, weighted_columns)
     return continuation_values
