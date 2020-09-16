@@ -220,18 +220,36 @@ def simulate(
             optim_paras=optim_paras,
             options=options,
         )
-
-        data.append(current_df_extended.copy(deep=True))
+        data.append(
+            current_df_extended.copy(deep=True).drop("dense_key_next_period", axis=1)
+        )
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             current_df_extended = current_df_extended.reset_index()
             df = apply_law_of_motion_for_core(current_df_extended, optim_paras)
-            state_space_columns = create_state_space_columns(optim_paras)
+            if optim_paras["exogenous_processes"]:
+                df = update_dense_state_variables(
+                    df,
+                    state_space.dense_key_to_dense_covariates,
+                    optim_paras["exogenous_processes"].keys(),
+                )
+                state_space_columns = create_state_space_columns(optim_paras)
             df = df.set_index(["identifier", "period"])[state_space_columns]
 
     simulated_data = _process_simulation_output(data, optim_paras)
 
     return simulated_data
+
+
+def update_dense_state_variables(
+    df, dense_key_to_dense_covariates, exogenous_processes
+):
+    """Insert docstring here."""
+    for key in df["dense_key_next_period"].unique():
+        dense_vars_to_value = dense_key_to_dense_covariates[key]
+        for exog in exogenous_processes:
+            df.loc[df["dense_key_next_period"] == key, exog] = dense_vars_to_value[exog]
+    return df
 
 
 def _extend_data_with_sampled_characteristics(df, optim_paras, options):
@@ -384,22 +402,25 @@ def _simulate_single_period(
         df[f"value_function_{choice}"] = value_functions[:, i]
         df[f"continuation_value_{choice}"] = continuation_values[:, i]
 
-    df["dense_key_next_period"] = apply_law_of_motion_for_dense(
-        complex_tuple, df["core_index"], options
-    )
+    # Check if there is an exogenous process
+    if optim_paras["exogenous_processes"]:
+        df["dense_key_next_period"] = apply_law_of_motion_for_dense(
+            complex_tuple, df["core_index"], options
+        )
     return df
 
 
 def apply_law_of_motion_for_dense(complex_tuple, core_index, options):
     """Insert docstring here."""
+    dense_key_next_period = core_index.copy(deep=True)
     transition_mat = load_objects("transition", complex_tuple, options)
     core_index_counts = core_index.value_counts()
     for index, count in core_index_counts.items():
         draws = np.random.choice(
             transition_mat.columns.values, size=count, p=transition_mat.loc[index, :]
         )
-        core_index.loc[core_index == index] = draws
-    return core_index
+        dense_key_next_period.loc[core_index == index] = draws.astype(int)
+    return dense_key_next_period
 
 
 def _sample_characteristic(states_df, options, level_dict, use_keys):

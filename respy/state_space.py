@@ -229,8 +229,6 @@ class StateSpace:
             )
             for key, value in expected_value_functions.items():
                 subset_expected_value_functions[key] = value
-            if period == 3:
-                breakpoint()
             continuation_values = _get_continuation_values(
                 self.get_attribute_from_period("dense_key_to_complex", period),
                 self.get_attribute_from_period("dense_key_to_core_indices", period),
