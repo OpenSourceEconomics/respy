@@ -10,37 +10,16 @@ from respy.shared import load_objects
 from respy.shared import create_dense_state_space_columns
 from respy.shared import pandas_dot
 
-@parallelize_across_dense_dimensions
 def compute_transition_probabilities(
         states,
-        core_key,
-        dense_covariates_to_dense_index,
-        core_key_and_dense_index_to_dense_key,
+        transit_keys,
+        exogenous_grid,
         optim_paras,
-                                     ):
-    """Insert Docstring Here!"""
+        dense_key_to_exogenous
+    ):
     exogenous_processes = optim_paras["exogenous_processes"]
 
-    # How does the accounting work here again? Would that actually work?
-    dense_columns = create_dense_state_space_columns(optim_paras)
-    static_dense_columns = [x for x in dense_columns if x not in exogenous_processes]
-
-    if static_dense_columns != []:
-        static_dense = list(states.groupby(static_dense_columns).groups)[0]
-        static_dense = (static_dense,) if type(static_dense) is int else static_dense
-    else:
-        static_dense = []
-
-    levels_of_processes = [range(len(i)) for i in exogenous_processes.values()]
-    comb_exog_procs = itertools.product(*levels_of_processes)
-
-    # Needs to be created in here since that is dense-period-choice-core specific.
-    dense_index_to_exogenous = {
-        dense_covariates_to_dense_index[(*static_dense, *exog)]: exog for exog in
-        comb_exog_procs}
-    dense_key_to_exogenous = {
-        core_key_and_dense_index_to_dense_key[(core_key, key)]: value for key, value in
-        dense_index_to_exogenous.items()}
+    dense_key_to_exogenous = dense_key_to_exogenous[transit_keys]
 
     # Compute the probabilities for every exogenous process.
     probabilities = []
@@ -57,7 +36,6 @@ def compute_transition_probabilities(
 
     # Prepare full Dataframe. If issues arrise we might want to switch typed dicts
     df = pd.DataFrame(index=states.index)
-    print(dense_key_to_exogenous)
 
     for dense in dense_key_to_exogenous:
         array = functools.reduce(np.multiply,
@@ -65,14 +43,22 @@ def compute_transition_probabilities(
                                   for proc, val in
                                   enumerate(dense_key_to_exogenous[dense])])
         df[str(dense)] = array
+    
     return df
+
 
 @parallelize_across_dense_dimensions
 def weight_continuation_values(
         complex,
         options,
-        continuation_values):
+        continuation_values,
+        transit_key_to_choice_set
+        ):
     transition_df = load_objects("transition", complex, options)
+    choice_set = complex[1]
+    continuation_values_adjusted = [
+
+    ]
 
     weighted_columns = \
         [transition_df[ftr_key].values.reshape((transition_df.shape[0], 1)) \
@@ -80,3 +66,62 @@ def weight_continuation_values(
 
     continuation_values = functools.reduce(np.add,weighted_columns)
     return continuation_values
+
+
+def create_continuation_choice_set(
+    dense_key_to_transit_representation,
+    dense_key_to_complex
+
+):
+    """
+    Return a dict containing the max representation choice
+    set of each dense choice core. 
+    """
+    continuation_choice_sets = dict()
+    for dense_key in dense_key_to_transit_representation:
+        continuation_choice_sets[dense_key] = list()
+        for transit_representation in dense_key_to_transit_representation:
+            if dense_key in dense_key_to_transit_representation[transit_representation]:
+                continuation_choice_sets[dense_key].append(
+                    dense_key_to_choice_set[transit_representation]
+            )
+    out = dict()
+    for dense_key in continuation_choice_sets:
+        out[sense_key] = _get_maximal_choice_set(
+            continuation_choice_sets[dense_key]
+        )
+    return out
+
+def _get_maximal_choice_set(list_of_choice_sets):
+    array = np.concatenate([np.expand_dims(x,axis=0) for x in a],axis=0)
+    out = array.any(axis=0)
+    return out
+
+def _get_representation_cols(rep_choice_set, choice_set):
+    """Return index of array cols"""
+    # Subset choice sets.
+    return np.array(choice_set)[np.array(rep_choice_set)]
+
+
+@parallelize_across_dense_dimensions
+def create_transition_objects(
+    dense_covariates,
+    core_key,
+    exog_grid,
+    n_exog,
+    optim_paras,
+    dense_covariates_to_dense_index,
+    core_key_and_dense_index_to_dense_key
+):
+"""Insert Docstring!"""
+    # Needs to be created in here since that is dense-period-choice-core specific.
+    static_dense = dense_covariates[:n_exog]
+   
+    reachable_dense_indices = [
+        dense_covariates_to_dense_index[(*static_dense, *exog)]]
+    
+    reachable_dense_keys = {
+        core_key_and_dense_index_to_dense_key[(core_key, key)]: value for key, value in
+        dense_index_to_exogenous.items()}
+    
+    return reachable_dense_keys

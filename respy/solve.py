@@ -4,6 +4,7 @@ import functools
 import numpy as np
 
 from respy.exogenous_processes import compute_transition_probabilities
+from respy.exogenous_processes import create_continuation_choice_set
 from respy.interpolate import kw_94_interpolation
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
@@ -96,7 +97,10 @@ def _create_param_specific_objects(
     wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
 
     if len(optim_paras["exogenous_processes"]) > 0:
-        transition_probabilities = compute_transition_probabilities(
+        (
+            transition_probabilities,
+            dense_key_to_transit_representation,
+        ) = compute_transition_probabilities(
             states,
             core_key,
             dense_covariates_to_dense_index,
@@ -104,6 +108,9 @@ def _create_param_specific_objects(
             optim_paras,
         )
         dump_objects(transition_probabilities, "transition", complex_, options)
+        dense_key_to_continuation_choice_set = create_continuation_choice_set(
+            dense_key_to_transit_representation, dense_key_to_choice_set
+        )
 
     return wages, nonpecs
 

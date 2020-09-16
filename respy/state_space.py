@@ -8,6 +8,8 @@ from numba.typed import Dict
 
 from respy._numba import sum_over_numba_boolean_unituple
 from respy.exogenous_processes import weight_continuation_values
+from respy.exogenous_processes import create_transition_objects
+from respy.exogenous_processes import create_transit_choice_set
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import apply_law_of_motion_for_core
 from respy.shared import compute_covariates
@@ -123,6 +125,9 @@ class StateSpace:
         self.child_indices = self.collect_child_indices()
         self.base_draws_sol = self.create_draws(options)
         self.create_arrays_for_expected_value_functions()
+        
+        if len(self.optim_paras["exogenous_processes"])>0:
+            self.create_objects_for_exogenous_processes()
 
     def _create_conversion_dictionaries(self):
         """Create mappings between state space location indices and properties.
@@ -186,6 +191,42 @@ class StateSpace:
         )
         for index, indices in self.dense_key_to_core_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
+    
+
+    def create_objects_for_exogenous_processes(self):
+        """Insert Docstring Here!"""
+        # Include switch arg
+        exogenous_processes = self.optim_paras["exogenous_processes"]
+        n_exog = len(exogenous_processes)
+
+
+        # How does the accounting work here again? Would that actually work?
+        dense_columns = create_dense_state_space_columns(optim_paras)
+        levels_of_processes = [range(len(i)) for i in exogenous_processes.values()]
+        self.exogenous_grid = itertools.product(*levels_of_processes)
+
+        self.dense_key_to_transit_keys = create_transition_objects(
+                self.dense_key_to_dense_covariates,
+                self.dense_key_to_core_key,
+                exogenous_grid,
+                n_exog,
+                optim_paras,
+                bypass = {
+                    "dense_covariates_to_dense_index":
+                    self.dense_covariates_to_dense_index,
+                    "core_key_and_dense_index_to_dense_key":
+                    self.core_key_and_dense_index_to_dense_key
+                }
+                )
+        self.transit_key_to_choice_set = 
+            create_transit_choice_set(
+                dense_key_to_transit_representation,
+                dense_key_to_choice_set
+            )
+
+        self.dense_key_to_exogenous = {key:value[-n_exog:] for key, value in 
+            self.dense_key_to_dense_covariates}
+
 
     def get_continuation_values(self, period):
         """Get continuation values.
@@ -229,10 +270,15 @@ class StateSpace:
             )
             for key, value in expected_value_functions.items():
                 subset_expected_value_functions[key] = value
-            if period == 3:
-                breakpoint()
+            
+            transit_choice_sets = "transit_key_to_choice_set" \
+            if hasattr(self, "transit_key_to_choice_set") else \
+                "dense_key_to_choice_set"
+              
+            
             continuation_values = _get_continuation_values(
                 self.get_attribute_from_period("dense_key_to_complex", period),
+                self.get_attribute_from_period(transit_choice_sets, period),
                 self.get_attribute_from_period("dense_key_to_core_indices", period),
                 child_indices,
                 self.core_key_and_dense_index_to_dense_key,
@@ -243,7 +289,10 @@ class StateSpace:
                 continuation_values = weight_continuation_values(
                     self.get_attribute_from_period("dense_key_to_complex", period),
                     self.options,
-                    bypass={"continuation_values": continuation_values},
+                    bypass={"continuation_values": continuation_values,
+                    "transit_key_to_choice_set":\
+                          self.get_attribute_from_period(transit_choice_sets, period)
+                    },
                 )
 
         return continuation_values
@@ -770,6 +819,7 @@ def _create_dense_period_choice(
 @nb.njit
 def _get_continuation_values(
     dense_complex_index,
+    choice_set,
     core_indices,
     child_indices,
     core_index_and_dense_vector_to_dense_index,
@@ -791,9 +841,9 @@ def _get_continuation_values(
 
     """
     if len(dense_complex_index) == 3:
-        period, choice_set, dense_idx = dense_complex_index
+        period, _, dense_idx = dense_complex_index
     elif len(dense_complex_index) == 2:
-        period, choice_set = dense_complex_index
+        period, _ = dense_complex_index
         dense_idx = 0
 
     n_choices = sum_over_numba_boolean_unituple(choice_set)
