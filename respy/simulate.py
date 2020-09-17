@@ -417,7 +417,9 @@ def apply_law_of_motion_for_dense(complex_tuple, core_index, options):
     core_index_counts = core_index.value_counts()
     for index, count in core_index_counts.items():
         draws = np.random.choice(
-            transition_mat.columns.values, size=count, p=transition_mat.loc[index, :]
+            transition_mat.columns.values,
+            size=count,
+            p=transition_mat.iloc[index].to_numpy(),
         )
         dense_key_next_period.loc[core_index == index] = draws.astype(int)
     return dense_key_next_period
