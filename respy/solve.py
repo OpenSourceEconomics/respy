@@ -4,7 +4,6 @@ import functools
 import numpy as np
 
 from respy.exogenous_processes import compute_transition_probabilities
-from respy.exogenous_processes import create_continuation_choice_set
 from respy.interpolate import kw_94_interpolation
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
@@ -58,12 +57,11 @@ def solve(params, options, state_space):
 
     wages, nonpecs = _create_param_specific_objects(
         state_space.dense_key_to_complex,
-        state_space.dense_key_to_core_key,
         state_space.dense_key_to_choice_set,
-        state_space.core_key_and_dense_index_to_dense_key,
-        state_space.dense_covariates_to_dense_index,
+        state_space.dense_key_to_transit_keys,
         optim_paras,
         options,
+        bypass={"dense_key_to_exogenous": state_space.dense_key_to_exogenous},
     )
 
     state_space.wages = wages
@@ -76,13 +74,7 @@ def solve(params, options, state_space):
 
 @parallelize_across_dense_dimensions
 def _create_param_specific_objects(
-    complex_,
-    core_key,
-    choice_set,
-    dense_index_and_core_key_to_dense_key,
-    dense_covariates_to_dense_index,
-    optim_paras,
-    options,
+    complex_, choice_set, transit_keys, optim_paras, options, dense_key_to_exogenous
 ):
     """Create param specific objects.
 
@@ -97,20 +89,10 @@ def _create_param_specific_objects(
     wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
 
     if len(optim_paras["exogenous_processes"]) > 0:
-        (
-            transition_probabilities,
-            dense_key_to_transit_representation,
-        ) = compute_transition_probabilities(
-            states,
-            core_key,
-            dense_covariates_to_dense_index,
-            dense_index_and_core_key_to_dense_key,
-            optim_paras,
+        transition_probabilities = compute_transition_probabilities(
+            states, transit_keys, optim_paras, dense_key_to_exogenous
         )
         dump_objects(transition_probabilities, "transition", complex_, options)
-        dense_key_to_continuation_choice_set = create_continuation_choice_set(
-            dense_key_to_transit_representation, dense_key_to_choice_set
-        )
 
     return wages, nonpecs
 
