@@ -220,20 +220,24 @@ def simulate(
             optim_paras=optim_paras,
             options=options,
         )
+
         data.append(
-            current_df_extended.copy(deep=True).drop("dense_key_next_period", axis=1)
+            current_df_extended.copy(deep=True).drop(
+                "dense_key_next_period", axis=1, errors="ignore"
+            )
         )
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             current_df_extended = current_df_extended.reset_index()
             df = apply_law_of_motion_for_core(current_df_extended, optim_paras)
+            state_space_columns = create_state_space_columns(optim_paras)
+
             if optim_paras["exogenous_processes"]:
                 df = update_dense_state_variables(
                     df,
                     state_space.dense_key_to_dense_covariates,
                     optim_paras["exogenous_processes"].keys(),
                 )
-                state_space_columns = create_state_space_columns(optim_paras)
             df = df.set_index(["identifier", "period"])[state_space_columns]
 
     simulated_data = _process_simulation_output(data, optim_paras)
