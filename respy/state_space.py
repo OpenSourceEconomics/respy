@@ -195,6 +195,7 @@ class StateSpace:
     def create_objects_for_exogenous_processes(self):
         """Insert Docstring Here."""
         # Include switch arg
+
         exogenous_processes = self.optim_paras["exogenous_processes"]
         n_exog = len(exogenous_processes)
 

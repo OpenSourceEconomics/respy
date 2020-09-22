@@ -55,13 +55,21 @@ def solve(params, options, state_space):
     """Solve the model."""
     optim_paras, options = process_params_and_options(params, options)
 
+    transit_keys = None
+    if hasattr(state_space, "dense_key_to_transit_keys"):
+        transit_keys = state_space.dense_key_to_transit_keys
+
+    dense_key_to_exogenous = None
+    if hasattr(state_space, "dense_key_to_exogenous"):
+        dense_key_to_exogenous = state_space.dense_key_to_exogenous
+
     wages, nonpecs = _create_param_specific_objects(
         state_space.dense_key_to_complex,
         state_space.dense_key_to_choice_set,
-        state_space.dense_key_to_transit_keys,
         optim_paras,
         options,
-        bypass={"dense_key_to_exogenous": state_space.dense_key_to_exogenous},
+        transit_keys=transit_keys,
+        bypass={"dense_key_to_exogenous": dense_key_to_exogenous},
     )
 
     state_space.wages = wages
@@ -74,7 +82,12 @@ def solve(params, options, state_space):
 
 @parallelize_across_dense_dimensions
 def _create_param_specific_objects(
-    complex_, choice_set, transit_keys, optim_paras, options, dense_key_to_exogenous
+    complex_,
+    choice_set,
+    optim_paras,
+    options,
+    dense_key_to_exogenous,
+    transit_keys=None,
 ):
     """Create param specific objects.
 
