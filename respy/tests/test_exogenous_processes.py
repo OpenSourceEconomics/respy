@@ -33,7 +33,7 @@ def model_with_two_exog_proc(model_with_one_exog_proc):
     return params, options
 
 
-@pytest.mark.fail
+@pytest.mark.xfail
 def test_transition_probabilities_for_one_exogenous_process(model_with_one_exog_proc):
     params, options = model_with_one_exog_proc
 
@@ -46,7 +46,7 @@ def test_transition_probabilities_for_one_exogenous_process(model_with_one_exog_
     assert np.allclose(probs, [[0.81, 0.09], [0.09, 0.01]], atol=0.01)
 
 
-@pytest.mark.fail
+@pytest.mark.xfail
 def test_transition_probabilities_for_two_exogenous_processes(model_with_two_exog_proc):
     params, options = model_with_two_exog_proc
 
@@ -101,7 +101,7 @@ def test_weight_continuation_values_for_two_exog_processes(model_with_two_exog_p
         assert np.allclose(continuation_values[period + 15], 1.4)
 
 
-def test_weight_continuation_values_with_inadmissible_choices():
+def test_weight_continuation_values_with_inadmissible_choices(model_with_two_exog_proc):
     """What do we try to cover."""
     params, options = model_with_two_exog_proc
     options["negative_choice_set"] = {"fishing": ["sick == 1"]}
