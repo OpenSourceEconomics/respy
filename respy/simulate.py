@@ -222,11 +222,14 @@ def simulate(
             options=options,
         )
 
-        data.append(
-            current_df_extended.copy(deep=True).drop(
-                "dense_key_next_period", axis=1, errors="ignore"
+        if optim_paras["exogenous_processes"]:
+            data.append(
+                current_df_extended.copy(deep=True).drop(
+                    "dense_key_next_period", axis=1
+                )
             )
-        )
+        else:
+            data.append(current_df_extended.copy(deep=True))
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             current_df_extended = current_df_extended.reset_index()
