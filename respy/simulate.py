@@ -254,7 +254,26 @@ def simulate(
 def update_dense_state_variables(
     df, dense_key_to_dense_covariates, exogenous_processes, dense_states
 ):
-    """Insert docstring here."""
+    """Update the value of the exogenous processes.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A pandas DataFrame containing the updated state variables, as well as the
+        draw of next periods dense key.
+    dense_key_to_dense_covariates : dict
+        Dictionary with dense_key as keys and dense grid point as values.
+    exogenous_processes: list
+        List of all exogenous processes.
+    dense_states : list
+        List of all dense variables.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        A pandas DataFrame containing the updated state variables and the updated
+        exogenous process.
+    """
     for dense_key in df["dense_key_next_period"].unique():
         for dense_pos, dense_variable in enumerate(dense_states):
             if dense_variable in exogenous_processes:
@@ -417,14 +436,27 @@ def _simulate_single_period(
 
     # Check if there is an exogenous process
     if optim_paras["exogenous_processes"]:
-        df["dense_key_next_period"] = apply_law_of_motion_for_dense(
+        df["dense_key_next_period"] = draw_dense_key_next_period(
             complex_tuple, df["core_index"], options
         )
     return df
 
 
-def apply_law_of_motion_for_dense(complex_tuple, core_index, options):
-    """Insert docstring here."""
+def draw_dense_key_next_period(complex_tuple, core_index, options):
+    """For exogenous processes draw the dense key for next period.
+
+    Parameters
+    ----------
+    complex_tuple
+    core_index
+    options
+
+    Returns
+    -------
+    dense_key_next_period : pd:Series
+        A pandas Series containing the dense keys in the next period for all keys.
+
+    """
     dense_key_next_period = core_index.copy(deep=True)
     transition_mat = load_objects("transition", complex_tuple, options)
     core_index_counts = core_index.value_counts()
