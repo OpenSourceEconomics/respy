@@ -14,6 +14,7 @@ from respy.shared import apply_law_of_motion_for_core
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
+from respy.shared import create_dense_state_space_columns
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import load_objects
@@ -233,10 +234,12 @@ def simulate(
             state_space_columns = create_state_space_columns(optim_paras)
 
             if optim_paras["exogenous_processes"]:
+                dense_state_columns = create_dense_state_space_columns(optim_paras)
                 df = update_dense_state_variables(
                     df,
                     state_space.dense_key_to_dense_covariates,
                     optim_paras["exogenous_processes"].keys(),
+                    dense_state_columns,
                 )
             df = df.set_index(["identifier", "period"])[state_space_columns]
 
@@ -246,13 +249,16 @@ def simulate(
 
 
 def update_dense_state_variables(
-    df, dense_key_to_dense_covariates, exogenous_processes
+    df, dense_key_to_dense_covariates, exogenous_processes, dense_states
 ):
     """Insert docstring here."""
-    for key in df["dense_key_next_period"].unique():
-        dense_vars_to_value = dense_key_to_dense_covariates[key]
-        for exog in exogenous_processes:
-            df.loc[df["dense_key_next_period"] == key, exog] = dense_vars_to_value[exog]
+    for dense_key in df["dense_key_next_period"].unique():
+        for dense_pos, dense_variable in enumerate(dense_states):
+            if dense_variable in exogenous_processes:
+                exog_value = dense_key_to_dense_covariates[dense_key][dense_pos]
+                df.loc[
+                    df["dense_key_next_period"] == dense_key, dense_variable
+                ] = exog_value
     return df
 
 
