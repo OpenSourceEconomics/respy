@@ -6,8 +6,14 @@ chronological order. We follow `semantic versioning <https://semver.org/>`_ and 
 releases are available on `Anaconda.org
 <https://anaconda.org/opensourceeconomics/respy>`_.
 
-2.0.0 - 2019-
+2.1.0 - 2020-
 -------------
+
+
+
+
+2.0.0 - 2019-2020
+-----------------
 
 - :gh:`177` removes all Fortran files and ensures that all tests still run through
   (:ghuser:`tobiasraabe`).

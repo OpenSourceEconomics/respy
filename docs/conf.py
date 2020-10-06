@@ -57,7 +57,7 @@ autodoc_mock_imports = [
 
 extlinks = {
     "ghuser": ("https://github.com/%s", "@"),
-    "gh": ("https://github.com/OpenSourceEconomics/respy/pulls/%s", "#"),
+    "gh": ("https://github.com/OpenSourceEconomics/respy/pull/%s", "#"),
 }
 
 intersphinx_mapping = {
