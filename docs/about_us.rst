@@ -19,15 +19,15 @@ Project Manager
 ~~~~~~~~~~~~~~~
 
 `Philipp Eisenhauer <https://github.com/peisenha>`_ (`email
-<mailto://eisenhauer@policy-lab.org>`__ )
+<mailto://eisenhauer@policy-lab.org>`__)
 
 Software Design
 ~~~~~~~~~~~~~~~
 
 - `Janos Gabler <https://github.com/janosg>`_ (`email
-  <mailto://janos.gabler@gmail.com>`__ )
-- `Tobias Raabe <https://github.com/tobiasraabe>`_ (`email <mailto://raabe@posteo.de>`__
-  )
+  <mailto://janos.gabler@gmail.com>`__)
+- `Tobias Raabe <https://github.com/tobiasraabe>`_ (`email 
+  <mailto://raabe@posteo.de>`__)
 
 Developers
 ~~~~~~~~~~

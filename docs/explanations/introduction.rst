@@ -3,7 +3,7 @@
 What Is Respy?
 ==============
 
-``respy`` is an open source framework written in Python for the simulation and
+**respy** is an open source framework written in Python for the simulation and
 estimation of some finite-horizon discrete choice dynamic programming (DCDP) models.
 In comparison to simple reduced-form analysis, these models allow the estimation
 of structural parameters which reflect agents' preferences and beliefs by assuming
@@ -13,9 +13,9 @@ answer research questions in areas of economics such as
 labor economics, industrial organization, economic demography, health economics,
 development economics, political economy, and marketing.
 
-What makes ``respy`` powerful is that it allows to build and solve structural
+What makes **respy** powerful is that it allows to build and solve structural
 models in weeks or months whose development previously took years. The design
-of ``respy`` allows the researcher to flexibly add the following components to
+of **respy** allows the researcher to flexibly add the following components to
 her model.
 
 - Any number of discrete choices (e.g., working alternatives, schooling, home
@@ -39,7 +39,7 @@ As is common with structural economic models, finite-horizon DCDP models oftenti
 rely on strong assumptions regarding unobservable state variables and error terms
 (see Aguirregabiria and Mira, 2010, :cite:`Aguirregabiria.2010`, p. 40 for a list
 of assumptions used in standard finite-horizon DCDP models).
-``respy`` focuses on the estimation of so-called **Eckstein-Keane-Wolpin (EKW) models**.
+**respy** focuses on the estimation of so-called **Eckstein-Keane-Wolpin (EKW) models**.
 In accordance with Aguirregabiria and Mira (2010, :cite:`Aguirregabiria.2010`)
 , we classify a DCDP model as an EKW model if it departures from standard
 DCDP modeling by relaxing at least one of the following assumptions:

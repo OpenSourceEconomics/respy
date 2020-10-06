@@ -58,7 +58,7 @@ implemented in all subsequent periods.
 
 .. rst-class:: centerblue
 
-  In ``respy`` the value functions can be retrieved as part of any model solution.
+  In **respy** the value functions can be retrieved as part of any model solution.
   In the case of our Keane and Wolpin (1997) exposition the value functions are
   indexed via ``Value_Function_{Alternative}``.
 
