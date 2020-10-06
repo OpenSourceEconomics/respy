@@ -24,3 +24,4 @@ model with ``respy``.
    parameterization
    notation
    bib
+   glossary
