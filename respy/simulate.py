@@ -299,13 +299,12 @@ def update_dense_state_variables(
         A pandas DataFrame containing the updated state variables and the updated
         exogenous process.
     """
+    num_dense_states = len(dense_states)
     for dense_key in df["dense_key_next_period"].unique():
-        for dense_pos, dense_variable in enumerate(dense_states):
-            if dense_variable in exogenous_processes:
-                exog_value = dense_key_to_dense_covariates[dense_key][dense_pos]
-                df.loc[
-                    df["dense_key_next_period"] == dense_key, dense_variable
-                ] = exog_value
+        for exog_proc, exog_index in enumerate(exogenous_processes):
+            exog_dense_index = exog_index + num_dense_states
+            exog_value = dense_key_to_dense_covariates[dense_key][exog_dense_index]
+            df.loc[df["dense_key_next_period"] == dense_key, exog_proc] = exog_value
     return df
 
 
