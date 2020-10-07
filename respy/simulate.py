@@ -17,6 +17,7 @@ from respy.shared import create_base_draws
 from respy.shared import create_dense_state_space_columns
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
+from respy.shared import get_choice_set_from_complex
 from respy.shared import load_objects
 from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
@@ -397,7 +398,7 @@ def _simulate_single_period(
     See docs for more information!
 
     """
-    choice_set = complex_tuple[1]
+    choice_set = get_choice_set_from_complex(complex_tuple)
     valid_choices = select_valid_choices(optim_paras["choices"], choice_set)
 
     n_wages_raw = len(optim_paras["choices_w_wage"])
