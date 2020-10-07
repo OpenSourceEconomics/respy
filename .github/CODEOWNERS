@@ -5,7 +5,7 @@
 # These owners will be the default owners for everything in the repo. Unless a later
 # match takes precedence, global owners will be requested for review when someone opens
 # a pull request.
-*                       @mo2561057 @tobiasraabe
+*                       @mo2561057
 
 # Owners responsible for the documentation.
 /docs/                  @amageh @tobiasraabe
