@@ -22,6 +22,29 @@ Contact: `@amageh <https://github.com/amageh>`_
 
 ----
 
+Suchy, R. (2020). Robust Human Capital Investment.
+
+    The thesis enriches the treatment of uncertainty in discrete choice dynamic
+    programming models applied to human capital investment decisions. It extends the
+    Keane and Wolpin (1997) life cycle model by a deliberate account of ambiguity.
+    Individuals fear model misspecification and seek robust decision rules that work
+    well over a whole range of models about their economic environment. The
+    literature on robust optimization informs the implementation of a robust value
+    function iteration procedure that induces robust policies. The resulting robust
+    human capital model is calibrated to a sample of young men from the National
+    Longitudinal Survey. The empirical validation of the model testifies its
+    capability to appropriately match behavioral patterns in the data, to predict
+    occupational choice decisions, and to improve the out-of-sample fit compared to
+    a risk-only model. It carries novel implications for the ex-ante evaluation of
+    educational policies. In case of a tuition subsidy, predictions from a
+    misspecified risk-only model may embellish their efficacy. Given a particular
+    tuition subsidy, a targeted intervention that reduces the level of ambiguity may
+    increase the demand for education.
+
+Contact: `@rafaelsuchy <https://github.com/rafaelsuchy>`_
+
+----
+
 Stenzel, T. (2020). Uncertainty Quantification for an Eckstein-Keane-Wolpin model with
 correlated input parameters.
 
