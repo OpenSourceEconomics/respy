@@ -35,10 +35,20 @@ def test_simulated_data(model_or_seed):
 
 
 @pytest.mark.end_to_end
-def test_one_step_ahead_simulation():
-    params, options, df = rp.get_example_model("kw_97_basic")
+@pytest.mark.parametrize("model", ["kw_97_basic", "kw_97_extended"])
+def test_one_step_ahead_simulation(model):
+    params, options, df = rp.get_example_model(model)
     options["n_periods"] = 11
     simulate = rp.get_simulate_func(params, options, "one_step_ahead", df)
+    _ = simulate(params)
+
+
+@pytest.mark.end_to_end
+@pytest.mark.parametrize("model", ["kw_97_basic", "kw_97_extended"])
+def test_n_step_ahead_simulation_with_data(model):
+    params, options, df = rp.get_example_model(model)
+    options["n_periods"] = 11
+    simulate = rp.get_simulate_func(params, options, "n_step_ahead_with_data", df)
     _ = simulate(params)
 
 
