@@ -775,3 +775,18 @@ def apply_law_of_motion_for_core(df, optim_paras):
     df["period"] = df["period"] + 1
 
     return df
+
+
+def get_choice_set_from_complex(complex_tuple):
+    """Select the choice set from a complex tuple.
+
+    Parameters
+    ----------
+    complex_tuple : tuple
+        The complex tuple.
+
+    Returns
+    -------
+    The choice set as tuple.
+    """
+    return complex_tuple[1]

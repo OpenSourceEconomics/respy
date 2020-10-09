@@ -7,7 +7,7 @@ from respy.simulate import get_simulate_func
 from respy.solve import get_solve_func
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_one_exog_proc():
     params, options = get_example_model("robinson_crusoe_basic", with_data=False)
     params.loc[("nonpec_fishing", "sick"), "value"] = -2
@@ -20,7 +20,7 @@ def model_with_one_exog_proc():
     return params, options
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_two_exog_proc(model_with_one_exog_proc):
     params, options = model_with_one_exog_proc
     params.loc[("nonpec_fishing", "stormy"), "value"] = -1
@@ -33,7 +33,6 @@ def model_with_two_exog_proc(model_with_one_exog_proc):
     return params, options
 
 
-@pytest.mark.xfail
 def test_transition_probabilities_for_one_exogenous_process(model_with_one_exog_proc):
     params, options = model_with_one_exog_proc
 
@@ -46,7 +45,6 @@ def test_transition_probabilities_for_one_exogenous_process(model_with_one_exog_
     assert np.allclose(probs, [[0.81, 0.09], [0.09, 0.01]], atol=0.01)
 
 
-@pytest.mark.xfail
 def test_transition_probabilities_for_two_exogenous_processes(model_with_two_exog_proc):
     params, options = model_with_two_exog_proc
 
@@ -59,7 +57,7 @@ def test_transition_probabilities_for_two_exogenous_processes(model_with_two_exo
 
     df["Prev_Weather"] = df.groupby("Identifier")["Weather"].shift()
     probs = pd.crosstab(df["Weather"], df["Prev_Weather"], normalize=True)
-    assert np.allclose(probs, [[0.64, 0.16], [0.16, 0.04]], atol=0.01)
+    assert np.allclose(probs, [[0.64, 0.16], [0.16, 0.04]], atol=0.02)
 
 
 def test_weight_continuation_values_for_one_exogenous_process(model_with_one_exog_proc):
