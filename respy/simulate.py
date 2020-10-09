@@ -235,10 +235,7 @@ def simulate(
             current_df_extended = current_df_extended.reset_index()
             df = apply_law_of_motion_for_core(current_df_extended, optim_paras)
             state_space_columns = create_state_space_columns(optim_paras)
-            df = apply_law_of_motion_for_dense(
-                df, state_space.dense_key_to_exogenous, optim_paras
-            )
-
+            df = apply_law_of_motion_for_dense(df, state_space, optim_paras)
             df = df.set_index(["identifier", "period"])[state_space_columns]
 
     simulated_data = _process_simulation_output(data, optim_paras)
@@ -246,7 +243,7 @@ def simulate(
     return simulated_data
 
 
-def apply_law_of_motion_for_dense(df, dense_key_to_exogenous, optim_paras):
+def apply_law_of_motion_for_dense(df, state_space, optim_paras):
     """Update dense variable, if exogenous process.
 
     Parameters
@@ -254,8 +251,7 @@ def apply_law_of_motion_for_dense(df, dense_key_to_exogenous, optim_paras):
     df : pandas.DataFrame
         A pandas DataFrame containing the updated state variables, as well as the
         draw of next periods dense key.
-    dense_key_to_exogenous : dict
-        Dictionary with dense_key as keys and exogenous process grid points.
+    state_space
     optim_paras
 
     Returns
@@ -266,7 +262,9 @@ def apply_law_of_motion_for_dense(df, dense_key_to_exogenous, optim_paras):
     """
     if optim_paras["exogenous_processes"]:
         df = update_dense_state_variables(
-            df, dense_key_to_exogenous, optim_paras["exogenous_processes"].keys(),
+            df,
+            state_space.dense_key_to_exogenous,
+            optim_paras["exogenous_processes"].keys(),
         )
     return df
 
