@@ -14,7 +14,6 @@ from respy.shared import apply_law_of_motion_for_core
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
-from respy.shared import create_dense_state_space_columns
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import get_choice_set_from_complex
@@ -237,7 +236,7 @@ def simulate(
             df = apply_law_of_motion_for_core(current_df_extended, optim_paras)
             state_space_columns = create_state_space_columns(optim_paras)
             df = apply_law_of_motion_for_dense(
-                df, state_space.dense_key_to_dense_covariates, optim_paras
+                df, state_space.dense_key_to_exogenous, optim_paras
             )
 
             df = df.set_index(["identifier", "period"])[state_space_columns]
@@ -247,7 +246,7 @@ def simulate(
     return simulated_data
 
 
-def apply_law_of_motion_for_dense(df, dense_key_to_dense_covariates, optim_paras):
+def apply_law_of_motion_for_dense(df, dense_key_to_exogenous, optim_paras):
     """Update dense variable, if exogenous process.
 
     Parameters
@@ -255,8 +254,8 @@ def apply_law_of_motion_for_dense(df, dense_key_to_dense_covariates, optim_paras
     df : pandas.DataFrame
         A pandas DataFrame containing the updated state variables, as well as the
         draw of next periods dense key.
-    dense_key_to_dense_covariates : dict
-        Dictionary with dense_key as keys and dense grid point as values.
+    dense_key_to_exogenous : dict
+        Dictionary with dense_key as keys and exogenous process grid points.
     optim_paras
 
     Returns
@@ -266,19 +265,13 @@ def apply_law_of_motion_for_dense(df, dense_key_to_dense_covariates, optim_paras
         exogenous process.
     """
     if optim_paras["exogenous_processes"]:
-        dense_state_columns = create_dense_state_space_columns(optim_paras)
         df = update_dense_state_variables(
-            df,
-            dense_key_to_dense_covariates,
-            optim_paras["exogenous_processes"].keys(),
-            dense_state_columns,
+            df, dense_key_to_exogenous, optim_paras["exogenous_processes"].keys(),
         )
     return df
 
 
-def update_dense_state_variables(
-    df, dense_key_to_dense_covariates, exogenous_processes, dense_states
-):
+def update_dense_state_variables(df, dense_key_to_exogenous, exogenous_processes):
     """Update the value of the exogenous processes.
 
     Parameters
@@ -286,12 +279,10 @@ def update_dense_state_variables(
     df : pandas.DataFrame
         A pandas DataFrame containing the updated state variables, as well as the
         draw of next periods dense key.
-    dense_key_to_dense_covariates : dict
-        Dictionary with dense_key as keys and dense grid point as values.
+    dense_key_to_exogenous : dict
+        Dictionary with dense_key as keys and exogenous process grid points.
     exogenous_processes: list
         List of all exogenous processes.
-    dense_states : list
-        List of all dense variables.
 
     Returns
     -------
@@ -299,11 +290,9 @@ def update_dense_state_variables(
         A pandas DataFrame containing the updated state variables and the updated
         exogenous process.
     """
-    num_dense_states = len(dense_states) - len(exogenous_processes)
     for dense_key in df["dense_key_next_period"].unique():
         for exog_index, exog_proc in enumerate(exogenous_processes):
-            exog_dense_index = exog_index + num_dense_states
-            exog_value = dense_key_to_dense_covariates[dense_key][exog_dense_index]
+            exog_value = dense_key_to_exogenous[dense_key][exog_index]
             df.loc[df["dense_key_next_period"] == dense_key, exog_proc] = exog_value
     return df
 
