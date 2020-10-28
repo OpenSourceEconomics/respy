@@ -603,14 +603,14 @@ def map_observations_to_states(states, state_space, optim_paras):
         core, state_space.indexer
     )
 
-    if state_space.dense_covariates_to_dense_index:
+    if state_space.dense_covs_to_dense_index:
         dense_columns = create_dense_state_space_columns(optim_paras)
         dense = states[dense_columns].to_numpy(dtype="int64")
 
         dense_key = _map_observations_to_dense_index(
             dense,
             core_key,
-            state_space.dense_covariates_to_dense_index,
+            state_space.dense_covs_to_dense_index,
             state_space.core_key_and_dense_index_to_dense_key,
         )
     else:
@@ -652,17 +652,14 @@ def map_states_to_core_key_and_core_index(states, indexer):
 
 @nb.njit
 def _map_observations_to_dense_index(
-    dense,
-    core_index,
-    dense_covariates_to_dense_index,
-    core_key_and_dense_index_to_dense_key,
+    dense, core_index, dense_covs_to_dense_index, core_key_and_dense_index_to_dense_key,
 ):
     n_observations = dense.shape[0]
     dense_key = np.zeros(n_observations, dtype=np.int64)
 
     for i in range(n_observations):
-        dense_index = dense_covariates_to_dense_index[
-            array_to_tuple(dense_covariates_to_dense_index, dense[i])
+        dense_index = dense_covs_to_dense_index[
+            array_to_tuple(dense_covs_to_dense_index, dense[i])
         ]
         dense_key_ = core_key_and_dense_index_to_dense_key[(core_index[i], dense_index)]
         dense_key[i] = dense_key_
@@ -794,12 +791,12 @@ def get_choice_set_from_complex(complex_tuple):
     return complex_tuple[1]
 
 
-def get_exogenous_from_dense_covariates(dense_covariates, optim_paras):
+def get_exogenous_from_dense_covs(dense_covs, optim_paras):
     """Select eogenous grid points from dense grid points.
 
     Parameters
     ----------
-    dense_covariates : tuple
+    dense_covs : tuple
         Dense covariates grid point.
     optim_paras : dict
 
@@ -808,4 +805,4 @@ def get_exogenous_from_dense_covariates(dense_covariates, optim_paras):
     The exogenous grid tuple
     """
     num_exog = len(optim_paras["exogenous_processes"])
-    return dense_covariates[-num_exog:]
+    return dense_covs[-num_exog:]

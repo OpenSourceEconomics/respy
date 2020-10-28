@@ -166,21 +166,19 @@ class StateSpace:
             ] = i
 
         if self.dense is False:
-            self.dense_covariates_to_dense_index = {}
-            self.dense_key_to_dense_covariates = {
-                i: {} for i in self.dense_key_to_complex
-            }
+            self.dense_covs_to_dense_index = {}
+            self.dense_key_to_dense_covs = {i: {} for i in self.dense_key_to_complex}
 
         else:
             n_dense = len(create_dense_state_space_columns(self.optim_paras))
-            self.dense_covariates_to_dense_index = Dict.empty(
+            self.dense_covs_to_dense_index = Dict.empty(
                 key_type=nb.types.UniTuple(nb.types.int64, n_dense),
                 value_type=nb.types.int64,
             )
             for i, k in enumerate(self.dense):
-                self.dense_covariates_to_dense_index[k] = i
+                self.dense_covs_to_dense_index[k] = i
 
-            self.dense_key_to_dense_covariates = {
+            self.dense_key_to_dense_covs = {
                 i: list(self.dense.keys())[self.dense_key_to_complex[i][2]]
                 for i in self.dense_key_to_complex
             }
@@ -205,12 +203,12 @@ class StateSpace:
         self.exogenous_grid = list(itertools.product(*levels_of_processes))
 
         self.dense_key_to_transit_keys = create_transition_objects(
-            self.dense_key_to_dense_covariates,
+            self.dense_key_to_dense_covs,
             self.dense_key_to_core_key,
             self.exogenous_grid,
             n_exog,
             bypass={
-                "dense_covariates_to_dense_index": self.dense_covariates_to_dense_index,
+                "dense_covs_to_dense_index": self.dense_covs_to_dense_index,
                 "core_key_and_dense_index_to_dense_key": self.core_key_and_dense_index_to_dense_key,  # noqa: E501
             },
         )

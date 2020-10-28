@@ -65,9 +65,7 @@ def solve(params, options, state_space):
         optim_paras,
         options,
         transit_keys=transit_keys,
-        bypass={
-            "dense_key_to_dense_covariates": state_space.dense_key_to_dense_covariates
-        },
+        bypass={"dense_key_to_dense_covs": state_space.dense_key_to_dense_covs},
     )
 
     state_space.wages = wages
@@ -80,7 +78,7 @@ def solve(params, options, state_space):
 
 @parallelize_across_dense_dimensions
 def _create_param_specific_objects(
-    complex_, optim_paras, options, dense_key_to_dense_covariates, transit_keys=None,
+    complex_, optim_paras, options, dense_key_to_dense_covs, transit_keys=None,
 ):
     """Create param specific objects.
 
@@ -97,7 +95,7 @@ def _create_param_specific_objects(
 
     if optim_paras["exogenous_processes"]:
         transition_probabilities = compute_transition_probabilities(
-            states, transit_keys, optim_paras, dense_key_to_dense_covariates
+            states, transit_keys, optim_paras, dense_key_to_dense_covs
         )
         dump_objects(transition_probabilities, "transition", complex_, options)
 
