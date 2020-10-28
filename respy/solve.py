@@ -9,6 +9,7 @@ from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_expected_value_functions
 from respy.shared import dump_objects
+from respy.shared import get_choice_set_from_complex
 from respy.shared import load_objects
 from respy.shared import pandas_dot
 from respy.shared import select_valid_choices
@@ -61,7 +62,6 @@ def solve(params, options, state_space):
 
     wages, nonpecs = _create_param_specific_objects(
         state_space.dense_key_to_complex,
-        state_space.dense_key_to_choice_set,
         optim_paras,
         options,
         transit_keys=transit_keys,
@@ -80,12 +80,7 @@ def solve(params, options, state_space):
 
 @parallelize_across_dense_dimensions
 def _create_param_specific_objects(
-    complex_,
-    choice_set,
-    optim_paras,
-    options,
-    dense_key_to_dense_covariates,
-    transit_keys=None,
+    complex_, optim_paras, options, dense_key_to_dense_covariates, transit_keys=None,
 ):
     """Create param specific objects.
 
@@ -97,6 +92,7 @@ def _create_param_specific_objects(
     For objects that we store on disk we will just return the prefix of the location.
     """
     states = load_objects("states", complex_, options)
+    choice_set = get_choice_set_from_complex(complex_)
     wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
 
     if optim_paras["exogenous_processes"]:
@@ -158,7 +154,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     # that is params specific?
     draws_emax_risk = transform_base_draws_with_cholesky_factor(
         state_space.base_draws_sol,
-        state_space.dense_key_to_choice_set,
+        state_space.dense_key_to_complex,
         optim_paras["shocks_cholesky"],
         optim_paras,
     )

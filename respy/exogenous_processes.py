@@ -6,6 +6,7 @@ import pandas as pd
 from scipy import special
 
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.shared import get_choice_set_from_complex
 from respy.shared import get_exogenous_from_dense_covariates
 from respy.shared import load_objects
 from respy.shared import pandas_dot
@@ -84,7 +85,7 @@ def weight_continuation_values(
 
 
 def create_transit_choice_set(
-    dense_key_to_transit_representation, dense_key_to_choice_set
+    dense_key_to_transit_representation, dense_key_to_complex
 ):
     """Return max representation choice set of each dense choice core."""
     continuation_choice_sets = {}
@@ -93,7 +94,9 @@ def create_transit_choice_set(
         for transit_representation in dense_key_to_transit_representation:
             if dense_key in dense_key_to_transit_representation[transit_representation]:
                 continuation_choice_sets[dense_key].append(
-                    dense_key_to_choice_set[transit_representation]
+                    get_choice_set_from_complex(
+                        dense_key_to_complex[transit_representation]
+                    )
                 )
     out = {}
     for dense_key in continuation_choice_sets:

@@ -408,7 +408,7 @@ def _simulate_single_period(
 
     draws_shock = df[[f"shock_reward_{c}" for c in valid_choices]].to_numpy()
     draws_shock_transformed = transform_base_draws_with_cholesky_factor(
-        draws_shock, choice_set, optim_paras["shocks_cholesky"], optim_paras
+        draws_shock, complex_tuple, optim_paras["shocks_cholesky"], optim_paras
     )
 
     draws_wage = df[[f"meas_error_wage_{c}" for c in valid_choices]].to_numpy()

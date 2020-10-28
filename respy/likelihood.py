@@ -21,6 +21,7 @@ from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import generate_column_dtype_dict_for_estimation
+from respy.shared import get_choice_set_from_complex
 from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
 from respy.shared import rename_labels_to_internal
@@ -106,7 +107,9 @@ def get_log_like_func(
     # Replace with decorator.
     base_draws_est = {}
     for dense_key, indices in df.groupby("dense_key").groups.items():
-        n_choices = sum(state_space.dense_key_to_choice_set[dense_key])
+        n_choices = sum(
+            get_choice_set_from_complex(state_space.dense_key_to_complex[dense_key])
+        )
         draws = create_base_draws(
             (len(indices), options["estimation_draws"], n_choices),
             next(options["estimation_seed_startup"]),
@@ -235,7 +238,7 @@ def _internal_log_like_obs(
         wages,
         nonpecs,
         continuation_values,
-        state_space.dense_key_to_choice_set,
+        state_space.dense_key_to_complex,
         optim_paras,
         options,
     )
@@ -278,11 +281,12 @@ def _compute_wage_and_choice_log_likelihood_contributions(
     wages,
     nonpecs,
     continuation_values,
-    choice_set,
+    complex_,
     optim_paras,
     options,
 ):
     """Compute wage and choice log likelihood contributions."""
+    choice_set = get_choice_set_from_complex(complex_)
     n_wages = len(select_valid_choices(optim_paras["choices_w_wage"], choice_set))
 
     indices = df["core_index"].to_numpy()

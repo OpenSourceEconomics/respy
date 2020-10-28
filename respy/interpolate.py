@@ -8,6 +8,7 @@ from respy.config import MAX_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import calculate_expected_value_functions
 from respy.shared import calculate_value_functions_and_flow_utilities
+from respy.shared import get_choice_set_from_complex
 
 
 def kw_94_interpolation(
@@ -76,7 +77,9 @@ def kw_94_interpolation(
         for dense_key in dense_keys_in_period
     }
     dense_key_to_choice_set_in_period = {
-        dense_key: state_space.dense_key_to_choice_set[dense_key]
+        dense_key: get_choice_set_from_complex(
+            state_space.dense_key_to_complex[dense_key]
+        )
         for dense_key in dense_keys_in_period
     }
 

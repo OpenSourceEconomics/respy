@@ -19,6 +19,7 @@ from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import dump_objects
+from respy.shared import get_choice_set_from_complex
 from respy.shared import load_objects
 from respy.shared import map_states_to_core_key_and_core_index
 from respy.shared import prepare_cache_directory
@@ -214,7 +215,7 @@ class StateSpace:
             },
         )
         self.transit_key_to_choice_set = create_transit_choice_set(
-            self.dense_key_to_transit_keys, self.dense_key_to_choice_set
+            self.dense_key_to_transit_keys, self.dense_key_to_complex
         )
 
     def get_continuation_values(self, period):
@@ -336,7 +337,10 @@ class StateSpace:
 
     def create_draws(self, options):
         """Get draws."""
-        n_choices_in_sets = list(set(map(sum, self.dense_key_to_choice_set.values())))
+        all_choice_sets = map(
+            get_choice_set_from_complex, self.dense_key_to_complex.values()
+        )
+        n_choices_in_sets = list(set(map(sum, all_choice_sets)))
         shocks_sets = []
 
         for n_choices in n_choices_in_sets:

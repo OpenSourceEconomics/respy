@@ -129,7 +129,7 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
 
 @parallelize_across_dense_dimensions
 def transform_base_draws_with_cholesky_factor(
-    draws, choice_set, shocks_cholesky, optim_paras
+    draws, complex_tuple, shocks_cholesky, optim_paras
 ):
     r"""Transform standard normal draws with the Cholesky factor.
 
@@ -151,6 +151,8 @@ def transform_base_draws_with_cholesky_factor(
     create_base_draws
 
     """
+    choice_set = get_choice_set_from_complex(complex_tuple)
+
     shocks_cholesky = subset_cholesky_factor_to_choice_set(shocks_cholesky, choice_set)
     draws_transformed = draws.dot(shocks_cholesky.T)
 
