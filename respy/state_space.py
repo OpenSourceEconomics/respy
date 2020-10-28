@@ -217,11 +217,6 @@ class StateSpace:
             self.dense_key_to_transit_keys, self.dense_key_to_choice_set
         )
 
-        self.dense_key_to_exogenous = {
-            key: value[-n_exog:]
-            for key, value in self.dense_key_to_dense_covariates.items()
-        }
-
     def get_continuation_values(self, period):
         """Get continuation values.
 

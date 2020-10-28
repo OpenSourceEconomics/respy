@@ -17,6 +17,7 @@ from respy.shared import create_base_draws
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import get_choice_set_from_complex
+from respy.shared import get_exogenous_from_dense_covariates
 from respy.shared import load_objects
 from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
@@ -179,7 +180,6 @@ def simulate(
 
     optim_paras, options = process_params_and_options(params, options)
     state_space = solve(params)
-
     # Prepare simulation.
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
 
@@ -262,14 +262,12 @@ def apply_law_of_motion_for_dense(df, state_space, optim_paras):
     """
     if optim_paras["exogenous_processes"]:
         df = update_dense_state_variables(
-            df,
-            state_space.dense_key_to_exogenous,
-            optim_paras["exogenous_processes"].keys(),
+            df, state_space.dense_key_to_dense_covariates, optim_paras,
         )
     return df
 
 
-def update_dense_state_variables(df, dense_key_to_exogenous, exogenous_processes):
+def update_dense_state_variables(df, dense_key_to_dense_covariates, optim_paras):
     """Update the value of the exogenous processes.
 
     Parameters
@@ -277,10 +275,9 @@ def update_dense_state_variables(df, dense_key_to_exogenous, exogenous_processes
     df : pandas.DataFrame
         A pandas DataFrame containing the updated state variables, as well as the
         draw of next periods dense key.
-    dense_key_to_exogenous : dict
-        Dictionary with dense_key as keys and exogenous process grid points.
-    exogenous_processes: list
-        List of all exogenous processes.
+    dense_key_to_dense_covariates : dict
+        Dictionary with dense_key as keys and dense grid points.
+    optim_paras : dict
 
     Returns
     -------
@@ -289,8 +286,11 @@ def update_dense_state_variables(df, dense_key_to_exogenous, exogenous_processes
         exogenous process.
     """
     for dense_key in df["dense_key_next_period"].unique():
-        for exog_index, exog_proc in enumerate(exogenous_processes):
-            exog_value = dense_key_to_exogenous[dense_key][exog_index]
+        for exog_index, exog_proc in enumerate(optim_paras["exogenous_processes"]):
+            exog_process_grid = get_exogenous_from_dense_covariates(
+                dense_key_to_dense_covariates[dense_key], optim_paras
+            )
+            exog_value = exog_process_grid[exog_index]
             df.loc[df["dense_key_next_period"] == dense_key, exog_proc] = exog_value
     return df
 
