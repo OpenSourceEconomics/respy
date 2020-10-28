@@ -9,14 +9,18 @@ from respy.parallelization import _is_dictionary_with_integer_keys
 
 def _typeddict_wo_integer_keys():
     dictionary = Dict.empty(
-        key_type=nb.types.UniTuple(nb.types.int64, 2), value_type=nb.types.int64,
+        key_type=nb.types.UniTuple(nb.types.int64, 2),
+        value_type=nb.types.int64,
     )
     dictionary[(1, 2)] = 1
     return dictionary
 
 
 def _typeddict_w_integer_keys():
-    dictionary = Dict.empty(key_type=nb.types.int64, value_type=nb.types.int64,)
+    dictionary = Dict.empty(
+        key_type=nb.types.int64,
+        value_type=nb.types.int64,
+    )
     dictionary[1] = 1
     return dictionary
 
