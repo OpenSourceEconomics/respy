@@ -672,8 +672,7 @@ def dump_objects(objects, topic, complex_, options):
     """Dump states."""
     file_name = _create_file_name_from_complex_index(topic, complex_)
     objects.to_parquet(
-        options["cache_path"] / file_name,
-        compression=options["cache_compression"],
+        options["cache_path"] / file_name, compression=options["cache_compression"],
     )
 
 
