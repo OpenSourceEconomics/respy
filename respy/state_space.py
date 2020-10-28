@@ -210,7 +210,7 @@ class StateSpace:
             n_exog,
             bypass={
                 "dense_covariates_to_dense_index": self.dense_covariates_to_dense_index,
-                "core_key_and_dense_index_to_dense_key": self.core_key_and_dense_index_to_dense_key,
+                "core_key_and_dense_index_to_dense_key": self.core_key_and_dense_index_to_dense_key,  # noqa: E501
             },
         )
         self.transit_key_to_choice_set = create_transit_choice_set(
