@@ -59,17 +59,15 @@ def solve(params, options, state_space):
     if hasattr(state_space, "dense_key_to_transit_keys"):
         transit_keys = state_space.dense_key_to_transit_keys
 
-    dense_key_to_exogenous = None
-    if hasattr(state_space, "dense_key_to_exogenous"):
-        dense_key_to_exogenous = state_space.dense_key_to_exogenous
-
     wages, nonpecs = _create_param_specific_objects(
         state_space.dense_key_to_complex,
         state_space.dense_key_to_choice_set,
         optim_paras,
         options,
         transit_keys=transit_keys,
-        bypass={"dense_key_to_exogenous": dense_key_to_exogenous},
+        bypass={
+            "dense_key_to_dense_covariates": state_space.dense_key_to_dense_covariates
+        },
     )
 
     state_space.wages = wages
@@ -86,7 +84,7 @@ def _create_param_specific_objects(
     choice_set,
     optim_paras,
     options,
-    dense_key_to_exogenous,
+    dense_key_to_dense_covariates,
     transit_keys=None,
 ):
     """Create param specific objects.
@@ -101,9 +99,9 @@ def _create_param_specific_objects(
     states = load_objects("states", complex_, options)
     wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
 
-    if len(optim_paras["exogenous_processes"]) > 0:
+    if optim_paras["exogenous_processes"]:
         transition_probabilities = compute_transition_probabilities(
-            states, transit_keys, optim_paras, dense_key_to_exogenous
+            states, transit_keys, optim_paras, dense_key_to_dense_covariates
         )
         dump_objects(transition_probabilities, "transition", complex_, options)
 

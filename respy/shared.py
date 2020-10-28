@@ -790,3 +790,20 @@ def get_choice_set_from_complex(complex_tuple):
     The choice set as tuple.
     """
     return complex_tuple[1]
+
+
+def get_exogenous_from_dense_covariates(dense_covariates, optim_paras):
+    """Select eogenous grid points from dense grid points.
+
+    Parameters
+    ----------
+    dense_covariates : tuple
+        Dense covariates grid point.
+    optim_paras : dict
+
+    Returns
+    -------
+    The exogenous grid tuple
+    """
+    num_exog = len(optim_paras["exogenous_processes"])
+    return dense_covariates[-num_exog:]

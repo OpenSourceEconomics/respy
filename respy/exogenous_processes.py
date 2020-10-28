@@ -6,17 +6,23 @@ import pandas as pd
 from scipy import special
 
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.shared import get_exogenous_from_dense_covariates
 from respy.shared import load_objects
 from respy.shared import pandas_dot
 
 
 def compute_transition_probabilities(
-    states, transit_keys, optim_paras, dense_key_to_exogenous
+    states, transit_keys, optim_paras, dense_key_to_dense_covariates
 ):
     """Insert Docstring."""
     exogenous_processes = optim_paras["exogenous_processes"]
 
-    dense_key_to_exogenous = {key: dense_key_to_exogenous[key] for key in transit_keys}
+    dense_key_to_exogenous = {
+        key: get_exogenous_from_dense_covariates(
+            dense_key_to_dense_covariates[key], optim_paras
+        )
+        for key in transit_keys
+    }
 
     # Compute the probabilities for every exogenous process.
     probabilities = []
