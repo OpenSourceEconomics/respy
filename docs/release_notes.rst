@@ -8,8 +8,8 @@ releases are available on `Anaconda.org
 
 2.1.0 - 2020-
 -------------
-
-
+- :gh:`383` Fixes simulation with data and adds tests (:ghuser:`janosg`).
+- :gh:`387` Fixes issue in documenation build (:ghuser:`amageh`).
 
 
 2.0.0 - 2019-2020
