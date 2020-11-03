@@ -19,7 +19,7 @@ the vector of structural parameters out of an admissible parameter space
 
 .. rst-class:: centerblue
 
-   The discount factor is pre-defined in ``respy`` and mandatory.
+   The discount factor is pre-defined in **respy** and mandatory.
    It is located in params data frame under the key ``delta``.
 
 --------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ model.
 
 .. rst-class:: centerblue
 
-  ``respy`` supports the calibration via simulated maximum-likelihood and the
+  **respy** supports the calibration via simulated maximum-likelihood and the
   method of simulated moments. Both can be called with ``respy.likelihood`` and
   ``respy.method_of_simulated_moments``, respectively.
 
@@ -80,7 +80,7 @@ The objective function takes the following form:
 
 .. rst-class:: centerblue
 
-  The implementation in ``respy`` minimizes the
+  The implementation in **respy** minimizes the
   simulated negative log-likelihood of the observed sample.
 
 --------------------------------------------------------------------------------
@@ -131,7 +131,7 @@ We have explained the economic model, its solution, one particular specification
 and the calibration procedure. The `Robinson Crusoe tutorial <https://
 respy.readthedocs.io/en/latest/tutorials/robinson_crusoe.html>`_
 provides a great applied resource to familiarize with the main functionalities
-of ``respy``. Reading through will help you to set-up and calibrate your own
+of **respy**. Reading through will help you to set-up and calibrate your own
 DCDP model.
 
 

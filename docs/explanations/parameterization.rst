@@ -16,7 +16,7 @@ Parameterization
 The wildcard {civilian} means either "blue" or "white".
 
 .. csv-table:: Table of Parameterization
-   :header: "Parameter", "State variable in ``respy``", "Explanation"
+   :header: "Parameter", "State variable in **respy**", "Explanation"
    :widths: 20, 35, 45
 
    ":math:`\delta`", "delta", "discount factor"

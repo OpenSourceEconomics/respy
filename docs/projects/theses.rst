@@ -6,6 +6,45 @@ of Bonn.
 
 ----
 
+Gehlen, A. (2020). Simulation-Based Estimation of Discrete Choice Dynamic Life-Cycle 
+Models.
+
+    The thesis revisits the models by Keane and Wolpin (1994, 1997) to explore Method of 
+    Simulated Moments (MSM) estimation as an alternative to the Simulated Maximum 
+    Likelihood (SML) approach used by the authors. The thesis discusses the various 
+    calibration choices needed to construct an appropriate MSM criterion function for 
+    estimation, as well as the challenges that come with optimization of the criterion. 
+    The analysis demonstrates that the MSM can be effectively employed for model 
+    estimation but simultaneously shows that results are very sensitive to calibration 
+    choices. 
+
+Contact: `@amageh <https://github.com/amageh>`_
+
+----
+
+Suchy, R. (2020). Robust Human Capital Investment.
+
+    The thesis enriches the treatment of uncertainty in discrete choice dynamic
+    programming models applied to human capital investment decisions. It extends the
+    Keane and Wolpin (1997) life cycle model by a deliberate account of ambiguity.
+    Individuals fear model misspecification and seek robust decision rules that work
+    well over a whole range of models about their economic environment. The
+    literature on robust optimization informs the implementation of a robust value
+    function iteration procedure that induces robust policies. The resulting robust
+    human capital model is calibrated to a sample of young men from the National
+    Longitudinal Survey. The empirical validation of the model testifies its
+    capability to appropriately match behavioral patterns in the data, to predict
+    occupational choice decisions, and to improve the out-of-sample fit compared to
+    a risk-only model. It carries novel implications for the ex-ante evaluation of
+    educational policies. In case of a tuition subsidy, predictions from a
+    misspecified risk-only model may embellish their efficacy. Given a particular
+    tuition subsidy, a targeted intervention that reduces the level of ambiguity may
+    increase the demand for education.
+
+Contact: `@rafaelsuchy <https://github.com/rafaelsuchy>`_
+
+----
+
 Stenzel, T. (2020). Uncertainty Quantification for an Eckstein-Keane-Wolpin model with
 correlated input parameters.
 
