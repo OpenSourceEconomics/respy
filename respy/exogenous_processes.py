@@ -14,7 +14,19 @@ from respy.shared import pandas_dot
 def compute_transition_probabilities(
     states, transit_keys, optim_paras, dense_key_to_dense_covariates
 ):
-    """Insert Docstring."""
+    """Get transition probabilities by dense_key.
+
+    We calculate transition probabilities for one dense key
+    in this function. Therefore we retrieve probabilities for individuals
+    and combine them to get a full transition matrix.
+
+    Returns
+    -------
+    df : pandas.core.DataFrame
+        Rows represent states within a dense key and columns potential
+        dense states in the next period.
+
+    """
     exogenous_processes = optim_paras["exogenous_processes"]
 
     dense_key_to_exogenous = {
@@ -29,10 +41,10 @@ def compute_transition_probabilities(
     for exog_proc in exogenous_processes:
 
         # Create the dot product of covariates and parameters.
-        x_betas = []
-        for params in exogenous_processes[exog_proc].values():
-            x_beta = pandas_dot(states[params.index], params)
-            x_betas.append(x_beta)
+        x_betas = [
+            pandas_dot(states[params.index], params)
+            for params in exogenous_processes[exog_proc].values()
+        ]
 
         probs = special.softmax(np.column_stack(x_betas), axis=1)
         probabilities.append(probs)
@@ -57,7 +69,24 @@ def compute_transition_probabilities(
 def weight_continuation_values(
     complex_, options, continuation_values, transit_key_to_choice_set
 ):
-    """Insert Docstring."""
+    """Weight continuation values by their probability.
+
+    We weight continuation values for a dense key according
+    to the probablity that she could end up in of these.
+    Exogenous processes only depend upon the state in this period and
+    not the choice thus we can calculate the cont values
+    symetrically across choices.
+    Caution has to be exercised when choice sets are restricted.
+    Another imortant point are states that can only be reached with a change
+    of exogenous process.
+
+
+    Returns
+    -------
+    continuation_values : np.array
+      (n_states, n_choices) with the weighted continuation values.
+
+    """
     transition_df = load_objects("transition", complex_, options)
 
     choice_set = complex_[1]
@@ -67,16 +96,16 @@ def weight_continuation_values(
         for key, value in transit_key_to_choice_set.items()
     }
     continuation_values_adjusted = {
-        ftr_key: continuation_values[int(ftr_key)][
-            :, list(choice_positons[int(ftr_key)])
+        future_key: continuation_values[int(future_key)][
+            :, list(choice_positons[int(future_key)])
         ]
-        for ftr_key in transition_df.columns
+        for future_key in transition_df.columns
     }
 
     weighted_columns = [
-        transition_df[ftr_key].values.reshape((transition_df.shape[0], 1))
-        * continuation_values_adjusted[ftr_key]
-        for ftr_key in transition_df.columns
+        transition_df[future_key].values.reshape((transition_df.shape[0], 1))
+        * continuation_values_adjusted[future_key]
+        for future_key in transition_df.columns
     ]
 
     continuation_values = functools.reduce(np.add, weighted_columns)
@@ -124,7 +153,7 @@ def create_transition_objects(
     dense_covariates_to_dense_index,
     core_key_and_dense_index_to_dense_key,
 ):
-    """Insert Doctring."""
+    """Create objects necessary for tranistion probabilities."""
     static_dense = dense_covariates[:-n_exog]
 
     reachable_dense_indices = [
