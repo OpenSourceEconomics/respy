@@ -154,15 +154,13 @@ class StateSpace:
         }
 
         self.core_key_and_dense_index_to_dense_key = Dict.empty(
-            key_type=nb.types.UniTuple(nb.types.int64, 2),
-            value_type=nb.types.int64,
+            key_type=nb.types.UniTuple(nb.types.int64, 2), value_type=nb.types.int64,
         )
 
         for i in self.dense_key_to_complex:
             self.core_key_and_dense_index_to_dense_key[
                 return_core_dense_key(
-                    self.dense_key_to_core_key[i],
-                    *self.dense_key_to_complex[i][2:],
+                    self.dense_key_to_core_key[i], *self.dense_key_to_complex[i][2:],
                 )
             ] = i
 
