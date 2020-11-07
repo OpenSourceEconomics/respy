@@ -722,12 +722,25 @@ def _create_dense_period_choice(
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
         dense_period_choice = {}
         for dense_idx, (_, dense_vec) in enumerate(dense.items()):
+            states = core.copy()
+            for key in dense_vec.keys():
+                states[key] = dense_vec[key]
             states = core.copy().assign(**dense_vec)
             states = compute_covariates(states, options["covariates_all"])
             states = create_is_inadmissible(states, optim_paras, options)
             for core_idx, indices in core_key_to_core_indices.items():
-                df = states.copy().loc[indices].assign(**dense_vec)
-                df[choices] = ~df[choices]
+                df = states.copy().loc[indices]
+                for key in dense_vec.keys():
+                    df[key] = dense_vec[key]
+                for choice in choices:
+                    df[choice] = df[choice].replace({True:False, False:True})    
+            #    for choice in choices:
+            #        for loc in df.index:
+            #            if df.loc[loc,choice]:
+            #                df.loc[loc,choice] = False
+            #            elif df.loc[loc,choice] is False:
+            #                df.loc[loc,choice] = True
+
                 grouper = df.groupby(choices).groups
                 if not len(grouper) == 1:
                     raise ValueError(
