@@ -193,7 +193,7 @@ class StateSpace:
             self.expected_value_functions[index] = np.zeros(len(indices))
 
     def create_objects_for_exogenous_processes(self):
-        """Insert Docstring Here."""
+        """Create mappings for the implementation of the exogenous processes."""
         # Include switch arg
 
         exogenous_processes = self.optim_paras["exogenous_processes"]
