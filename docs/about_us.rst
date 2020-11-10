@@ -19,15 +19,15 @@ Project Manager
 ~~~~~~~~~~~~~~~
 
 `Philipp Eisenhauer <https://github.com/peisenha>`_ (`email
-<mailto://eisenhauer@policy-lab.org>`__ )
+<mailto://eisenhauer@policy-lab.org>`__)
 
 Software Design
 ~~~~~~~~~~~~~~~
 
 - `Janos Gabler <https://github.com/janosg>`_ (`email
-  <mailto://janos.gabler@gmail.com>`__ )
-- `Tobias Raabe <https://github.com/tobiasraabe>`_ (`email <mailto://raabe@posteo.de>`__
-  )
+  <mailto://janos.gabler@gmail.com>`__)
+- `Tobias Raabe <https://github.com/tobiasraabe>`_ (`email 
+  <mailto://raabe@posteo.de>`__)
 
 Developers
 ~~~~~~~~~~
@@ -41,8 +41,8 @@ Contributors
 - `Sofia Badini <https://github.com/SofiaBadini>`_ (Hyperbolic discounting)
 - `Linda Maokomatanda <https://github.com/lindamaok899>`_ (Robust OLS)
 - `Tim Mensinger <https://github.com/timmens>`_ (Recommended reading)
-- `Rafael Suchy <https://github.com/rafaelsuchy>`_ (Quasi-Monte Carlo simulation)
-
+- `Rafael Suchy <https://github.com/rafaelsuchy>`_ (Quasi-Monte Carlo simulation, Explanations)
+- `Benedikt Kauf <https://github.com/bekauf>`_ (Explanations)
 
 Acknowledgments
 ---------------

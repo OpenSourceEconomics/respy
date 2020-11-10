@@ -13,6 +13,7 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import apply_law_of_motion_for_core
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
+from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
@@ -702,6 +703,8 @@ def _process_input_df_for_simulation(df, method, options, optim_paras):
             .sort_index()
         )
 
+        df = convert_labeled_variables_to_codes(df, optim_paras)
+
     elif method == "one_step_ahead":
         df = (
             df.copy()
@@ -709,6 +712,8 @@ def _process_input_df_for_simulation(df, method, options, optim_paras):
             .rename_axis(index=rename_labels_to_internal)
             .sort_index()
         )
+
+        df = convert_labeled_variables_to_codes(df, optim_paras)
 
     else:
         raise NotImplementedError(

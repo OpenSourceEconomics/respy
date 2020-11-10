@@ -1,4 +1,5 @@
 channels:
+  - defaults
   - conda-forge
 dependencies:
   - python
@@ -7,4 +8,5 @@ dependencies:
   - numpydoc
   - sphinx
   - sphinx-autoapi
+  - sphinxcontrib-bibtex
   - pydata-sphinx-theme>=0.3.0
