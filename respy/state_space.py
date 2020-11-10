@@ -733,15 +733,18 @@ def _create_dense_period_choice(
                 for key in dense_vec.keys():
                     df[key] = dense_vec[key]
                 for choice in choices:
-                    df[choice] = df[choice].replace({True:False, False:True})    
-            #    for choice in choices:
-            #        for loc in df.index:
-            #            if df.loc[loc,choice]:
-            #                df.loc[loc,choice] = False
-            #            elif df.loc[loc,choice] is False:
-            #                df.loc[loc,choice] = True
+                    df[choice] = df[choice].replace({True:False, False:True})
+                
+                unique_combinations = df.drop_duplicates(subset=choices)[choices]
+                choice_combs = []
+                for ix in unique_combinations.index:
+                    choice_combs.append(unique_combinations.loc[ix,choices].values)
+                grouper = {}
+                
+                for comb in choice_combs:
+                    filter_ = (df[choices] == comb).all(axis=1)
+                    grouper[tuple(comb)] = list(df[filter_].index)
 
-                grouper = df.groupby(choices).groups
                 if not len(grouper) == 1:
                     raise ValueError(
                         "Choice restrictions cannot interact between core and dense "
