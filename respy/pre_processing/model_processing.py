@@ -139,6 +139,7 @@ def _parse_parameters(params, options):
     """Parse the parameter vector into a dictionary of model quantities."""
     optim_paras = {"delta": params.loc[("delta", "delta")]}
     optim_paras = _parse_present_bias_parameter(optim_paras, params)
+    optim_paras = _parse_exogenous_processes(optim_paras, params)
     optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
@@ -181,6 +182,22 @@ def _parse_present_bias_parameter(optim_paras, params):
     return optim_paras
 
 
+def _parse_exogenous_processes(optim_paras, params):
+    """Parse exogenous processes."""
+    optim_paras["exogenous_processes"] = {}
+
+    names = _parse_observable_or_exog_process_names(params, "exogenous_process")
+
+    for exog_proc in names:
+        regex_pattern = fr"\bexogenous_process_{exog_proc}_([0-9a-z_]+)\b"
+        parsed_parameters = _parse_probabilities_or_logit_coefficients(
+            params, regex_pattern
+        )
+        optim_paras["exogenous_processes"][exog_proc] = parsed_parameters
+
+    return optim_paras
+
+
 def _parse_observables(optim_paras, params):
     """Parse observed variables and their levels."""
     optim_paras["observables"] = {}
@@ -193,6 +210,34 @@ def _parse_observables(optim_paras, params):
             params, regex_pattern
         )
         optim_paras["observables"][observable] = parsed_parameters
+
+    for exog_proc in optim_paras["exogenous_processes"]:
+        if exog_proc not in optim_paras["observables"]:
+            warnings.warn(
+                "The distribution of initial values for the exogenous process "
+                f"'{exog_proc}' is not defined in 'params'. Use the 'observable' "
+                "keyword for this. This is only necessary for the n-step-ahead "
+                "simulation. In the following, values are assumed to be equiprobable."
+            )
+            optim_paras["observables"][exog_proc] = {
+                level: pd.Series(data=[0], index=["constant"])
+                for level in optim_paras["exogenous_processes"][exog_proc]
+            }
+        else:
+            defined_values = set(optim_paras["exogenous_processes"][exog_proc]) - set(
+                optim_paras["observables"][exog_proc]
+            )
+            if defined_values:
+                raise ValueError(
+                    f"Not all values, {defined_values}, of the exogenous process "
+                    f"'{exog_proc}' are defined in 'params'."
+                )
+
+    # Sort the dictionary again due inserted exogenous processes.
+    optim_paras["observables"] = {
+        obs: optim_paras["observables"][obs]
+        for obs in sorted(optim_paras["observables"])
+    }
 
     return optim_paras
 
@@ -643,17 +688,22 @@ def _parse_observable_or_exog_process_names(params, keyword):
 
     """
     mask = params.index.get_level_values("category").str.startswith(f"{keyword}_")
+
+    # Get all category indices, replace the keyword, e.g., `"observable_"` and remove at
+    # least the characters after the last underscore.
     categories = (
         params[mask]
         .index.get_level_values("category")
         .str.replace(f"{keyword}_", "", n=1)
+        .str.rsplit("_", n=1)
+        .str[0]
     )
 
     prefixes = {
         os.path.commonprefix([a, b]) for a, b in itertools.combinations(categories, 2)
     }
     # Remove trailing underscores and empty strings.
-    prefixes = {prefix[:-1] for prefix in prefixes if prefix}
+    prefixes = {prefix.rstrip("_") for prefix in prefixes if prefix}
 
     # Remove substrings. If a prefix is in any other prefix, remove it from the set.
     substrings = {a for a, b in itertools.permutations(prefixes, 2) if a in b}

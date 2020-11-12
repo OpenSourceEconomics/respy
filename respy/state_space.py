@@ -7,6 +7,9 @@ import pandas as pd
 from numba.typed import Dict
 
 from respy._numba import sum_over_numba_boolean_unituple
+from respy.exogenous_processes import create_transit_choice_set
+from respy.exogenous_processes import create_transition_objects
+from respy.exogenous_processes import weight_continuation_values
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import apply_law_of_motion_for_core
 from respy.shared import compute_covariates
@@ -15,8 +18,8 @@ from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
-from respy.shared import dump_states
-from respy.shared import load_states
+from respy.shared import dump_objects
+from respy.shared import load_objects
 from respy.shared import map_states_to_core_key_and_core_index
 from respy.shared import prepare_cache_directory
 from respy.shared import return_core_dense_key
@@ -119,9 +122,12 @@ class StateSpace:
         self.options = options
         self.n_periods = options["n_periods"]
         self._create_conversion_dictionaries()
-        self.child_indices = self.collect_child_indices()
         self.base_draws_sol = self.create_draws(options)
         self.create_arrays_for_expected_value_functions()
+
+        if len(self.optim_paras["exogenous_processes"]) > 0:
+            self.create_objects_for_exogenous_processes()
+        self.child_indices = self.collect_child_indices()
 
     def _create_conversion_dictionaries(self):
         """Create mappings between state space location indices and properties.
@@ -133,7 +139,7 @@ class StateSpace:
             i: k for i, k in enumerate(self.dense_period_cores)
         }
 
-        dense_key_to_core_key = {
+        self.dense_key_to_core_key = {
             i: self.dense_period_cores[self.dense_key_to_complex[i]]
             for i in self.dense_key_to_complex
         }
@@ -143,7 +149,7 @@ class StateSpace:
         }
 
         self.dense_key_to_core_indices = {
-            i: np.array(self.core_key_to_core_indices[dense_key_to_core_key[i]])
+            i: np.array(self.core_key_to_core_indices[self.dense_key_to_core_key[i]])
             for i in self.dense_key_to_complex
         }
 
@@ -154,7 +160,7 @@ class StateSpace:
         for i in self.dense_key_to_complex:
             self.core_key_and_dense_index_to_dense_key[
                 return_core_dense_key(
-                    dense_key_to_core_key[i], *self.dense_key_to_complex[i][2:],
+                    self.dense_key_to_core_key[i], *self.dense_key_to_complex[i][2:],
                 )
             ] = i
 
@@ -174,7 +180,7 @@ class StateSpace:
                 self.dense_covariates_to_dense_index[k] = i
 
             self.dense_key_to_dense_covariates = {
-                i: list(self.dense.values())[self.dense_key_to_complex[i][2]]
+                i: list(self.dense.keys())[self.dense_key_to_complex[i][2]]
                 for i in self.dense_key_to_complex
             }
 
@@ -185,6 +191,31 @@ class StateSpace:
         )
         for index, indices in self.dense_key_to_core_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
+
+    def create_objects_for_exogenous_processes(self):
+        """Create mappings for the implementation of the exogenous processes."""
+        # Include switch arg
+
+        exogenous_processes = self.optim_paras["exogenous_processes"]
+        n_exog = len(exogenous_processes)
+
+        # How does the accounting work here again? Would that actually work?
+        levels_of_processes = [range(len(i)) for i in exogenous_processes.values()]
+        self.exogenous_grid = list(itertools.product(*levels_of_processes))
+
+        self.dense_key_to_transit_keys = create_transition_objects(
+            self.dense_key_to_dense_covariates,
+            self.dense_key_to_core_key,
+            self.exogenous_grid,
+            n_exog,
+            bypass={
+                "dense_covariates_to_dense_index": self.dense_covariates_to_dense_index,
+                "core_key_and_dense_index_to_dense_key": self.core_key_and_dense_index_to_dense_key,  # noqa: E501
+            },
+        )
+        self.transit_key_to_choice_set = create_transit_choice_set(
+            self.dense_key_to_transit_keys, self.dense_key_to_choice_set
+        )
 
     def get_continuation_values(self, period):
         """Get continuation values.
@@ -229,13 +260,33 @@ class StateSpace:
             for key, value in expected_value_functions.items():
                 subset_expected_value_functions[key] = value
 
+            transit_choice_sets = (
+                "transit_key_to_choice_set"
+                if hasattr(self, "transit_key_to_choice_set")
+                else "dense_key_to_choice_set"
+            )
+
             continuation_values = _get_continuation_values(
-                self.get_attribute_from_period("dense_key_to_core_indices", period),
                 self.get_attribute_from_period("dense_key_to_complex", period),
+                self.get_attribute_from_period(transit_choice_sets, period),
+                self.get_attribute_from_period("dense_key_to_core_indices", period),
                 child_indices,
                 self.core_key_and_dense_index_to_dense_key,
                 bypass={"expected_value_functions": subset_expected_value_functions},
             )
+
+            if len(self.optim_paras["exogenous_processes"]) > 0:
+                continuation_values = weight_continuation_values(
+                    self.get_attribute_from_period("dense_key_to_complex", period),
+                    self.options,
+                    bypass={
+                        "continuation_values": continuation_values,
+                        "transit_key_to_choice_set": self.get_attribute_from_period(
+                            transit_choice_sets, period
+                        ),
+                    },
+                )
+
         return continuation_values
 
     def collect_child_indices(self):
@@ -261,10 +312,18 @@ class StateSpace:
                 for k, v in self.dense_key_to_complex.items()
                 if v[0] < self.n_periods - 1
             }
+
+            transit_choice_sets = (
+                "transit_key_to_choice_set"
+                if hasattr(self, "transit_key_to_choice_set")
+                else "dense_key_to_choice_set"
+            )
+
             dense_key_to_choice_set_except_last_period = {
-                k: self.dense_key_to_choice_set[k]
+                k: getattr(self, transit_choice_sets)[k]
                 for k in dense_key_to_complex_except_last_period
             }
+
             child_indices = _collect_child_indices(
                 dense_key_to_complex_except_last_period,
                 dense_key_to_choice_set_except_last_period,
@@ -716,7 +775,9 @@ def _create_dense_period_choice(
     """
     if not dense:
         for key, complex_ in core_key_to_complex.items():
-            dump_states(core.loc[core_key_to_core_indices[key]], complex_, options)
+            dump_objects(
+                core.loc[core_key_to_core_indices[key]], "states", complex_, options
+            )
         dense_period_choice = {k: i for i, k in core_key_to_complex.items()}
     else:
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
@@ -724,6 +785,7 @@ def _create_dense_period_choice(
         for dense_idx, (_, dense_vec) in enumerate(dense.items()):
             states = core.copy().assign(**dense_vec)
             states = compute_covariates(states, options["covariates_all"])
+
             states = create_is_inadmissible(states, optim_paras, options)
             for core_idx, indices in core_key_to_core_indices.items():
                 df = states.copy().loc[indices].assign(**dense_vec)
@@ -743,18 +805,21 @@ def _create_dense_period_choice(
 
                 dense_period_choice = {**dense_period_choice, **period_choice}
                 idx = list(grouper.keys())[0]
-                dump_states(
-                    df, (core_key_to_complex[core_idx][0], idx, dense_idx), options
+                dump_objects(
+                    df,
+                    "states",
+                    (core_key_to_complex[core_idx][0], idx, dense_idx),
+                    options,
                 )
 
     return dense_period_choice
 
 
 @parallelize_across_dense_dimensions
-@nb.njit
 def _get_continuation_values(
-    core_indices,
     dense_complex_index,
+    choice_set,
+    core_indices,
     child_indices,
     core_index_and_dense_vector_to_dense_index,
     expected_value_functions,
@@ -775,9 +840,9 @@ def _get_continuation_values(
 
     """
     if len(dense_complex_index) == 3:
-        period, choice_set, dense_idx = dense_complex_index
+        period, _, dense_idx = dense_complex_index
     elif len(dense_complex_index) == 2:
-        period, choice_set = dense_complex_index
+        period, _ = dense_complex_index
         dense_idx = 0
 
     n_choices = sum_over_numba_boolean_unituple(choice_set)
@@ -824,7 +889,7 @@ def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
 
     """
     core_columns = create_core_state_space_columns(optim_paras)
-    states = load_states(complex_, options)
+    states = load_objects("states", complex_, options)
 
     n_choices = sum(choice_set)
     indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)

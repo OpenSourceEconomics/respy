@@ -3,11 +3,13 @@ import functools
 
 import numpy as np
 
+from respy.exogenous_processes import compute_transition_probabilities
 from respy.interpolate import kw_94_interpolation
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_expected_value_functions
-from respy.shared import load_states
+from respy.shared import dump_objects
+from respy.shared import load_objects
 from respy.shared import pandas_dot
 from respy.shared import select_valid_choices
 from respy.shared import transform_base_draws_with_cholesky_factor
@@ -53,11 +55,19 @@ def solve(params, options, state_space):
     """Solve the model."""
     optim_paras, options = process_params_and_options(params, options)
 
-    wages, nonpecs = _create_choice_rewards(
+    transit_keys = None
+    if hasattr(state_space, "dense_key_to_transit_keys"):
+        transit_keys = state_space.dense_key_to_transit_keys
+
+    wages, nonpecs = _create_param_specific_objects(
         state_space.dense_key_to_complex,
         state_space.dense_key_to_choice_set,
         optim_paras,
         options,
+        transit_keys=transit_keys,
+        bypass={
+            "dense_key_to_dense_covariates": state_space.dense_key_to_dense_covariates
+        },
     )
 
     state_space.wages = wages
@@ -69,12 +79,39 @@ def solve(params, options, state_space):
 
 
 @parallelize_across_dense_dimensions
-def _create_choice_rewards(complex_, choice_set, optim_paras, options):
+def _create_param_specific_objects(
+    complex_,
+    choice_set,
+    optim_paras,
+    options,
+    dense_key_to_dense_covariates,
+    transit_keys=None,
+):
+    """Create param specific objects.
+
+    This function creates objects that are not fixed for a given model.
+    Depending on their size they are either kept in working memory such
+    as wages or dumped on disk such as transition probabilities!
+    In the medium run we could also allow for fixed params here by saving values
+    on disk directly!
+    For objects that we store on disk we will just return the prefix of the location.
+    """
+    states = load_objects("states", complex_, options)
+    wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
+
+    if optim_paras["exogenous_processes"]:
+        transition_probabilities = compute_transition_probabilities(
+            states, transit_keys, optim_paras, dense_key_to_dense_covariates
+        )
+        dump_objects(transition_probabilities, "transition", complex_, options)
+
+    return wages, nonpecs
+
+
+def _create_choice_rewards(states, choice_set, optim_paras):
     """Create wage and non-pecuniary reward for each state and choice."""
     n_choices = sum(choice_set)
     choices = select_valid_choices(optim_paras["choices"], choice_set)
-
-    states = load_states(complex_, options)
 
     n_states = states.shape[0]
 
@@ -117,6 +154,8 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     """
     n_periods = options["n_periods"]
 
+    # Can we move that up to the other function? Then we have everything at one point
+    # that is params specific?
     draws_emax_risk = transform_base_draws_with_cholesky_factor(
         state_space.base_draws_sol,
         state_space.dense_key_to_choice_set,
@@ -125,27 +164,28 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     )
 
     for period in reversed(range(n_periods)):
-        dense_indices_in_period = state_space.get_dense_keys_from_period(period)
+        dense_keys_in_period = state_space.get_dense_keys_from_period(period)
 
         period_draws_emax_risk = {
             dense_index: draws_emax_risk[dense_index]
-            for dense_index in dense_indices_in_period
+            for dense_index in dense_keys_in_period
         }
 
         n_states_in_period = sum(
             len(state_space.dense_key_to_core_indices[dense_index])
-            for dense_index in dense_indices_in_period
+            for dense_index in dense_keys_in_period
         )
+
         # See docstring for note on interpolation.
         any_interpolated = options[
             "interpolation_points"
         ] < n_states_in_period and options["interpolation_points"] >= 2 * len(
-            dense_indices_in_period
+            dense_keys_in_period
         )
 
-        # Handle myopic individuals.
+        # Handle myopic individuals. Check interpolation!
         if optim_paras["delta"] == 0:
-            period_expected_value_functions = {k: 0 for k in dense_indices_in_period}
+            period_expected_value_functions = {k: 0 for k in dense_keys_in_period}
 
         elif any_interpolated:
             period_expected_value_functions = kw_94_interpolation(
@@ -157,7 +197,6 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             wages = state_space.get_attribute_from_period("wages", period)
             nonpecs = state_space.get_attribute_from_period("nonpecs", period)
             continuation_values = state_space.get_continuation_values(period)
-
             period_expected_value_functions = _full_solution(
                 wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras
             )
