@@ -17,6 +17,9 @@ from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
+from respy.shared import get_choice_set_from_complex
+from respy.shared import get_exogenous_from_dense_covariates
+from respy.shared import load_objects
 from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
 from respy.shared import rename_labels_from_internal
@@ -178,7 +181,6 @@ def simulate(
 
     optim_paras, options = process_params_and_options(params, options)
     state_space = solve(params)
-
     # Prepare simulation.
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
 
@@ -206,31 +208,92 @@ def simulate(
 
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-        index_to_choice_set = state_space.get_attribute_from_period(
-            "dense_key_to_choice_set", period
+        index_to_complex = state_space.get_attribute_from_period(
+            "dense_key_to_complex", period
         )
         continuation_values = state_space.get_continuation_values(period=period)
 
         current_df_extended = _simulate_single_period(
             current_df,
-            index_to_choice_set,
+            index_to_complex,
             wages,
             nonpecs,
             continuation_values,
             optim_paras=optim_paras,
+            options=options,
         )
 
-        data.append(current_df_extended.copy(deep=True))
+        if optim_paras["exogenous_processes"]:
+            data.append(
+                current_df_extended.copy(deep=True).drop(
+                    "dense_key_next_period", axis=1
+                )
+            )
+        else:
+            data.append(current_df_extended.copy(deep=True))
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             current_df_extended = current_df_extended.reset_index()
             df = apply_law_of_motion_for_core(current_df_extended, optim_paras)
             state_space_columns = create_state_space_columns(optim_paras)
+            df = apply_law_of_motion_for_dense(df, state_space, optim_paras)
             df = df.set_index(["identifier", "period"])[state_space_columns]
 
     simulated_data = _process_simulation_output(data, optim_paras)
 
     return simulated_data
+
+
+def apply_law_of_motion_for_dense(df, state_space, optim_paras):
+    """Update dense variable, if exogenous process.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A pandas DataFrame containing the updated state variables, as well as the
+        draw of next periods dense key.
+    state_space
+    optim_paras
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        A pandas DataFrame containing the updated state variables and the updated
+        exogenous process.
+    """
+    if optim_paras["exogenous_processes"]:
+        df = update_dense_state_variables(
+            df, state_space.dense_key_to_dense_covariates, optim_paras,
+        )
+    return df
+
+
+def update_dense_state_variables(df, dense_key_to_dense_covariates, optim_paras):
+    """Update the value of the exogenous processes.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A pandas DataFrame containing the updated state variables, as well as the
+        draw of next periods dense key.
+    dense_key_to_dense_covariates : dict
+        Dictionary with dense_key as keys and dense grid points.
+    optim_paras : dict
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        A pandas DataFrame containing the updated state variables and the updated
+        exogenous process.
+    """
+    for dense_key in df["dense_key_next_period"].unique():
+        for exog_index, exog_proc in enumerate(optim_paras["exogenous_processes"]):
+            exog_process_grid = get_exogenous_from_dense_covariates(
+                dense_key_to_dense_covariates[dense_key], optim_paras
+            )
+            exog_value = exog_process_grid[exog_index]
+            df.loc[df["dense_key_next_period"] == dense_key, exog_proc] = exog_value
+    return df
 
 
 def _extend_data_with_sampled_characteristics(df, optim_paras, options):
@@ -308,7 +371,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 @split_and_combine_df
 @parallelize_across_dense_dimensions
 def _simulate_single_period(
-    df, choice_set, wages, nonpecs, continuation_values, optim_paras
+    df, complex_tuple, wages, nonpecs, continuation_values, optim_paras, options
 ):
     """Simulate individuals in a single period.
 
@@ -322,6 +385,7 @@ def _simulate_single_period(
     See docs for more information!
 
     """
+    choice_set = get_choice_set_from_complex(complex_tuple)
     valid_choices = select_valid_choices(optim_paras["choices"], choice_set)
 
     n_wages_raw = len(optim_paras["choices_w_wage"])
@@ -382,7 +446,40 @@ def _simulate_single_period(
         df[f"value_function_{choice}"] = value_functions[:, i]
         df[f"continuation_value_{choice}"] = continuation_values[:, i]
 
+    # Check if there is an exogenous process
+    if optim_paras["exogenous_processes"]:
+        df["dense_key_next_period"] = draw_dense_key_next_period(
+            complex_tuple, df["core_index"], options
+        )
     return df
+
+
+def draw_dense_key_next_period(complex_tuple, core_index, options):
+    """For exogenous processes draw the dense key for next period.
+
+    Parameters
+    ----------
+    complex_tuple
+    core_index
+    options
+
+    Returns
+    -------
+    dense_key_next_period : pd:Series
+        A pandas Series containing the dense keys in the next period for all keys.
+
+    """
+    dense_key_next_period = core_index.copy(deep=True)
+    transition_mat = load_objects("transition", complex_tuple, options)
+    core_index_counts = core_index.value_counts()
+    for index, count in core_index_counts.items():
+        draws = np.random.choice(
+            transition_mat.columns.values,
+            size=count,
+            p=transition_mat.iloc[index].to_numpy(),
+        )
+        dense_key_next_period.loc[core_index == index] = draws.astype(int)
+    return dense_key_next_period
 
 
 def _sample_characteristic(states_df, options, level_dict, use_keys):

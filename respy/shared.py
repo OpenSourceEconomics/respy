@@ -400,9 +400,16 @@ def create_core_state_space_columns(optim_paras):
 
 def create_dense_state_space_columns(optim_paras):
     """Create internal column names for the dense state space."""
-    columns = list(optim_paras["observables"])
+    exogenous_processes = optim_paras["exogenous_processes"]
+    dense_columns = list(optim_paras["observables"])
+
+    static_dense_columns = [x for x in dense_columns if x not in exogenous_processes]
+    columns = static_dense_columns
+
     if optim_paras["n_types"] >= 2:
         columns += ["type"]
+
+    columns += list(exogenous_processes)
 
     return columns
 
@@ -661,28 +668,28 @@ def _map_observations_to_dense_index(
     return dense_key
 
 
-def dump_states(states, complex_, options):
+def dump_objects(objects, topic, complex_, options):
     """Dump states."""
-    file_name = _create_file_name_from_complex_index(complex_)
-    states.to_parquet(
+    file_name = _create_file_name_from_complex_index(topic, complex_)
+    objects.to_parquet(
         options["cache_path"] / file_name, compression=options["cache_compression"],
     )
 
 
-def load_states(complex_, options):
+def load_objects(topic, complex_, options):
     """Load states."""
-    file_name = _create_file_name_from_complex_index(complex_)
+    file_name = _create_file_name_from_complex_index(topic, complex_)
     directory = options["cache_path"]
     return pd.read_parquet(directory / file_name)
 
 
-def _create_file_name_from_complex_index(complex_):
+def _create_file_name_from_complex_index(topic, complex_):
     """Create a file name from a complex index."""
     choice = "".join([str(int(x)) for x in complex_[1]])
     if len(complex_) == 3:
-        file_name = f"{complex_[0]}_{choice}_{complex_[2]}.parquet"
+        file_name = f"{topic}_{complex_[0]}_{choice}_{complex_[2]}.parquet"
     elif len(complex_) == 2:
-        file_name = f"{complex_[0]}_{choice}.parquet"
+        file_name = f"{topic}_{complex_[0]}_{choice}.parquet"
     else:
         raise NotImplementedError
 
@@ -768,3 +775,35 @@ def apply_law_of_motion_for_core(df, optim_paras):
     df["period"] = df["period"] + 1
 
     return df
+
+
+def get_choice_set_from_complex(complex_tuple):
+    """Select the choice set from a complex tuple.
+
+    Parameters
+    ----------
+    complex_tuple : tuple
+        The complex tuple.
+
+    Returns
+    -------
+    The choice set as tuple.
+    """
+    return complex_tuple[1]
+
+
+def get_exogenous_from_dense_covariates(dense_covariates, optim_paras):
+    """Select eogenous grid points from dense grid points.
+
+    Parameters
+    ----------
+    dense_covariates : tuple
+        Dense covariates grid point.
+    optim_paras : dict
+
+    Returns
+    -------
+    The exogenous grid tuple
+    """
+    num_exog = len(optim_paras["exogenous_processes"])
+    return dense_covariates[-num_exog:]

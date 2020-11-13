@@ -11,6 +11,7 @@ from respy.likelihood import get_log_like_func
 from respy.pre_processing.model_checking import validate_options
 from respy.pre_processing.model_processing import _add_default_is_inadmissible
 from respy.pre_processing.model_processing import _convert_labels_in_formulas_to_codes
+from respy.pre_processing.model_processing import _parse_exogenous_processes
 from respy.pre_processing.model_processing import _parse_initial_and_max_experience
 from respy.pre_processing.model_processing import _parse_measurement_errors
 from respy.pre_processing.model_processing import _parse_observables
@@ -156,7 +157,8 @@ def test_parse_observables():
         ),
         index_col=["category", "name"],
     )["value"]
-    optim_paras = _parse_observables({}, params)
+    optim_paras = _parse_exogenous_processes({}, params)
+    optim_paras = _parse_observables(optim_paras, params)
 
     expected = {
         "fishing_grounds": {
