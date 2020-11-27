@@ -1,4 +1,4 @@
-How to load example models
+How to Load Example Models
 ==========================
 
 In the tutorials and guides of the **respy** documentation, you will frequently 
