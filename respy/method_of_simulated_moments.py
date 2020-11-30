@@ -434,9 +434,11 @@ def _create_comparison_plot_data_msm(empirical_moments, simulated_moments):
     tidy_empirical_moments["kind"] = "empirical"
     tidy_simulated_moments["kind"] = "simulated"
 
-    return pd.concat(
-        [tidy_empirical_moments, tidy_simulated_moments], ignore_index=True
-    )
+    df = pd.concat([tidy_empirical_moments, tidy_simulated_moments], ignore_index=True)
+
+    df[["moment_set", "kind"]] = df[["moment_set", "kind"]].astype("category")
+
+    return df
 
 
 def _create_tidy_data(moments):

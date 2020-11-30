@@ -581,7 +581,9 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
     """Create DataFrame for estimagic's comparison plot."""
     df = df.copy()
 
-    df["choice"] = df["choice"].replace(dict(enumerate(optim_paras["choices"])))
+    df["choice"] = (
+        df["choice"].replace(dict(enumerate(optim_paras["choices"]))).astype("category")
+    )
 
     # During the likelihood calculation, the log likelihood for missing wages is
     # substituted with 0. Remove these log likelihoods to get the correct picture.
@@ -595,7 +597,7 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
     df = df.reset_index().melt(id_vars=["identifier", "period", "choice"])
 
     splitted_label = df.variable.str.split("_", expand=True)
-    df["kind"] = splitted_label[1]
+    df["kind"] = splitted_label[1].astype("category")
     df = df.drop(columns="variable").dropna()
 
     if log_type_probabilities is not None:
@@ -611,6 +613,9 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
         )
 
         df = df.append(log_type_probabilities, sort=False)
+
+    df.identifier = df.identifier.astype("uint16")
+    df.period = df.period.astype("uint8")
 
     return df
 
