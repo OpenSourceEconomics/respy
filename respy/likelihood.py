@@ -57,6 +57,8 @@ def get_log_like_func(params, options, df, return_scalar=True):
             - ``choice`` : Choice that ``value`` is connected to.
             - ``value`` : Value of log likelihood contribution.
             - ``kind`` : Kind of contribution (e.g choice or wage).
+            - ``type`` and `log_type_probability``: Will be included in models with
+            types.
 
     Returns
     -------

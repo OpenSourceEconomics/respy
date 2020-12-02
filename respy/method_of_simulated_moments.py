@@ -207,11 +207,7 @@ def moment_errors(
 
     Returns
     -------
-    out : pandas.Series or float or tuple
-        Scalar or moment error vector depending on value of return_scalar. Will be a
-        tuple containing simulated moments of same type as empirical_moments or a tidy
-        pandas.DataFrame if either return_simulated_moments or the first element in
-        return_comparison_plot_data is True.
+    out : float or dict
 
     """
     empirical_moments = copy.deepcopy(empirical_moments)
