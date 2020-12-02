@@ -244,7 +244,7 @@ def moment_errors(
             "root_contributions": pd.Series(
                 moment_errors @ np.sqrt(weighting_matrix), index=moment_errors.index
             ),
-            "simulated_moments": _reconstruct_input_from_dict(simulated_moments),
+            "simulated_moments": simulated_moments,
             "comparison_plot_data": _create_comparison_plot_data_msm(
                 empirical_moments, simulated_moments
             ),
