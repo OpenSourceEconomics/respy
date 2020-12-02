@@ -29,9 +29,7 @@ from respy.shared import subset_cholesky_factor_to_choice_set
 from respy.solve import get_solve_func
 
 
-def get_log_like_func(
-    params, options, df, return_scalar=True, return_comparison_plot_data=False
-):
+def get_log_like_func(params, options, df, return_scalar=True):
     """Get the criterion function for maximum likelihood estimation.
 
     Return a version of the likelihood functions in respy where all arguments
@@ -48,11 +46,17 @@ def get_log_like_func(
     df : pandas.DataFrame
         The model is fit to this dataset.
     return_scalar : bool, default False
-        Indicator for whether the mean log likelihood should be returned or the log
-        likelihood contributions.
-    return_comparison_plot_data : bool, default False
-        Indicator for whether a :class:`pandas.DataFrame` with various contributions for
-        the visualization with estimagic should be returned.
+        Indicator for whether the mean log likelihood should be returned. If False will
+        return a dictionary with the following key and value pairs:
+        - "value": mean log likelihood (float)
+        - "contributions": log likelihood contributions (numpy.array)
+        - "comparison_plot_data" : DataFrame with various contributions for
+        the visualization with estimagic. Data contains the following columns:
+            - ``identifier`` : Individual identifiers derived from input df.
+            - ``period`` : Periods derived from input df.
+            - ``choice`` : Choice that ``value`` is connected to.
+            - ``value`` : Value of log likelihood contribution.
+            - ``kind`` : Kind of contribution (e.g choice or wage).
 
     Returns
     -------
@@ -74,21 +78,15 @@ def get_log_like_func(
     >>> log_like = rp.get_log_like_func(params=params, options=options, df=data)
     >>> scalar = log_like(params)
 
-    Additionally, a :class:`pandas.DataFrame` with data for visualization can be
-    returned.
+    Alternatively, a dictionary containing the log likelihood, as well as
+    log likelihood contributions and a :class:`pandas.DataFrame` can be returned.
 
     >>> log_like = rp.get_log_like_func(params=params, options=options, df=data,
     ...     return_comparison_plot_data=True
     ... )
-    >>> scalar, df = log_like(params)
-
-    In alternative to the log likelihood, a :class:`numpy.array` of the individual
-    log likelihood contributions can be returned.
-
-    >>> log_like_contribs = rp.get_log_like_func(params=params, options=options,
-    ...     df=data, return_scalar=False
-    ... )
-    >>> array = log_like_contribs(params)
+    >>> outputs = log_like(params)
+    >>> outputs.keys()
+    dict_keys(['value', 'contributions', 'comparison_plot_data'])
     """
     optim_paras, options = process_params_and_options(params, options)
 
@@ -122,21 +120,13 @@ def get_log_like_func(
         type_covariates=type_covariates,
         options=options,
         return_scalar=return_scalar,
-        return_comparison_plot_data=return_comparison_plot_data,
     )
 
     return criterion_function
 
 
 def log_like(
-    params,
-    df,
-    base_draws_est,
-    solve,
-    type_covariates,
-    options,
-    return_scalar,
-    return_comparison_plot_data,
+    params, df, base_draws_est, solve, type_covariates, options, return_scalar,
 ):
     """Criterion function for the likelihood maximization.
 
@@ -166,14 +156,15 @@ def log_like(
     )
 
     # Return mean log likelihood or log likelihood contributions.
-    out = contribs.mean() if return_scalar else contribs
-
-    if return_comparison_plot_data:
-        comparison_plot_data = _create_comparison_plot_data(
-            df, log_type_probabilities, optim_paras
-        )
-        out = (out, comparison_plot_data)
-
+    out = contribs.mean()
+    if not return_scalar:
+        out = {
+            "value": out,
+            "contributions": contribs,
+            "comparison_plot_data": _create_comparison_plot_data(
+                df, log_type_probabilities, optim_paras
+            ),
+        }
     return out
 
 

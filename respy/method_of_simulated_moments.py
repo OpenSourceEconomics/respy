@@ -33,8 +33,6 @@ def get_moment_errors_func(
     weighting_matrix,
     n_simulation_periods=None,
     return_scalar=True,
-    return_simulated_moments=False,
-    return_comparison_plot_data=False,
 ):
     """Get the moment errors function for MSM estimation.
 
@@ -67,25 +65,32 @@ def get_moment_errors_func(
         This option does not affect ``options["n_periods"]`` which controls the
         number of periods for which decision rules are computed.
     return_scalar : bool, default True
-        Indicates whether to return moment error vector (False) or weighted
-        square product of moment error vectors (True).
-    return_simulated_moments : bool, default False
-        Indicates whether simulated moments should be returned with other output.
-        If True will return simulated moments of the same type as empirical_moments.
-    return_comparison_plot_data : bool, default False
-        Indicator for whether a :class:`pandas.DataFrame` with empirical and simulated
-        moments for the visualization with estimagic should be returned. Data contains
-        the following columns:
+        Indicates whether to return the scalar value of weighted square product of
+        moment error vector or dictionary that additionally contains vector of
+        (weighted) moment errors, simulated moments that follow the structure
+        of empirical moments, and simulated as well as empirical moments in a
+        pandas.DataFrame that adheres to a tidy data format. The dictionary will contain
+        the following key and value pairs:
 
-        - ``moment_column``: Contains the column names of the moment DataFrames/Series
-          names.
-        - ``moment_index``: Contains the index of the moment DataFrames/
-          Series.MultiIndex indices will be joined to one string.
-        - ``value``: Contains moment values.
-        - ``moment_set``: Indicator for each set of moments, will use keys if
-          empirical_moments are specified in a dict. Moments input as lists will be
-          numbered according to position.
-        - ``kind``: Indicates whether moments are empirical or simulated.
+        - "value": Scalar vale of weighted moment errors (float)
+        - "root_contributions": Moment error vectors multiplied with root of weighting
+          matrix (numpy.ndarray)
+        - "simulated_moments": Simulated moments for given parametrization. Will be in
+        the same data format as `empirical_moments` (pandas.Series or pandas.DataFrame
+        or list or dict)
+        - "comparison_plot_data": A :class:`pandas.DataFrame` that contains both
+        empirical and simulated moments in a tidy data format (pandas.DataFrame). Data
+        contains the following columns:
+
+            - ``moment_column``: Contains the column names of the moment
+            DataFrames/Series names.
+            - ``moment_index``: Contains the index of the moment DataFrames/
+            Series.MultiIndex indices will be joined to one string.
+            - ``value``: Contains moment values.
+            - ``moment_set``: Indicator for each set of moments, will use keys if
+            empirical_moments are specified in a dict. Moments input as lists will be
+            numbered according to position.
+            - ``kind``: Indicates whether moments are empirical or simulated.
 
     Returns
     -------
@@ -99,8 +104,6 @@ def get_moment_errors_func(
     ValueError
         If the number of functions to compute the simulated moments does not match the
         number of empirical moments.
-    ValueError
-        If simulated moments and the comparison plot data should be returned.
 
     """
     empirical_moments = copy.deepcopy(empirical_moments)
@@ -145,12 +148,6 @@ def get_moment_errors_func(
             "the number of sets of empirical moments."
         )
 
-    if return_simulated_moments and return_comparison_plot_data:
-        raise ValueError(
-            "Can only return either simulated moments or comparison plot data, not "
-            "both."
-        )
-
     moment_errors_func = functools.partial(
         moment_errors,
         simulate=simulate,
@@ -159,8 +156,6 @@ def get_moment_errors_func(
         empirical_moments=empirical_moments,
         weighting_matrix=weighting_matrix,
         return_scalar=return_scalar,
-        return_simulated_moments=return_simulated_moments,
-        return_comparison_plot_data=return_comparison_plot_data,
         are_empirical_moments_dict=are_empirical_moments_dict,
     )
 
@@ -175,8 +170,6 @@ def moment_errors(
     empirical_moments,
     weighting_matrix,
     return_scalar,
-    return_simulated_moments,
-    return_comparison_plot_data,
     are_empirical_moments_dict,
 ):
     """Loss function for MSM estimation.
@@ -203,17 +196,14 @@ def moment_errors(
         Square matrix of dimension (NxN) with N denoting the number of
         empirical_moments. Used to weight squared moment errors.
     return_scalar : bool
-        Indicates whether to return moment error vector (False) or weighted square
-        product of moment error vector (True).
-    return_simulated_moments : bool
-        Indicates whether simulated moments should be returned with other output.
-        Will return simulated moments of the same type as empirical_moments.
-    return_comparison_plot_data : bool
-        Will output moments in a tidy data format if True. Uses dictionary keys
-        from empirical moments to group sets of moments.
+        Indicates whether to return the scalar value of weighted square product of
+        moment error vector or dictionary that additionally contains vector of
+        (root weighted) moment errors, simulated moments that follow the structure
+        of empirical moments, and simulated as well as empirical moments in a
+        pandas.DataFrame that adheres to a tidy data format.
     are_empirical_moments_dict : bool
         Indicates whether empirical_moments are originally saved to a dict. Used
-        for return of simulated moments in the same form.
+        for return of simulated moments in the same form when return_scalar is False.
 
     Returns
     -------
@@ -244,28 +234,25 @@ def moment_errors(
 
     moment_errors = flat_empirical_moments - flat_simulated_moments
 
-    # Return moment errors as indexed DataFrame or calculate weighted square product of
-    # moment errors depending on return_scalar.
-    if return_scalar:
-        out = moment_errors.T @ weighting_matrix @ moment_errors
-    else:
-        out = pd.Series(
-            moment_errors @ np.sqrt(weighting_matrix), index=moment_errors.index
-        )
+    # Return only scalar value or dictionary with additional information:
+    # weighted moment errors, simulated moments, and empirical and simulated moments
+    # in a DataFrame that adheres to a tidy data format.
+    out = moment_errors.T @ weighting_matrix @ moment_errors
 
-    if return_simulated_moments:
+    if not return_scalar:
         if not are_empirical_moments_dict:
             simulated_moments = _reconstruct_input_from_dict(simulated_moments)
-        out = (out, simulated_moments)
 
-    elif return_comparison_plot_data:
-        tidy_moments = _create_comparison_plot_data_msm(
-            empirical_moments, simulated_moments
-        )
-        out = (out, tidy_moments)
-
-    else:
-        pass
+        out = {
+            "value": out,
+            "root_contributions": pd.Series(
+                moment_errors @ np.sqrt(weighting_matrix), index=moment_errors.index
+            ),
+            "simulated_moments": _reconstruct_input_from_dict(simulated_moments),
+            "comparison_plot_data": _create_comparison_plot_data_msm(
+                empirical_moments, simulated_moments
+            ),
+        }
 
     return out
 
