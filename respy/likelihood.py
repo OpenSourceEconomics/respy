@@ -84,7 +84,7 @@ def get_log_like_func(params, options, df, return_scalar=True):
     log likelihood contributions and a :class:`pandas.DataFrame` can be returned.
 
     >>> log_like = rp.get_log_like_func(params=params, options=options, df=data,
-    ...     return_comparison_plot_data=True
+    ...     return_scalar=False
     ... )
     >>> outputs = log_like(params)
     >>> outputs.keys()

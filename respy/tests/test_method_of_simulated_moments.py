@@ -1,6 +1,7 @@
 """Test the msm interface of respy."""
 import copy
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -56,8 +57,8 @@ def test_msm_zero(msm_args, return_scalar):
         assert weighted_sum_squared_errors(msm_args[0]) == 0
     else:
         out = weighted_sum_squared_errors(msm_args[0])
-        assert isinstance(out, pd.Series)
-        assert (out == 0).all()
+        assert isinstance(out["root_contributions"], np.ndarray)
+        assert (out["root_contributions"] == 0).all()
 
 
 @pytest.mark.end_to_end
@@ -107,36 +108,18 @@ def test_randomness_msm(model_or_seed):
 
 
 @pytest.mark.integration
-def test_return_simulated_moments_for_msm(msm_args):
-    """Return_simulated_moments."""
-    weighted_sum_squared_errors = get_moment_errors_func(
-        *msm_args, return_simulated_moments=True
-    )
-    fval, simulated_moments = weighted_sum_squared_errors(msm_args[0])
+def test_return_output_dict_for_msm(msm_args):
+    """Return dictionary with function value, weighted moment errors (log contributions),
+    simulated moments and comparison plot data."""
+    weighted_errors = get_moment_errors_func(*msm_args, return_scalar=False)
 
-    assert isinstance(fval, float)
-    assert isinstance(simulated_moments, (dict, list, pd.DataFrame, pd.Series))
+    outputs = weighted_errors(msm_args[0])
 
-
-@pytest.mark.integration
-def test_return_comparison_plot_data_for_msm(msm_args):
-    """Return_comparison_plot_data."""
-    weighted_errors = get_moment_errors_func(
-        *msm_args, return_scalar=False, return_comparison_plot_data=True
-    )
-    moment_errors, df = weighted_errors(msm_args[0])
-
-    assert isinstance(moment_errors, pd.Series)
-    assert isinstance(df, pd.DataFrame)
-
-
-@pytest.mark.integration
-def test_multiple_returns_msm(msm_args):
-    """Raise error if moments and comparison plot data is requested."""
-    with pytest.raises(ValueError, match="Can only return either"):
-        get_moment_errors_func(
-            *msm_args, return_simulated_moments=True, return_comparison_plot_data=True
-        )
+    assert isinstance(outputs, dict)
+    assert isinstance(outputs[("value")], float)
+    assert isinstance(outputs[("root_contributions")], np.ndarray)
+    assert isinstance(outputs[("simulated_moments")], dict)
+    assert isinstance(outputs[("comparison_plot_data")], pd.DataFrame)
 
 
 def _calc_choice_freq(df):
