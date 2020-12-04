@@ -114,12 +114,16 @@ def test_return_output_dict_for_msm(msm_args):
     weighted_errors = get_moment_errors_func(*msm_args, return_scalar=False)
 
     outputs = weighted_errors(msm_args[0])
+    df = outputs["comparison_plot_data"]
 
     assert isinstance(outputs, dict)
-    assert isinstance(outputs[("value")], float)
-    assert isinstance(outputs[("root_contributions")], np.ndarray)
-    assert isinstance(outputs[("simulated_moments")], dict)
-    assert isinstance(outputs[("comparison_plot_data")], pd.DataFrame)
+    assert isinstance(outputs["value"], float)
+    assert isinstance(outputs["root_contributions"], np.ndarray)
+    assert isinstance(outputs["simulated_moments"], dict)
+    assert isinstance(df, pd.DataFrame)
+
+    # Simulated moments mirror empirical moments.
+    assert df.loc[df.kind == "simulated"].shape == df.loc[df.kind == "empirical"].shape
 
 
 def _calc_choice_freq(df):

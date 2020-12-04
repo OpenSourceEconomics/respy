@@ -588,6 +588,7 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
     df = df[columns]
 
     df = df.reset_index().melt(id_vars=["identifier", "period", "choice"])
+    df = df.astype({"identifier": "uint16", "period": "uint8"})
 
     splitted_label = df.variable.str.split("_", expand=True)
     df["kind"] = splitted_label[1].astype("category")
@@ -604,11 +605,8 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
                 value_name="log_type_probability",
             )
         )
-
+        log_type_probabilities.type = log_type_probabilities.type.astype("category")
         df = df.append(log_type_probabilities, sort=False)
-
-    df.identifier = df.identifier.astype("uint16")
-    df.period = df.period.astype("uint8")
 
     return df
 
