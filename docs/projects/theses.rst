@@ -6,17 +6,30 @@ of Bonn.
 
 ----
 
-Gehlen, A. (2020). Simulation-Based Estimation of Discrete Choice Dynamic Life-Cycle 
+Mensinger, T. (2020). On the Use of Surrogate Models in Structural Microeconometrics
+
+    The thesis applies the ideas of surrogate modeling to the human capital model by Keane and
+    Wolpin (1994) to facilitate the application of uncertainty propagation and sensitivity analysis.
+    The analysis demonstrates that surrogate models do not outperform a brute force approach when
+    propagating the model's parametric uncertainty to selected quantities of interest to
+    economists. However, surrogate models are essential to also conduct a subsequent sensitivity
+    analysis and machine learning methods are useful to calibrate a surrogate to high precision.
+
+Contact: `@timmens <https://github.com/timmens>`_
+
+----
+
+Gehlen, A. (2020). Simulation-Based Estimation of Discrete Choice Dynamic Life-Cycle
 Models.
 
-    The thesis revisits the models by Keane and Wolpin (1994, 1997) to explore Method of 
-    Simulated Moments (MSM) estimation as an alternative to the Simulated Maximum 
-    Likelihood (SML) approach used by the authors. The thesis discusses the various 
-    calibration choices needed to construct an appropriate MSM criterion function for 
-    estimation, as well as the challenges that come with optimization of the criterion. 
-    The analysis demonstrates that the MSM can be effectively employed for model 
-    estimation but simultaneously shows that results are very sensitive to calibration 
-    choices. 
+    The thesis revisits the models by Keane and Wolpin (1994, 1997) to explore Method of
+    Simulated Moments (MSM) estimation as an alternative to the Simulated Maximum
+    Likelihood (SML) approach used by the authors. The thesis discusses the various
+    calibration choices needed to construct an appropriate MSM criterion function for
+    estimation, as well as the challenges that come with optimization of the criterion.
+    The analysis demonstrates that the MSM can be effectively employed for model
+    estimation but simultaneously shows that results are very sensitive to calibration
+    choices.
 
 Contact: `@amageh <https://github.com/amageh>`_
 
