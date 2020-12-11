@@ -8,12 +8,13 @@ of Bonn.
 
 Mensinger, T. (2020). On the Use of Surrogate Models in Structural Microeconometrics
 
-    The thesis applies the ideas of surrogate modeling to the human capital model by Keane and
-    Wolpin (1994) to facilitate the application of uncertainty propagation and sensitivity analysis.
-    The analysis demonstrates that surrogate models do not outperform a brute force approach when
-    propagating the model's parametric uncertainty to selected quantities of interest to
-    economists. However, surrogate models are essential to also conduct a subsequent sensitivity
-    analysis and machine learning methods are useful to calibrate a surrogate to high precision.
+    The thesis applies the ideas of surrogate modeling to the human capital model by
+    Keane and Wolpin (1994) to facilitate the application of uncertainty propagation
+    and sensitivity analysis. The analysis demonstrates that surrogate models do not
+    outperform a brute force approach when propagating the model's parametric
+    uncertainty to selected quantities of interest to economists. However, surrogate
+    models are essential to also conduct a subsequent sensitivity analysis and machine
+    learning methods are useful to calibrate a surrogate to high precision.
 
 Contact: `@timmens <https://github.com/timmens>`_
 
