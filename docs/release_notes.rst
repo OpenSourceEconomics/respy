@@ -8,8 +8,12 @@ releases are available on `Anaconda.org
 
 2.1.0 - 2020-
 -------------
+- :gh:`381` Implements exogenous processes (:ghuser:`MaxBlesch`, :ghuser:`mo2561057`).
 - :gh:`383` Fixes simulation with data and adds tests (:ghuser:`janosg`).
 - :gh:`387` Fixes issue in documenation build (:ghuser:`amageh`).
+- :gh:`391` Adds how-to guide on example models and specifying a model (:ghuser:`amageh`;
+   model specification guide draws on work by :ghuser:`tobiasraabe`
+   and :ghuser:`rafaelsuchy`).
 
 
 2.0.0 - 2019-2020
