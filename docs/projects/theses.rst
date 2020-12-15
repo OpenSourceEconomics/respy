@@ -6,17 +6,30 @@ of Bonn.
 
 ----
 
-Gehlen, A. (2020). Simulation-Based Estimation of Discrete Choice Dynamic Life-Cycle 
+Maokomatanda, L. (2020). Sensitivity Analysis for Structural Microeconomic Models using Shapley Values
+
+    The parametric uncertainties in the analysis of structural microeconometric models are
+    ubiquitous. However, sensitivity analysis is rare and particularly challenging in this
+    setting due to many correlated parameters. Shapely values with their foundation in game theory
+    appear particularly suited in this case. This thesis computes the Shapely values for the
+    estimated model parameters in Keane and Wolpin (1994) to assess their relative quantitative
+    importance for the model's counterfactual predictions.
+
+Contact: `@lindamaok899 <https://github.com/lindamaok899>`_
+
+----
+
+Gehlen, A. (2020). Simulation-Based Estimation of Discrete Choice Dynamic Life-Cycle
 Models.
 
-    The thesis revisits the models by Keane and Wolpin (1994, 1997) to explore Method of 
-    Simulated Moments (MSM) estimation as an alternative to the Simulated Maximum 
-    Likelihood (SML) approach used by the authors. The thesis discusses the various 
-    calibration choices needed to construct an appropriate MSM criterion function for 
-    estimation, as well as the challenges that come with optimization of the criterion. 
-    The analysis demonstrates that the MSM can be effectively employed for model 
-    estimation but simultaneously shows that results are very sensitive to calibration 
-    choices. 
+    The thesis revisits the models by Keane and Wolpin (1994, 1997) to explore Method of
+    Simulated Moments (MSM) estimation as an alternative to the Simulated Maximum
+    Likelihood (SML) approach used by the authors. The thesis discusses the various
+    calibration choices needed to construct an appropriate MSM criterion function for
+    estimation, as well as the challenges that come with optimization of the criterion.
+    The analysis demonstrates that the MSM can be effectively employed for model
+    estimation but simultaneously shows that results are very sensitive to calibration
+    choices.
 
 Contact: `@amageh <https://github.com/amageh>`_
 
