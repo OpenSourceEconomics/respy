@@ -1,8 +1,7 @@
 Theses
 ======
 
-Here is a list of Master's theses submitted by students of economics from the University
-of Bonn.
+Here is a list of Master's theses submitted by students of economics from the University of Bonn.
 
 ----
 

@@ -53,11 +53,41 @@ cluster for scalability and performance testing. We appreciate the financial sup
 the `AXA Research Fund <https://www.axa-research.org/>`_ and the  `University of Bonn
 <https://www.uni-bonn.de>`_.
 
+We gratefully acknowledge funding by the Federal Ministry of Education 
+and Research (BMBF) and the Ministry of Culture and Science of the
+State  of North Rhine-Westphalia (MKW) as part of the Excellence
+Strategy of the federal and state governments.
+
 We are indebted to the open source community as we build on top of numerous open source
 tools such as the `SciPy <https://www.scipy.org>`_ and `PyData <https://pydata.org/>`_
 ecosystems. In particular, without **respy**'s interface would not work without `pandas
 <https://pandas.pydata.org/>`_ and it could not rival any program written in Fortran in
 terms of speed without `Numba <http://numba.pydata.org/>`_.
+
+
+|OSE| |space| |TRA| |space| |UniBonn| |space| |DIW|
+
+.. |OSE| image:: https://raw.githubusercontent.com/OpenSourceEconomics/ose-corporate-design/master/logos/OSE_logo_RGB.svg
+  :width: 20%
+  :target: https://open-econ.org
+
+.. |UniBonn| image:: _static/images/UNI_Bonn_Logo_Standard_RZ_RGB.svg
+  :width: 20 %
+  :target: https://www.uni-bonn.de
+
+.. |TRA| image:: _static/images/Logo_TRA1.png
+  :width: 10 %
+  :target: https://www.uni-bonn.de/research/research-profile/mathematics-modelling-and-simulation-of-complex-systems-1
+
+.. |DIW| image:: _static/images/Logo_DIW_Berlin.svg
+  :width: 20 %
+  :target: https://github.com/OpenSourceEconomics/respy/blob/main/docs/_static/funding/Becker_Sebastian_Arbeitsprogramm.pdf
+
+.. |space| raw:: html
+
+     <embed>
+     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+     </embed>
 
 
 .. Keep following section in sync with README.rst.
