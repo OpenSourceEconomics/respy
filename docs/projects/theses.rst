@@ -6,7 +6,20 @@ of Bonn.
 
 ----
 
-Mensinger, T. (2020). On the Use of Surrogate Models in Structural Microeconometrics
+Maokomatanda, L. (2020). Sensitivity Analysis for Structural Microeconomic Models using Shapley Values.
+
+    The parametric uncertainties in the analysis of structural microeconometric models are
+    ubiquitous. However, sensitivity analysis is rare and particularly challenging in this
+    setting due to many correlated parameters. Shapely values with their foundation in game theory
+    appear particularly suited in this case. This thesis computes the Shapely values for the
+    estimated model parameters in Keane and Wolpin (1994) to assess their relative quantitative
+    importance for the model's counterfactual predictions.
+
+Contact: `@lindamaok899 <https://github.com/lindamaok899>`_
+
+---
+
+Mensinger, T. (2020). On the Use of Surrogate Models in Structural Microeconometrics.
 
     The thesis applies the ideas of surrogate modeling to the human capital model by Keane and
     Wolpin (1994) to facilitate the application of uncertainty propagation and sensitivity analysis.
