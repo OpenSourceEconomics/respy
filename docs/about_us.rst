@@ -7,7 +7,7 @@ If you have any questions or comments, please do not hesitate to contact us via 
 an issue on Github, writing an `email`_ to or join our `zulipchat group
 <https://ose.zulipchat.com/>`_ or via personal emails.
 
-.. _email: respy.9b46528f81292a712fa4855ff362f40f.show-sender@streams.zulipchat.com
+.. _email: research-codes-respy.9b46528f81292a712fa4855ff362f40f.show-sender@streams.zulipchat.com
 
 Team
 ----
