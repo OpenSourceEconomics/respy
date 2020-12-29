@@ -30,7 +30,6 @@ def create_state_space_class(optim_paras, options):
     prepare_cache_directory(options)
     core = _create_core_state_space(optim_paras, options)
     dense_grid = _create_dense_state_space_grid(optim_paras)
-
     # Downcast after calculations or be aware of silent integer overflows.
     core = compute_covariates(core, options["covariates_core"])
     core = core.apply(downcast_to_smallest_dtype)
@@ -513,10 +512,8 @@ def _create_core_from_choice_experiences(optim_paras):
         data = _create_core_state_space_per_period(
             period,
             additional_exp,
-            optim_paras,
-            np.zeros(len(choices_w_exp), dtype=np.uint8),
-        )
-        df_ = pd.DataFrame.from_records(data, columns=exp_cols)
+            optim_paras)
+        df_ = pd.DataFrame(data=data, columns=exp_cols)
         df_.insert(0, "period", period)
         container.append(df_)
 
@@ -525,7 +522,7 @@ def _create_core_from_choice_experiences(optim_paras):
     return df
 
 
-def _create_core_state_space_per_period(
+def _create_core_state_space_per_period_alt(
     period, additional_exp, optim_paras, experiences, pos=0
 ):
     """Create core state space per period.
@@ -571,6 +568,42 @@ def _create_core_state_space_per_period(
             yield from _create_core_state_space_per_period(
                 period, additional_exp, optim_paras, updated_experiences, pos + 1
             )
+
+
+def _create_core_state_space_per_period(
+    period, additional_exp, optim_paras
+):
+    """Create core state space per period.
+
+    First, this function returns a state combined with all possible lagged choices and
+    types.
+
+    Secondly, if there exists a choice with experience in ``additional_exp[pos]``, loop
+    over all admissible experiences, update the state and pass it to the same function,
+    but moving to the next choice which accumulates experience.
+
+    Parameters
+    ----------
+    period : int
+        Number of period.
+    additional_exp : numpy.ndarray
+        Array with shape (n_choices_w_exp,) containing integers representing the
+        additional experience per choice which is admissible. This is the difference
+        between the maximum experience and minimum of initial experience per choice.
+    experiences : None or numpy.ndarray, default None
+        Array with shape (n_choices_w_exp,) which contains current experience of state.
+    pos : int, default 0
+        Index for current choice with experience. If index is valid for array
+        ``experiences``, then loop over all admissible experience levels of this choice.
+        Otherwise, ``experiences[pos]`` would lead to an :exc:`IndexError`.
+
+    """
+    set_choices = [list(range(x + 1)) for x in additional_exp]
+    list_comb = list(itertools.product(*set_choices))
+    out = np.concatenate([np.array(x) for x in list_comb]).reshape(len(list_comb),len(additional_exp))
+    check = out.sum(axis=1)
+    filter_out = check <= period
+    return out[filter_out]
 
 
 def _add_lagged_choice_to_core_state_space(df, optim_paras):
@@ -916,7 +949,6 @@ def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
 
         states_["choice"] = choice
         states_ = apply_law_of_motion_for_core(states_, optim_paras)
-
         states_ = states_[["period"] + core_columns]
 
         indices[:, i, 0], indices[:, i, 1] = map_states_to_core_key_and_core_index(
