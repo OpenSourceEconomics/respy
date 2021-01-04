@@ -8,5 +8,5 @@ dependencies:
   - numpydoc
   - sphinx
   - sphinx-autoapi
-  - sphinxcontrib-bibtex>=2.1.4a0
+  - sphinxcontrib-bibtex<2.0.0
   - pydata-sphinx-theme>=0.3.0
