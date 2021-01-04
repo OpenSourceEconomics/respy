@@ -2,11 +2,11 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.8
+  - python
   - ipython
   - nbsphinx
   - numpydoc
   - sphinx
   - sphinx-autoapi
-  - sphinxcontrib-bibtex<2.0.0
+  - sphinxcontrib-bibtex
   - pydata-sphinx-theme>=0.3.0
