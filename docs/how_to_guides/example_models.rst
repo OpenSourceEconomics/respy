@@ -42,9 +42,9 @@ The models are called:
 - ``robinson_crusoe_basic``
 - ``robinson_crusoe_extended``
 
-These models are excellent examples to use for learning and prototyping because they are
-very computationally feasible due to the small number of available choices and low
-number of periods in the models.
+These models are excellent examples to use for learning and prototyping: They
+include a small number of available choices and a low number of periods such
+that they are computationally feasible.
 
 
 Keane and Wolpin (1994)
@@ -59,14 +59,11 @@ of models based on the following publication:
   *The Review of Economics and Statistics*, 648-672.
 
 
-The study is mainly concerned with the computational difficulties that accompany the
-solution of discrete choice dynamic programming (DCDP) problems such as the ones
-encountered in dynamic life-cycle models of educational and occupational choice. In the
-study, Keane and Wolpin (1994) develop an approximate solution method which consists of
-Monte Carlo integration with simulation and an interpolation approach to ease the
-computational burden of solving the DCDP model. They utilize one model with three
-different parametrizations to assess their solution method. This model and its three
-parametrizations are example models that are part of the **respy** interface.
+In the study, Keane and Wolpin (1994) develop an approximate solution method which
+consists of Monte Carlo integration with simulation and an interpolation approach to
+ease the computational burden of solving the DCDP model. They utilize one model with
+three different parametrizations to assess their solution method. This model and its
+three parametrizations are used as example models in the **respy** interface.
 They are called:
 
 - ``kw_94_one``
@@ -78,7 +75,7 @@ The model consists of four mutually exclusive alternatives that individuals can 
 in each period. Agents can either choose to work in one of two sectors *a* or *b*,
 invest in *education* or stay *home*. The work alternatives award a wage and experience,
 while school only awards experience. In the home option, individuals gain neither a wage
-nor experience. The plot blow shows the choice patterns for the three parametrizations.
+nor experience. The plot below shows the choice patterns for the three parametrizations.
 The model considers a time horizon of 40 periods.
 
 
@@ -87,14 +84,17 @@ Keane and Wolpin (1997)
 
 A more advanced group of examples are given by the models developed by Keane and Wolpin
 (1997). In this study, the authors implement an empirical structural life-cycle model of
-occupational choice and human capital investment. They estimate their models on data
-from the National Longitudinal Survey of Youth (NLSY).
+occupational choice and human capital investment. They estimate their model on data
+from the National Longitudinal Survey of Youth (NLSY). The study includes a "basic" 
+model parametrization that is very similar to the model of Keane and Wolpin (1994) and
+and "extended" parametrization that improves on the empirical fit of the basic model. 
 
 - Keane, M. P., & Wolpin, K. I. (1997). The Career Decisions of Young Men.
   *Journal of Political Economy*, 105(3), 473-522.
 
 
-**respy** supports both the basic and extended model from the paper. They are named:
+**respy** supports both the basic and extended parametrization from the paper.
+They are named:
 
 - ``kw_97_basic``
 - ``kw_97_extended``
