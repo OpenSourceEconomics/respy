@@ -85,7 +85,7 @@ Keane and Wolpin (1997)
 A more advanced group of examples are given by the models developed by Keane and Wolpin
 (1997). In this study, the authors implement an empirical structural life-cycle model of
 occupational choice and human capital investment. They estimate their model on data
-from the National Longitudinal Survey of Youth (NLSY). The study includes a "basic" 
+from the National Longitudinal Survey of Youth (NLSY). The study includes a "basic"
 model parametrization that is very similar to the model of Keane and Wolpin (1994) and
 and "extended" parametrization that improves on the empirical fit of the basic model. 
 
