@@ -13,7 +13,7 @@ releases are available on `Anaconda.org
 - :gh:`387` Fixes issue in documenation build (:ghuser:`amageh`).
 - :gh:`391` Adds how-to guide on example models and specifying a model (:ghuser:`amageh`;
   model specification guide draws on work by :ghuser:`tobiasraabe`
-  and :ghuser:`rafaelsuchy`).
+  and :ghuser:`rafaelsuchy`). Fixes bug in model validation for shock parameters.
 
 
 2.0.0 - 2019-2020
