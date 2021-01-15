@@ -26,7 +26,20 @@ from respy.shared import return_core_dense_key
 
 
 def create_state_space_class(optim_paras, options):
-    """Create the state space of the model."""
+    """Create the state space of the model.
+
+    Parameters
+    ----------
+        optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
+            Processed model options and params.
+        options : dict [str, int or list or dict]
+            User specified attributes of the model like seeds, periods, etc.
+
+    Returns
+    -------
+        state_space : :class:`~respy.state_space.StateSpace`
+
+    """
     prepare_cache_directory(options)
     core = _create_core_state_space(optim_paras, options)
     dense_grid = _create_dense_state_space_grid(optim_paras)
@@ -100,15 +113,17 @@ class StateSpace:
         indexer : numba.typed.Dict
             Maps states (rows of core) into tuples containing core key and
             core index. i : state -> (core_key, core_index)
-        dense : dict
+        dense : bool or dict [tuple [int], dict [str, int or bool]]
             Maps dense states into dense covariates.
-        dense_period_cores : dict
+        dense_period_cores : dict [tuple [int, tuple [bool]], int]
             Maps period, choice_set and dense_index into core_key.
             d : (core_key,choice_set,dense_index) -> core_key
-        core_key_to_complex : dict
+        core_key_to_complex : dict [int, tuple [bool]]
             Maps period and choice_set into core_key
-        core_key_to_core_indices : dict
+        core_key_to_core_indices : dict [int, :class:`pandas.Int64Index`]
             Maps core_keys into core_indices.
+        optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
+        options : dict [str, int or list or dict]
 
         """
         self.core = core
@@ -607,6 +622,7 @@ def _create_core_state_space_per_period(
 
 
 def _add_lagged_choice_to_core_state_space(df, optim_paras):
+    """Add lagged choice to the core state space."""
     container = []
     for lag in range(1, optim_paras["n_lagged_choices"] + 1):
         for choice_code in range(len(optim_paras["choices"])):
@@ -632,7 +648,7 @@ def _filter_core_state_space(df, options):
     Parameters
     ----------
     df : pandas.DataFrame
-    options : dict
+    options : dict [str, int or list or dict]
 
     """
     for definition in options["core_state_space_filters"]:
@@ -648,6 +664,17 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
     function loops through all combinations from initial experiences and adds them to
     existing experiences. After that, we need to check whether the maximum in
     experiences is still binding.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+    optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        Core state space where initial experiences have been added to experiences
+        gained in the model.
 
     """
     choices = optim_paras["choices"]
@@ -688,12 +715,12 @@ def _create_dense_state_space_grid(optim_paras):
 
     Parameters
     ----------
-    optim_paras : dict
+    optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
         Contains parsed model parameters.
 
     Returns
     -------
-    dense_state_space_grid : list
+    dense_state_space_grid : bool or list [tuple [int]]
         Contains all dense states as tuples.
 
     """
@@ -708,7 +735,18 @@ def _create_dense_state_space_grid(optim_paras):
 
 
 def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
-    """Obtain covariates for all dense states."""
+    """Obtain covariates for all dense states.
+
+    Parameters
+    ----------
+    dense_grid : bool or list [tuple [int]]
+    optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
+    options : dict [str, int or list or dict]
+
+    Returns
+    -------
+    covariates : bool or dict [tuple [int], dict [str, int or bool]]
+    """
     if dense_grid:
         columns = create_dense_state_space_columns(optim_paras)
 
@@ -925,9 +963,9 @@ def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
         Tuple representing admissible choices
     indexer : numba.typed.Dict
         A dictionary with core states as keys and the core key and core index as values.
-    optim_paras : dict
+    optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
         Contains model parameters.
-    options : dict
+    options : dict [str, int or list or dict]
         Contains model options.
 
     Returns
