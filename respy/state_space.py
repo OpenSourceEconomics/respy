@@ -524,10 +524,7 @@ def _create_core_from_choice_experiences(optim_paras):
 
     container = []
     for period in np.arange(optim_paras["n_periods"], dtype=np.uint8):
-        data = _create_core_state_space_per_period(
-            period,
-            additional_exp,
-            optim_paras)
+        data = _create_core_state_space_per_period(period, additional_exp, optim_paras)
         df_ = pd.DataFrame(data=data, columns=exp_cols)
         df_.insert(0, "period", period)
         container.append(df_)
@@ -585,9 +582,7 @@ def _create_core_state_space_per_period_alt(
             )
 
 
-def _create_core_state_space_per_period(
-    period, additional_exp, optim_paras
-):
+def _create_core_state_space_per_period(period, additional_exp, optim_paras):
     """Create core state space per period.
 
     First, this function returns a state combined with all possible lagged choices and
@@ -615,7 +610,9 @@ def _create_core_state_space_per_period(
     """
     set_choices = [list(range(x + 1)) for x in additional_exp]
     list_comb = list(itertools.product(*set_choices))
-    out = np.concatenate([np.array(x) for x in list_comb]).reshape(len(list_comb),len(additional_exp))
+    out = np.concatenate([np.array(x) for x in list_comb]).reshape(
+        len(list_comb), len(additional_exp)
+    )
     check = out.sum(axis=1)
     filter_out = check <= period
     return out[filter_out]
@@ -866,14 +863,14 @@ def _create_dense_period_choice(
                 for key in dense_vec.keys():
                     df[key] = dense_vec[key]
                 for choice in choices:
-                    df[choice] = df[choice].replace({True:False, False:True})
-                
+                    df[choice] = df[choice].replace({True: False, False: True})
+
                 unique_combinations = df.drop_duplicates(subset=choices)[choices]
                 choice_combs = []
                 for ix in unique_combinations.index:
-                    choice_combs.append(unique_combinations.loc[ix,choices].values)
+                    choice_combs.append(unique_combinations.loc[ix, choices].values)
                 grouper = {}
-                
+
                 for comb in choice_combs:
                     filter_ = (df[choices] == comb).all(axis=1)
                     grouper[tuple(comb)] = list(df[filter_].index)

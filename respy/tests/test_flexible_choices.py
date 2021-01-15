@@ -2,14 +2,12 @@
 import pandas as pd
 import pytest
 
+import respy as rp
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.simulate import get_simulate_func
-from respy.state_space import create_state_space_class
 from respy.state_space import _create_dense_period_choice
-
+from respy.state_space import create_state_space_class
 from respy.tests.utils import process_model_or_seed
-import respy as rp
-
 
 
 @pytest.mark.integration
@@ -65,10 +63,10 @@ def test_simulation_with_flexible_choice_sets():
 
 
 def test_dense_period_choice():
-    params, options = rp.get_example_model("kw_94_one",with_data=False)
+    params, options = rp.get_example_model("kw_94_one", with_data=False)
     options["negative_choice_set"] = {}
     options["negative_choice_set"]["b"] = ["period < 5"]
-    
+
     optim_paras, options = process_params_and_options(params, options)
     state_space = create_state_space_class(optim_paras, options)
 
@@ -78,10 +76,9 @@ def test_dense_period_choice():
         state_space.core_key_to_core_indices,
         state_space.core_key_to_complex,
         optim_paras,
-        options
+        options,
     )
 
-    for key in check: 
+    for key in check:
         if key[0] < 5:
             assert ~key[1][1]
-
