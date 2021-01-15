@@ -27,7 +27,7 @@ def get_solve_func(params, options):
     ----------
     params : pandas.DataFrame
         DataFrame containing parameter series.
-    options : dict
+    options : dict [str, int or list or dict]
         Dictionary containing model attributes which are not optimized.
 
     Returns
@@ -52,7 +52,22 @@ def get_solve_func(params, options):
 
 
 def solve(params, options, state_space):
-    """Solve the model."""
+    """Solve the model.
+
+    Parameters
+    ----------
+    params : pandas.DataFrame
+        DataFrame containing parameter series.
+    options : dict [str, int or list or dict]
+        Dictionary containing model attributes.
+    state_space : :class:`~respy.state_space.StateSpace`
+        Unsolved state space of the model.
+
+    Returns
+    -------
+    state_space : :class:`~respy.state_space.StateSpace`
+        Solved state space of the model.
+    """
     optim_paras, options = process_params_and_options(params, options)
 
     transit_keys = None
@@ -90,11 +105,24 @@ def _create_param_specific_objects(
     """Create param specific objects.
 
     This function creates objects that are not fixed for a given model.
-    Depending on their size they are either kept in working memory such
-    as wages or dumped on disk such as transition probabilities!
+    Depending on their size they are either kept in working memory (e.g. wages) or
+    dumped on disk (e.g. transition probabilities).
     In the medium run we could also allow for fixed params here by saving values
     on disk directly!
     For objects that we store on disk we will just return the prefix of the location.
+
+    Parameters
+    ----------
+    complex_ : dict [int, tuple [int or tuple [bool]]]
+    choice_set : dict [int, tuple [bool]]
+    optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
+    options : dict [str, int or list or dict]
+    dense_key_to_dense_covariates : dict [int, dict]
+    transit_keys : dict, default None
+
+    Returns
+    -------
+    wages, nonpecs : dict [int, :class:`numpy.ndarray` [:class:`numpy.ndarray` [float]]]
     """
     states = load_objects("states", complex_, options)
     wages, nonpecs = _create_choice_rewards(states, choice_set, optim_paras)
@@ -109,7 +137,19 @@ def _create_param_specific_objects(
 
 
 def _create_choice_rewards(states, choice_set, optim_paras):
-    """Create wage and non-pecuniary reward for each state and choice."""
+    """Create wage and non-pecuniary reward for each state and choice.
+
+    Parameters
+    ----------
+        states : pandas.DataFrame
+        choice_set : tuple [bool]
+        optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
+
+    Returns
+    -------
+        wages, nonpecs : class:`numpy.ndarray` [:class:`numpy.ndarray` [float]]
+
+    """
     n_choices = sum(choice_set)
     choices = select_valid_choices(optim_paras["choices"], choice_set)
 
@@ -142,9 +182,9 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     ----------
     state_space : :class:`~respy.state_space.StateSpace`
         State space of the model which is not solved yet.
-    optim_paras : dict
+    optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
         Parsed model parameters affected by the optimization.
-    options : dict
+    options : dict [str, int or list or dict]
         Optimization independent model options.
 
     Returns
@@ -217,6 +257,17 @@ def _full_solution(
     In contrast to approximate solution, the Monte Carlo integration is done for each
     state and not only a subset of states.
 
+    Parameters
+    ----------
+        wages : dict [int, :class:`numpy.ndarray` [:class:`numpy.ndarray` [float]]]
+        nonpecs : dict [int, :class:`numpy.ndarray` [:class:`numpy.ndarray` [float]]]
+        continuation_values : dict [int, :class:`numpy.ndarray` [:class:`numpy.ndarray` [float]]]
+        period_draws_emax_risk : dict [int, :class:`numpy.ndarray` [:class:`numpy.ndarray` [float]]]
+        optim_paras : dict [str, int or float or :class:`numpy.ndarray` or dict]
+
+    Returns
+    -------
+        period_expected_value_functions : dict [int, :class:`numpy.ndarray` [float]]
     """
     period_expected_value_functions = calculate_expected_value_functions(
         wages,
