@@ -38,10 +38,10 @@ dependencies:
   - scipy
   - seaborn
   - snakeviz
-  - sphinx=3.4.1
+  - sphinx
   - sphinx-autobuild
   - sphinxcontrib-bibtex
-  - sphinx-autoapi
+  - sphinx-autoapi=1.6.0
   - pydata-sphinx-theme>=0.3.0
   - tox-conda
   - pip:
