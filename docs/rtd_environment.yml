@@ -8,6 +8,6 @@ dependencies:
   - numpydoc
   - sphinx
   - sphinx-autoapi
-  - sphinxcontrib-bibtex
+  - sphinxcontrib-bibtex<2.0.0
   - pydata-sphinx-theme>=0.3.0
   - parso>=0.8.1
