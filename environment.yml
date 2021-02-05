@@ -30,7 +30,7 @@ dependencies:
   - pre-commit
   - pyarrow
   - pyyaml
-  - pytest
+  - pytest>=6.2.1
   - pytest-cov
   - pytest-xdist
   - python-snappy
