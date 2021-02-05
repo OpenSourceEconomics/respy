@@ -25,7 +25,8 @@ dependencies:
   - numba
   - numexpr
   - numpydoc
-  - pandas>=1.2.1
+  - pandas>=0.24
+  - numpy<1.20
   - pdbpp
   - pre-commit
   - pyarrow
