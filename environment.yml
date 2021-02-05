@@ -38,7 +38,7 @@ dependencies:
   - scipy
   - seaborn
   - snakeviz
-  - sphinx<=3.2.1
+  - sphinx<3.4.3
   - sphinx-autobuild
   - sphinxcontrib-bibtex
   - sphinx-autoapi
