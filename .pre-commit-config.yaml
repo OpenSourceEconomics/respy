@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v3.4.0
     hooks:
     -   id: check-added-large-files
         args: ['--maxkb=10']
@@ -10,25 +10,25 @@ repos:
     -   id: debug-statements
     -   id: end-of-file-fixer
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v2.7.2
+    rev: v2.10.0
     hooks:
     -   id: pyupgrade
         args: [--py36-plus]
 -   repo: https://github.com/asottile/reorder_python_imports
-    rev: v2.3.5
+    rev: v2.4.0
     hooks:
     -   id: reorder-python-imports
 -   repo: https://github.com/psf/black
-    rev: 19.10b0
+    rev: 20.8b1
     hooks:
     -   id: black
 -   repo: https://github.com/asottile/blacken-docs
-    rev: v1.8.0
+    rev: v1.9.2
     hooks:
     -   id: blacken-docs
         additional_dependencies: [black]
 -   repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.3
+    rev: 3.8.4
     hooks:
     -   id: flake8
         additional_dependencies: [
@@ -47,7 +47,7 @@ repos:
             Pygments,
         ]
 -   repo: https://github.com/PyCQA/doc8
-    rev: 0.9.0a0
+    rev: 0.9.0a1
     hooks:
     -   id: doc8
 # -   repo: https://github.com/codespell-project/codespell
