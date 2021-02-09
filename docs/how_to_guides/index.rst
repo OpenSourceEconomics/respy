@@ -8,6 +8,8 @@ How-to guides are designed to provide detailed instructions for very specific ta
 .. toctree::
     :maxdepth: 1
 
+    example_models
+    specify_model
     finite_mixture
     initial_conditions
     numerical_integration

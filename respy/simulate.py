@@ -263,7 +263,9 @@ def apply_law_of_motion_for_dense(df, state_space, optim_paras):
     """
     if optim_paras["exogenous_processes"]:
         df = update_dense_state_variables(
-            df, state_space.dense_key_to_dense_covariates, optim_paras,
+            df,
+            state_space.dense_key_to_dense_covariates,
+            optim_paras,
         )
     return df
 
