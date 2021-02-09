@@ -37,4 +37,3 @@ Model calibration
     numerical_integration
     msm
     msm_estimation_exercise
-
