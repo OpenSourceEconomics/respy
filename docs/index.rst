@@ -84,8 +84,10 @@ The documentation is structured in four parts.
                         <div class="card-body flex-fill">
                             <h5 class="card-title">Explanations</h5>
                             <p class="card-text">
-                                Explanations give detailed information to key topics and
-                                concepts which underlie the package.
+                                Explanations contain a theoretical outline of
+                                the economic models that can be implemented with
+                                the package.
+                                
                             </p>
                         </div>
                     </div>
