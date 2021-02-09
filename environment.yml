@@ -26,11 +26,12 @@ dependencies:
   - numexpr
   - numpydoc
   - pandas>=0.24
+  - numpy>=1.2
   - pdbpp
   - pre-commit
   - pyarrow
   - pyyaml
-  - pytest
+  - pytest>=6.2.1
   - pytest-cov
   - pytest-xdist
   - python-snappy
@@ -41,7 +42,7 @@ dependencies:
   - sphinx
   - sphinx-autobuild
   - sphinxcontrib-bibtex
-  - sphinx-autoapi
+  - sphinx-autoapi<1.6.0
   - pydata-sphinx-theme>=0.3.0
   - tox-conda
   - pip:

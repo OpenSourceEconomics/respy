@@ -39,7 +39,7 @@ The wildcard {civilian} means either "blue" or "white".
    "", "**Experience-related**", ""
    ":math:`\gamma_{a,1}`", "exp_{civilian}_collar", "return to experience, same sector, linear (wage)"
    ":math:`\gamma_{a,2}`", "exp_{civilian}_collar_square", "return to experience, same sector, quadratic (divided by 100) (wage)"
-   ":math:`\gamma_{a,3}`", "any_exp_{civilian}_collar", "return to experience, same sector, quadratic (divided by 100) (wage)"
+   ":math:`\gamma_{a,3}`", "any_exp_{civilian}_collar", "return for any experience in same sector"
    ":math:`\gamma_{a,4}`", "period", "linear age effect (wage)"
    ":math:`\gamma_{a,5}`", "is_minor", "effect of being a minor (wage)"
    ":math:`\gamma_{a,6}`", "work_{civilian}_collar_lagged", "effect of being a minor (wage)"
