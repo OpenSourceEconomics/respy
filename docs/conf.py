@@ -117,7 +117,7 @@ autosummary_generate = True
 # Configuration for autoapi
 autoapi_type = "python"
 autoapi_dirs = ["../respy"]
-autoapi_ignore = ["../respy/tests/"]
+autoapi_ignore = ["*/tests/*"]
 
 
 # -- Options for HTML output ----------------------------------------------

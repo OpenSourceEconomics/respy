@@ -104,17 +104,16 @@ The documentation provides multiple sections:
                 </a>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="reference_guides/index.html" id="index-link">
+                <a href="autoapi/index.html" id="index-link">
                     <div class="card text-center intro-card shadow">
-                        <img src="_static/images/coding.svg" class="card-img-top"
-                             alt="reference guides icon" height="52"
+                        <img src="_static/images/computer.svg" class="card-img-top"
+                             alt="API icon" height="52"
                         >
                         <div class="card-body flex-fill">
-                            <h5 class="card-title">Reference Guides</h5>
+                            <h5 class="card-title">API Reference</h5>
                             <p class="card-text">
-                                Reference Guides explain the implementation. If you are
-                                interested in the inner workings, you will find this
-                                section helpful.
+                            The API provides a documentation of the interface and
+                            usage of each function in respy.
                             </p>
                         </div>
                     </div>
@@ -164,7 +163,7 @@ The documentation provides multiple sections:
         </div>
     </div>
   <header>
-    <h1>Community section</h1>
+    <h1>Community </h1>
   </header>
     <div class="container" id="index-container">
         <div class="row">
@@ -210,8 +209,8 @@ The documentation provides multiple sections:
     tutorials/index
     explanations/index
     how_to_guides/index
+    autoapi/index
     reference_guides/index
     development/index
     projects/index
     about_us
-    autoapi/index
