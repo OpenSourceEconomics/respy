@@ -7,6 +7,6 @@ Development
 
     contributing_to_respy
     releases
+    ../release_notes
     roadmap
-
     template_for_tutorials

@@ -37,10 +37,13 @@ With conda available on your path, installing **respy** is as simple as typing
     $ conda config --add channels conda-forge
     $ conda install -c opensourceeconomics respy
 
-The documentation is structured in four parts.
+The documentation provides multiple sections:
 
 .. raw:: html
 
+  <header>
+    <h1>Introduction</h1>
+  </header>
     <div class="container" id="index-container">
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
@@ -60,22 +63,6 @@ The documentation is structured in four parts.
                 </a>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="how_to_guides/index.html" id="index-link">
-                    <div class="card text-center intro-card shadow">
-                        <img src="_static/images/book.svg" class="card-img-top"
-                             alt="how-to guides icon" height="52"
-                        >
-                        <div class="card-body flex-fill">
-                            <h5 class="card-title">How-to Guides</h5>
-                            <p class="card-text">
-                                How-to guides are designed to provide detailed
-                                instructions for very specific and advanced tasks.
-                            </p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
                 <a href="explanations/index.html" id="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/books.svg" class="card-img-top"
@@ -87,7 +74,30 @@ The documentation is structured in four parts.
                                 Explanations contain a theoretical outline of
                                 the economic models that can be implemented with
                                 the package.
-                                
+
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+  <header>
+    <h1>Advanced usage</h1>
+  </header>
+    <div class="container" id="index-container">
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
+                <a href="how_to_guides/index.html" id="index-link">
+                    <div class="card text-center intro-card shadow">
+                        <img src="_static/images/book.svg" class="card-img-top"
+                             alt="how-to guides icon" height="52"
+                        >
+                        <div class="card-body flex-fill">
+                            <h5 class="card-title">How-to Guides</h5>
+                            <p class="card-text">
+                                How-to guides are designed to provide detailed
+                                instructions for very specific and advanced tasks.
                             </p>
                         </div>
                     </div>
@@ -112,6 +122,86 @@ The documentation is structured in four parts.
             </div>
         </div>
     </div>
+  <header>
+    <h1>Development</h1>
+  </header>
+    <div class="container" id="index-container">
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
+                <a href="reference_guides/index.html" id="index-link">
+                    <div class="card text-center intro-card shadow">
+                        <img src="_static/images/coding.svg" class="card-img-top"
+                             alt="reference guides icon" height="52"
+                        >
+                        <div class="card-body flex-fill">
+                            <h5 class="card-title">Reference Guides</h5>
+                            <p class="card-text">
+                                Reference Guides explain the implementation. If you are
+                                interested in the inner workings, you will find this
+                                section helpful.
+                            </p>
+                        </div>
+                    </div>
+                 </a>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
+                <a href="development/index.html" id="index-link">
+                    <div class="card text-center intro-card shadow">
+                        <img src="_static/images/gears.svg" class="card-img-top"
+                             alt="Development icon" height="52"
+                        >
+                        <div class="card-body flex-fill">
+                            <h5 class="card-title">Development</h5>
+                            <p class="card-text">
+                            There are multiple ways to contribute to respy. This
+                            section documents the development of respy and outlines
+                            possible contributions.
+                            </p>
+                        </div>
+                    </div>
+                 </a>
+            </div>
+        </div>
+    </div>
+  <header>
+    <h1>Community section</h1>
+  </header>
+    <div class="container" id="index-container">
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
+                <a href="projects/index.html" id="index-link">
+                    <div class="card text-center intro-card shadow">
+                        <img src="_static/images/dividers.svg" class="card-img-top"
+                             alt="projects icon" height="52"
+                        >
+                        <div class="card-body flex-fill">
+                            <h5 class="card-title">Projects</h5>
+                            <p class="card-text">
+                                respy was used for several academic projects. You can
+                                find a detailed documentation of these projects here.
+                            </p>
+                        </div>
+                    </div>
+                 </a>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
+                <a href="about_us.html" id="index-link">
+                    <div class="card text-center intro-card shadow">
+                        <img src="_static/images/peoples.svg" class="card-img-top"
+                             alt="about us icon" height="52"
+                        >
+                        <div class="card-body flex-fill">
+                            <h5 class="card-title">About us</h5>
+                            <p class="card-text">
+                                Here you find information about the team behind the
+                                development of respy.
+                            </p>
+                        </div>
+                    </div>
+                 </a>
+            </div>
+        </div>
+    </div>
 
 
 .. toctree::
@@ -121,14 +211,7 @@ The documentation is structured in four parts.
     explanations/index
     how_to_guides/index
     reference_guides/index
-
-
-If you are looking for other resources, you might find them here.
-
-.. toctree::
-    :maxdepth: 1
-
-    projects/index
     development/index
+    projects/index
     about_us
-    release_notes
+    autoapi/index
