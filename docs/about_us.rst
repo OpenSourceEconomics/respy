@@ -64,6 +64,7 @@ ecosystems. In particular, without **respy**'s interface would not work without 
 <https://pandas.pydata.org/>`_ and it could not rival any program written in Fortran in
 terms of speed without `Numba <http://numba.pydata.org/>`_.
 
+We use icons by `svgrepo.com <https://www.svgrepo.com/>`_ in the documentation.
 
 |OSE| |space| |TRA| |space| |UniBonn| |space| |DIW|
 
