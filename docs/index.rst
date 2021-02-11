@@ -96,8 +96,8 @@ The documentation provides multiple sections:
                         <div class="card-body flex-fill">
                             <h5 class="card-title">How-to Guides</h5>
                             <p class="card-text">
-                                How-to guides are designed to provide detailed
-                                instructions for very specific and advanced tasks.
+                                How-to guides provide information on specific features and offer
+                                guidance for implementing models.
                             </p>
                         </div>
                     </div>
@@ -113,7 +113,7 @@ The documentation provides multiple sections:
                             <h5 class="card-title">API Reference</h5>
                             <p class="card-text">
                             The API provides a documentation of the interface and
-                            usage of each function in respy.
+                            individual functions in respy.
                             </p>
                         </div>
                     </div>
@@ -153,7 +153,7 @@ The documentation provides multiple sections:
                             <h5 class="card-title">Development</h5>
                             <p class="card-text">
                             There are multiple ways to contribute to respy. This
-                            section documents the development of respy and outlines
+                            section documents the development of the package and outlines
                             possible contributions.
                             </p>
                         </div>
@@ -176,8 +176,8 @@ The documentation provides multiple sections:
                         <div class="card-body flex-fill">
                             <h5 class="card-title">Projects</h5>
                             <p class="card-text">
-                                respy was used for several academic projects. You can
-                                find a detailed documentation of these projects here.
+                                This section provides an overview of academic
+                                projects that use respy.
                             </p>
                         </div>
                     </div>
