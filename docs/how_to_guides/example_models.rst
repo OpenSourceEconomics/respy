@@ -5,10 +5,10 @@ In the tutorials and guides of the **respy** documentation, you will frequently
 encounter *example models*. These are pre-defined models that can be easily accessed
 with just one function call to facilitate an introductory workflow and use in
 explanatory material. The set of examples consists of simple as well as very advanced
-models to cover a wide range of use cases and challanges that come with an increasing
+models to cover a wide range of use cases and challenges that come with an increasing
 degree of complexity in dynamic discrete choice models.
 
-For instance, in the tutorials you will encounter two very simple models that are based 
+For instance, in the tutorials, you will encounter two very simple models that are based 
 on the story of Robinson Crusoe. Other example models are based on actual economic
 publications and thus serve to illustrate the scalability of `respy` models.
 
@@ -116,7 +116,7 @@ Keane and Wolpin (2000)
 -----------------------
 
 Another example model provided in the respy interface is the model presented in Keane
-and Wolpin (2000). The model incorporates an observable charactistic to account for
+and Wolpin (2000). The model incorporates an observable characteristic to account for
 race, aiming to analyze the effects of monetary incentive schemes designed to reduce
 racial differences in school attainment and earnings.
 
