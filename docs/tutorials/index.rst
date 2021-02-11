@@ -10,6 +10,10 @@ of **respy** as a teaching tool. Although the focus is on how to use the package
 you will find several cross-references to the theoretical concepts behind the models.
 
 
+===========
+First steps
+===========
+
 .. toctree::
    :maxdepth: 1
    :numbered:
@@ -17,5 +21,15 @@ you will find several cross-references to the theoretical concepts behind the mo
    installation
    robinson_crusoe
    tutorial_params_options_simulate
+
+================
+Advanced objects
+================
+
+.. toctree::
+   :maxdepth: 1
+   :numbered:
+
    tutorial_experience
    tutorial_observables
+   tutorial_exogenous_processes
