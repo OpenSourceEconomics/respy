@@ -24,7 +24,6 @@ Extending your model
 
     finite_mixture
     initial_conditions
-    numerical_integration
     impatient_robinson
 
 
@@ -35,5 +34,6 @@ Model calibration
     :maxdepth: 1
     
     numerical_integration
+    likelihood
     msm
     msm_estimation_exercise
