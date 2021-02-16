@@ -16,7 +16,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
                 <a href="specify_model.html" id="index-link">
                     <div class="card text-center shadow h-100">
-                        <div class="card-header"><large>How to Specify a Model</large></div>
+                        <div class="card-header"><large>Specifying a Model</large></div>
                             <div class="card-body flex-fill">
                                 <p class="card-text small">
                                     Learn how to translate a model from equations
