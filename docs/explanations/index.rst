@@ -24,4 +24,5 @@ model with **respy**.
    parameterization
    notation
    bib
+   implementation_kw94
    glossary
