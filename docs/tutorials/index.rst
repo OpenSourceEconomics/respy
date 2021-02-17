@@ -33,3 +33,4 @@ Advanced objects
    tutorial_experience
    tutorial_observables
    tutorial_exogenous_processes
+   tutorial_impatient_robinson

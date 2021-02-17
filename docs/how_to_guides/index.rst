@@ -14,7 +14,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
     <div class="container" id="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="specify_model.html" id="index-link">
+                <a href="how_to_specify_model.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Specifying a Model</large></div>
                             <div class="card-body flex-fill">
@@ -28,7 +28,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="example_models.html" id="index-link">
+                <a href="how_to_example_models.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Loading Example Models</large></div>
                             <div class="card-body flex-fill">
@@ -42,7 +42,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="simulation.html" id="index-link">
+                <a href="how_to_simulation.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Simulation</large></div>
                             <div class="card-body flex-fill">
@@ -66,7 +66,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
     <div class="container" id="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="finite_mixture.html" id="index-link">
+                <a href="how_to_finite_mixture.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Unobeserved Hetereogeneity</large></div>
                             <div class="card-body flex-fill">
@@ -80,7 +80,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="initial_conditions.html" id="index-link">
+                <a href="how_to_initial_conditions.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Initial Conditions</large></div>
                             <div class="card-body flex-fill">
@@ -95,9 +95,9 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="simulation.html" id="index-link">
+                <a href="how_to_hyperbolic_discounting.html" id="index-link">
                     <div class="card text-center shadow h-100">
-                        <div class="card-header"><large>Impatient Robinson</large></div>
+                        <div class="card-header"><large>Hyperbolic Discounting</large></div>
                             <div class="card-body flex-fill">
                                 <p class="card-text small">
                                     Learn how to implement hyperbolic discounting
@@ -118,7 +118,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
     <div class="container" id="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="likelihood.html" id="index-link">
+                <a href="how_to_likelihood.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Maximum Likelihood</large></div>
                             <div class="card-body flex-fill">
@@ -132,7 +132,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="msm.html" id="index-link">
+                <a href="how_to_msm.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Method of Simulated Moments</large></div>
                             <div class="card-body flex-fill">
@@ -146,7 +146,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="simulation.html" id="index-link">
+                <a href="how_to_msm_estimation_exercise.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Estimation Exercise MSM</large></div>
                             <div class="card-body flex-fill">
@@ -166,13 +166,13 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
     :hidden:
     :maxdepth: 1
 
-    specify_model
-    example_models
-    simulation
-    finite_mixture
-    initial_conditions
-    impatient_robinson
-    numerical_integration
-    likelihood
-    msm
-    msm_estimation_exercise
+    how_to_specify_model
+    how_to_example_models
+    how_to_simulation
+    how_to_finite_mixture
+    how_to_initial_conditions
+    how_to_hyperbolic_discounting
+    how_to_numerical_integration
+    how_to_likelihood
+    how_to_msm
+    how_to_msm_estimation_exercise
