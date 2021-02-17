@@ -4,7 +4,8 @@ How-to Guides
 =============
 
 How-to guides provide detailed information about **respy**'s functionalities.
-Refer to these guides if you aim to implement and estimate your own EKW model.
+Refer to these guides if you are already familiar with EKW models aim to learn more
+about implementing and estimating your own model with **respy**.
 
 .. raw:: html
 
@@ -118,7 +119,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
     <div class="container" id="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="how_to_likelihood.html" id="index-link">
+                <a href="tutorial.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Maximum Likelihood</large></div>
                             <div class="card-body flex-fill">
@@ -130,8 +131,8 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
                     </div>
                 </a>
             </div>
-
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
+            
+       <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
                 <a href="how_to_msm.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Method of Simulated Moments</large></div>
@@ -145,7 +146,7 @@ Refer to these guides if you aim to implement and estimate your own EKW model.
                 </a>
             </div>
 
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
                 <a href="how_to_msm_estimation_exercise.html" id="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Estimation Exercise MSM</large></div>
