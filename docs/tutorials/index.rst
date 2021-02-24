@@ -47,7 +47,7 @@ you will find several cross-references to the theoretical concepts behind the mo
                 <a href="tutorial_params_options_simulate.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">
-                            <code class="docutils literal notranslate"><span class="pre">params</span></code>, <code class="docutils literal notranslate"><span class="pre">options</span></code>, and simulation
+                            <span><code class="docutils literal notranslate"><span class="pre">params</span></code>, <code class="docutils literal notranslate"><span class="pre">options</span></code>, and simulation</span>
                         </div>
                         <div class="card-body flex-fill">
                             <p class="card-text">
@@ -60,8 +60,6 @@ you will find several cross-references to the theoretical concepts behind the mo
             </div>
         </div>
     </div>
-
-
 
     <h2>Advanced features</h2>
 
