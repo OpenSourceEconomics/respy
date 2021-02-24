@@ -12,10 +12,10 @@ about implementing and estimating your own model with **respy**.
   <header>
     <h2>Model implementation</h2>
   </header>
-    <div class="container" id="index-container">
+    <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="how_to_specify_model.html" id="index-link">
+                <a href="how_to_specify_model.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Specifying a Model</large></div>
                             <div class="card-body flex-fill">
@@ -29,7 +29,7 @@ about implementing and estimating your own model with **respy**.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="how_to_example_models.html" id="index-link">
+                <a href="how_to_example_models.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Loading Example Models</large></div>
                             <div class="card-body flex-fill">
@@ -43,7 +43,7 @@ about implementing and estimating your own model with **respy**.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="how_to_simulation.html" id="index-link">
+                <a href="how_to_simulation.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Simulation</large></div>
                             <div class="card-body flex-fill">
@@ -64,10 +64,10 @@ about implementing and estimating your own model with **respy**.
   <header>
     <h2>Model extensions</h2>
   </header>
-    <div class="container" id="index-container">
+    <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="how_to_finite_mixture.html" id="index-link">
+                <a href="how_to_finite_mixture.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Unobeserved Hetereogeneity</large></div>
                             <div class="card-body flex-fill">
@@ -81,7 +81,7 @@ about implementing and estimating your own model with **respy**.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="how_to_initial_conditions.html" id="index-link">
+                <a href="how_to_initial_conditions.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Initial Conditions</large></div>
                             <div class="card-body flex-fill">
@@ -96,7 +96,7 @@ about implementing and estimating your own model with **respy**.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="how_to_hyperbolic_discounting.html" id="index-link">
+                <a href="how_to_hyperbolic_discounting.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Hyperbolic Discounting</large></div>
                             <div class="card-body flex-fill">
@@ -116,10 +116,10 @@ about implementing and estimating your own model with **respy**.
   <header>
     <h2>Model Calibration</h2>
   </header>
-    <div class="container" id="index-container">
+    <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="tutorial.html" id="index-link">
+                <a href="tutorial.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Maximum Likelihood</large></div>
                             <div class="card-body flex-fill">
@@ -133,7 +133,7 @@ about implementing and estimating your own model with **respy**.
             </div>
             
        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="how_to_msm.html" id="index-link">
+                <a href="how_to_msm.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Method of Simulated Moments</large></div>
                             <div class="card-body flex-fill">
@@ -147,7 +147,7 @@ about implementing and estimating your own model with **respy**.
             </div>
 
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 d-flex">
-                <a href="how_to_msm_estimation_exercise.html" id="index-link">
+                <a href="how_to_msm_estimation_exercise.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header"><large>Estimation Exercise MSM</large></div>
                             <div class="card-body flex-fill">
