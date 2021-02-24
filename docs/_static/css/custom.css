@@ -84,6 +84,12 @@ a.index-link {
 
 /* card tweaks */
 
+.shadow { transition: box-shadow 0.2s ease-in-out; }
+
+.shadow:hover {
+  box-shadow: 0.2rem 0.7rem 1rem rgba(0,0,0,.2) !important;
+  transition: box-shadow 0.2s ease-in-out;
+}
 
 .card-header {
   font-weight: bold;
