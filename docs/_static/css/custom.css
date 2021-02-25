@@ -15,6 +15,10 @@ div.prompt {
     margin: 20px 0px;
 }
 
+.card-img-top + .card-body {
+    padding-top: 0;
+}
+
 div.index-container {
     padding-bottom: 20px;
 }

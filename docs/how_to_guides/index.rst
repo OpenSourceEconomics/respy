@@ -9,7 +9,8 @@ about implementing and estimating your own model with **respy**.
 
 .. raw:: html
 
-    <h2>Model implementation</h2>
+    <h2>Model Implementation</h2>
+
     <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
@@ -56,7 +57,8 @@ about implementing and estimating your own model with **respy**.
         </div>
     </div>
 
-    <h2>Model extensions</h2>
+    <h2>Model Extensions</h2>
+
     <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
@@ -105,10 +107,11 @@ about implementing and estimating your own model with **respy**.
     </div>
 
     <h2>Model Calibration</h2>
+
     <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                <a href="tutorial.html" class="index-link">
+                <a href="how_to_likelihood.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Maximum Likelihood</div>
                             <div class="card-body flex-fill">
