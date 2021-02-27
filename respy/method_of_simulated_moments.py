@@ -236,18 +236,17 @@ def moment_errors(
     out = moment_errors.T @ weighting_matrix @ moment_errors
 
     if not return_scalar:
-        if not are_empirical_moments_dict:
-            simulated_moments = _reconstruct_input_from_dict(simulated_moments)
-
         out = {
             "value": out,
             "root_contributions": moment_errors @ np.sqrt(weighting_matrix),
-            "simulated_moments": simulated_moments,
             "comparison_plot_data": _create_comparison_plot_data_msm(
                 empirical_moments, simulated_moments
             ),
         }
+        if not are_empirical_moments_dict:
+            simulated_moments = _reconstruct_input_from_dict(simulated_moments)
 
+        out["simulated_moments"] = (simulated_moments,)
     return out
 
 
