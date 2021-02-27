@@ -128,7 +128,13 @@ def get_log_like_func(params, options, df, return_scalar=True):
 
 
 def log_like(
-    params, df, base_draws_est, solve, type_covariates, options, return_scalar,
+    params,
+    df,
+    base_draws_est,
+    solve,
+    type_covariates,
+    options,
+    return_scalar,
 ):
     """Criterion function for the likelihood maximization.
 
