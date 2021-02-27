@@ -12,10 +12,9 @@ from respy.simulate import get_simulate_func
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.fixture(scope="module")
-def msm_args(worker_id):
+@pytest.fixture(scope="module", params=[True, False])
+def msm_args(worker_id, request):
     """Provides example input for testing method of simulated moments."""
-    calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
 
     params, options = get_example_model("kw_94_one", with_data=False)
     options["n_periods"] = 3
@@ -27,12 +26,21 @@ def msm_args(worker_id):
     simulate = get_simulate_func(params, options)
     df = simulate(params)
 
-    empirical_moments = {
-        "Choices": _replace_nans(_calc_choice_freq(df)),
-        "Mean Wage": _replace_nans(_calc_wage_mean(df)),
-    }
+    if request.param:
+        calc_moments = [_calc_wage_mean, _calc_choice_freq]
+        empirical_moments = [
+            _replace_nans(_calc_wage_mean(df)),
+            _replace_nans(_calc_choice_freq(df)),
+        ]
+        weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
-    weighting_matrix = get_diag_weighting_matrix(empirical_moments)
+    else:
+        calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
+        empirical_moments = {
+            "Choices": _replace_nans(_calc_choice_freq(df)),
+            "Mean Wage": _replace_nans(_calc_wage_mean(df)),
+        }
+        weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
     return (
         params,
@@ -119,7 +127,7 @@ def test_return_output_dict_for_msm(msm_args):
     assert isinstance(outputs, dict)
     assert isinstance(outputs["value"], float)
     assert isinstance(outputs["root_contributions"], np.ndarray)
-    assert isinstance(outputs["simulated_moments"], dict)
+    assert isinstance(outputs["simulated_moments"], (dict, list))
     assert isinstance(df, pd.DataFrame)
 
     # Simulated moments mirror empirical moments.
