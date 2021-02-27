@@ -246,7 +246,7 @@ def moment_errors(
         if not are_empirical_moments_dict:
             simulated_moments = _reconstruct_input_from_dict(simulated_moments)
 
-        out["simulated_moments"] = (simulated_moments,)
+        out["simulated_moments"] = simulated_moments
     return out
 
 
