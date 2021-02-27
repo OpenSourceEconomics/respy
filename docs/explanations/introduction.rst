@@ -1,6 +1,6 @@
 .. _what_is_respy:
 
-What Is Respy?
+What is respy?
 ==============
 
 **respy** is an open source framework written in Python for the simulation and

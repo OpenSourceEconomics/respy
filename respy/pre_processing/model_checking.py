@@ -57,10 +57,10 @@ def _validate_shocks(params, optim_paras):
         for i, c_1 in enumerate(choices):
             for c_2 in choices[: i + 1]:
                 if c_1 == c_2:
-                    label = "var" if "shocks_cov" in index else "chol"
+                    label = "var" if "shocks_cov" in params.index else "chol"
                     index.append(f"{label}_{c_1}")
                 else:
-                    label = "cov" if "shocks_cov" in index else "chol"
+                    label = "cov" if "shocks_cov" in params.index else "chol"
                     index.append(f"{label}_{c_1}_{c_2}")
 
     assert all(
