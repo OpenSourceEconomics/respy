@@ -204,13 +204,14 @@ The documentation provides multiple sections:
 
 
 .. toctree::
-    :hidden:
+   :maxdepth: 1
+   :hidden:
 
-    tutorials/index
-    explanations/index
-    how_to_guides/index
-    autoapi/index
-    reference_guides/index
-    development/index
-    projects/index
-    about_us
+   tutorials/index
+   explanations/index
+   how_to_guides/index
+   autoapi/index
+   reference_guides/index
+   development/index
+   projects/index
+   about_us
