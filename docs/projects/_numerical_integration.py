@@ -8,10 +8,11 @@ TUITION_SUBSIDIES = [0, 500]
 
 
 def get_single_integrand(
-    df, idx, scaling, methods, manual_limits="no", xlimits=[0, 1], ylimits=[0, 1]
+    df, idx, scaling, methods, manual_limits="no", xlimits=(0, 1), ylimits=(0, 1)
 ):
-    """Plots the values of the idx-th evaluation of an integral stored in a
-    dataframe. The dataframe contains values of the integrand computed at
+    """Plot the values of the idx-th evaluation of an integral stored in a dataframe.
+
+    The dataframe contains values of the integrand computed at
     a different number of points.
 
     Input
@@ -23,7 +24,6 @@ def get_single_integrand(
     Output
         - figure
     """
-
     fig, ax = plt.subplots()
 
     for m in methods:
@@ -42,14 +42,13 @@ def get_single_integrand(
 
 
 def get_label(method):
-    """Standardizes labels for graphs given METHOD list
+    """Standardize labels for graphs given METHOD list.
 
     Input
         - method (list): list of methods to standardize
     Output
         - label (string): standardizes labels
     """
-
     label = method.capitalize()
     if label == "Random":
         label = "random"
@@ -58,7 +57,9 @@ def get_label(method):
 
 
 def get_rmse_rate(df, comparison_rates, methods):
-    """Plots the absolute rate of rmse on a loglog scale for different METHODS
+    """Plot the absolute rate of rmse.
+
+    Plots rate on a loglog scale for different METHODS
     of function/integral value evaluation.
 
     Input
@@ -68,7 +69,6 @@ def get_rmse_rate(df, comparison_rates, methods):
     Output
         - figure
     """
-
     for measure in ["absolute", "relative"]:
 
         fig, ax = plt.subplots(1, 1, figsize=(6.5, 4.5))
@@ -111,7 +111,7 @@ def get_rmse_rate(df, comparison_rates, methods):
 
 
 def get_policy_prediction(df, baseline, alternative, methods):
-    """Plots the policy prediction under different integrations methods.
+    """Plot the policy prediction under different integrations methods.
 
     Input
         - df (dataframe): policy-values for various number of points
@@ -122,7 +122,6 @@ def get_policy_prediction(df, baseline, alternative, methods):
     Output
         figure
     """
-
     fig, ax = plt.subplots()
 
     for m in methods:
@@ -139,8 +138,8 @@ def get_policy_prediction(df, baseline, alternative, methods):
     ax.legend()
 
 
-def set_formatter(ax, is_int=True, which="xy"):
-    """Formats axis values.
+def set_formatter(ax, which="xy"):
+    """Format axis values.
 
     Input
         - ax: which ax object to format

@@ -151,6 +151,19 @@ about implementing and estimating your own model with **respy**.
                     </div>
                 </a>
             </div>
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                <a href="how_to_numerical_integration.html" class="index-link">
+                    <div class="card text-center shadow h-100">
+                        <div class="card-header">Numerical Integration</div>
+                            <div class="card-body flex-fill">
+                                <p class="card-text">
+                                    Learn how to adjust the numerical integration
+                                    in the model.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
 
