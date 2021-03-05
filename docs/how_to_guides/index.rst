@@ -20,7 +20,7 @@ about implementing and estimating your own model with **respy**.
                             <div class="card-body flex-fill">
                                 <p class="card-text">
                                     Learn how to translate a model from equations
-                                    to the params and options.
+                                    to the <span><code class="docutils literal notranslate"><span class="pre">params</span></code> and <code class="docutils literal notranslate"><span class="pre">options</span></code>.</span>
                             </p>
                         </div>
                     </div>

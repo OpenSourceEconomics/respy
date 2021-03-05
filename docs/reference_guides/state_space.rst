@@ -20,14 +20,14 @@ space.
 .. _core_state_space:
 
 The Core State Space
---------------------
+....................
 
 ads
 
 .. _dense_grid:
 
 Dense Grid
-----------
+..........
 
 The dense grid is a list that contains all states of dense variables. A dense variable
 is not a deterministic function of past choices and time. Adding another dense variables
@@ -49,7 +49,7 @@ important since the model solution essentially loops through each dense state.
 .. _period_choice_cores:
 
 Period Choice Cores
--------------------
+...................
 
 The interface of respy allows for flexible choice sets. The period choice core maps
 period and choice set to a set of core states.
@@ -58,7 +58,7 @@ period and choice set to a set of core states.
 .. _dense_period_choice_cores:
 
 Dense Period Choice Cores
--------------------------
+.........................
 
 The period choice core maps period and choice set and dense index to a set of core
 states. This is the separation of states that the model solution loops over. All of the
@@ -73,7 +73,7 @@ stored together and why the model solution loops over period and all
 .. _state_space_location_indices:
 
 State Space Location Indices
-============================
+----------------------------
 
 To create the state space and to store information efficiently we build simple indices
 of the objects introduced above. In general we call location indices indices if the
@@ -83,7 +83,7 @@ defining mapping is injective and keys if the defining mapping is not injective.
 .. _core_indices:
 
 Core Indices
-------------
+............
 
 Core indices are row indices for states in the :ref:`core state space
 <core_state_space>`. They are continued over different periods and choice sets in the
@@ -93,7 +93,7 @@ core.
 .. _core_key:
 
 Core Key
---------
+........
 
 A ``core_key`` is an index for a set of states in the core state space which are in the
 same period and share the same choice set.
@@ -102,7 +102,7 @@ same period and share the same choice set.
 .. _dense_vector:
 
 Dense Vector
-------------
+............
 
 A dense vector is combination of values in the dense dimensions.
 
@@ -110,7 +110,7 @@ A dense vector is combination of values in the dense dimensions.
 .. _dense_index:
 
 Dense Index
------------
+...........
 
 A dense index is a position in the dense grid.
 
@@ -118,7 +118,7 @@ A dense index is a position in the dense grid.
 .. _dense_key:
 
 Dense Key
----------
+.........
 
 A ``dense_key`` is an index for a set of states in the dense state space which are in
 the same period, share the same choice set, and the same dense vector.
@@ -126,7 +126,7 @@ the same period, share the same choice set, and the same dense vector.
 .. _complex:
 
 Complex
---------------------
+.......
 A complex key is the basis for `core_key` and `dense_key` it is a tuple of a period and
 a tuple for the choice set which contains booleans for whether a choice is available.
 The complex index for a dense index also contains the dense vector in the last position.
@@ -135,7 +135,7 @@ The complex index for a dense index also contains the dense vector in the last p
 
 
 State Space Methods
-===================
+-------------------
 
 Several methods facilitate communication between different groups in the state space.
 They are shortly introduced in turn:
@@ -144,7 +144,7 @@ They are shortly introduced in turn:
 .. _collect_child_indices:
 
 Collect Child Indices
----------------------
+.....................
 
 This function assigns each state a function that maps choices into child states.
 
@@ -152,7 +152,7 @@ This function assigns each state a function that maps choices into child states.
 .. _get_continuation_values:
 
 Get Continuation Values
------------------------
+.......................
 
 This method uses collect child indices to assign each state a function
 that maps choices into continuation values.

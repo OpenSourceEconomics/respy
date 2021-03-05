@@ -14,6 +14,9 @@ releases are available on `Anaconda.org
 - :gh:`391` Adds how-to guide on example models and specifying a model (:ghuser:`amageh`;
   model specification guide draws on work by :ghuser:`tobiasraabe`
   and :ghuser:`rafaelsuchy`). Fixes bug in model validation for shock parameters.
+- :gh:`395` Adds guides and tutorials for exoegnous proccesses, covariates, and maximum 
+  likelihood estimation. Improves structure and appearance of documentation. 
+  (:ghuser:`MaxBlesch`, :ghuser:`amageh`).
 
 
 2.0.0 - 2019-2020

@@ -52,7 +52,7 @@ you will find several cross-references to the theoretical concepts behind the mo
                         <div class="card-body flex-fill">
                             <p class="card-text">
                                 Learn about the basic building blocks of any
-                                respy model: params and options.
+                                <b>respy</b> model.
                             </p>
                         </div>
                     </div>
