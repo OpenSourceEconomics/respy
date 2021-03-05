@@ -1,6 +1,52 @@
 /* Remove execution count for notebook cells. */
-div.prompt {
+.nbinput .prompt,
+.nboutput .prompt {
     display: none;
+}
+
+
+/* General */
+
+h1, h2, h3, h4, h5 {
+    color: #004385 !important;
+}
+
+/*a {
+    color: #0C619F !important;
+}*/
+
+a:hover {
+    color: #187FB9 !important;
+}
+
+a:active {
+    color: #187FB9 !important;
+}
+
+a.headerlink {
+    color: #004385 !important;
+}
+
+a.headerlink:hover {
+    color: #fff !important;
+    background-color: #187FB9 !important;
+}
+
+/* color for naigation bar when item has been selected */
+.navbar-light .navbar-nav .active>.nav-link {
+    color: #187FB9 !important;
+}
+
+/* color for sidebar item when it has been selected */
+
+.bd-sidebar .nav .active > a {
+    color: #187FB9 !important;
+}
+
+/* toc on right of page, color when item is selected */
+.toc-entry > .nav-link.active {
+  color: #187FB9;
+  border-left: 2px solid #187FB9;
 }
 
 /* Getting started index page */
@@ -9,10 +55,12 @@ div.prompt {
     padding: 40px 10px 20px 10px;
     margin: 10px 0px;
     max-height: 85%;
+
 }
 
 .intro-card .card-text {
     margin: 20px 0px;
+
 }
 
 .card-img-top + .card-body {
@@ -35,16 +83,16 @@ a.index-link {
 }
 
 .gs-torefguide .badge {
-    background-color: #130654;
+    background-color: #004C8D;
     margin: 10px 10px 10px 0px;
     padding: 5px;
 }
 
 .gs-torefguide a {
     margin-left: 5px;
-    color: #130654;
-    border-bottom: 1px solid #FFCA00f3;
-    box-shadow: 0px -10px 0px #FFCA00f3 inset;
+    color: #004C8D;
+    border-bottom: 1px solid #fff79c;
+    box-shadow: 0px -15px 0px #fff79c inset;
 }
 
 .gs-torefguide p {
@@ -56,32 +104,32 @@ a.index-link {
     color: grey;
     text-decoration: none;
     border-bottom: 1px solid #b2ff80f3;
-    box-shadow: 0px -10px 0px #b2ff80f3 inset;
+    box-shadow: 0px -15px 0px #b2ff80f3 inset;
 }
 
-.blue { color: #130654; }
+.blue { color: #004C8D; }
 
 .boldblue {
   font-weight: bold;
-  color: #130654;
+  color: #004C8D;
 }
 
 .centerblue {
   text-align: center;
-  color: #130654;
+  color: #004C8D;
 }
 
 .orange { color: orange; }
 
 .verbatimblue {
   font-weight: verbatim;
-  color: #130654;
+  color: #004C8D;
 }
 
 .boldcenterblue {
   font-weight: bold;
   text-align: center;
-  color: #130654;
+  color: #004C8D;
 }
 
 /* card tweaks */

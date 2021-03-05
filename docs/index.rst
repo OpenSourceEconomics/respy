@@ -37,7 +37,6 @@ With conda available on your path, installing **respy** is as simple as typing
     $ conda config --add channels conda-forge
     $ conda install -c opensourceeconomics respy
 
-The documentation provides multiple sections:
 
 .. raw:: html
 
