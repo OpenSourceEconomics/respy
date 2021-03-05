@@ -1,9 +1,6 @@
-/* Remove execution count for notebook cells. */
-.nbinput .prompt,
-.nboutput .prompt {
+div.prompt {
     display: none;
 }
-
 
 /* General */
 
