@@ -40,6 +40,7 @@ extensions = [
     "nbsphinx",
     "numpydoc",
     "autoapi.extension",
+    "sphinx_tabs.tabs",
 ]
 
 autodoc_mock_imports = [
