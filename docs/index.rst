@@ -44,10 +44,10 @@ The documentation provides multiple sections:
   <header>
     <h1>Introduction</h1>
   </header>
-    <div class="container" id="index-container">
+    <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="tutorials/index.html" id="index-link">
+                <a href="tutorials/index.html" class="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/light-bulb.svg" class="card-img-top"
                              alt="tutorials-icon" height="52"
@@ -63,7 +63,7 @@ The documentation provides multiple sections:
                 </a>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="explanations/index.html" id="index-link">
+                <a href="explanations/index.html" class="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/books.svg" class="card-img-top"
                              alt="explanations icon" height="52"
@@ -85,10 +85,10 @@ The documentation provides multiple sections:
   <header>
     <h1>Advanced usage</h1>
   </header>
-    <div class="container" id="index-container">
+    <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="how_to_guides/index.html" id="index-link">
+                <a href="how_to_guides/index.html" class="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/book.svg" class="card-img-top"
                              alt="how-to guides icon" height="52"
@@ -104,7 +104,7 @@ The documentation provides multiple sections:
                 </a>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="autoapi/index.html" id="index-link">
+                <a href="autoapi/index.html" class="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/computer.svg" class="card-img-top"
                              alt="API icon" height="52"
@@ -124,10 +124,10 @@ The documentation provides multiple sections:
   <header>
     <h1>Development</h1>
   </header>
-    <div class="container" id="index-container">
+    <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="reference_guides/index.html" id="index-link">
+                <a href="reference_guides/index.html" class="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/coding.svg" class="card-img-top"
                              alt="reference guides icon" height="52"
@@ -144,7 +144,7 @@ The documentation provides multiple sections:
                  </a>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="development/index.html" id="index-link">
+                <a href="development/index.html" class="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/gears.svg" class="card-img-top"
                              alt="Development icon" height="52"
@@ -165,10 +165,10 @@ The documentation provides multiple sections:
   <header>
     <h1>Community </h1>
   </header>
-    <div class="container" id="index-container">
+    <div class="container" class="index-container">
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="projects/index.html" id="index-link">
+                <a href="projects/index.html" class="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/dividers.svg" class="card-img-top"
                              alt="projects icon" height="52"
@@ -184,7 +184,7 @@ The documentation provides multiple sections:
                  </a>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
-                <a href="about_us.html" id="index-link">
+                <a href="about_us.html" class="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/peoples.svg" class="card-img-top"
                              alt="about us icon" height="52"
@@ -204,13 +204,14 @@ The documentation provides multiple sections:
 
 
 .. toctree::
-    :hidden:
+   :maxdepth: 1
+   :hidden:
 
-    tutorials/index
-    explanations/index
-    how_to_guides/index
-    autoapi/index
-    reference_guides/index
-    development/index
-    projects/index
-    about_us
+   tutorials/index
+   explanations/index
+   how_to_guides/index
+   autoapi/index
+   reference_guides/index
+   development/index
+   projects/index
+   about_us

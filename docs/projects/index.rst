@@ -19,3 +19,12 @@ We also maintain a list of replicated models from some research papers to valida
 
    keane-and-wolpin-1994
    estimating-keane-and-wolpin-1997-msm
+
+
+Below, you find projects exploring specific components of the implemention
+of Eckstein-Keane-Wolpin models.
+
+.. toctree::
+   :maxdepth: 1
+
+   numerical_integration

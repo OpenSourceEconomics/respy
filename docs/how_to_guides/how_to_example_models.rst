@@ -18,14 +18,36 @@ You can access example models by typing
 
     params, options, data = rp.get_example_model("model_name")
 
+
+If you only want to get the `params` and `options`, set the argument `with_data`
+to **False**.
+
+.. code-block:: python
+
+    params, options = rp.get_example_model("model_name", with_data=False)
+
+
+
+.. raw:: html
+
+     <div
+      <p class="d-flex flex-row gs-torefguide">
+          <span class="badge badge-info">To API</span></p>
+      <p>For more information, checkout the function in the<a
+         href="../autoapi/respy/interface/index.html#respy.interface.get_example_model">API</a> </p>
+     </div>
+
+
 Below are the example models that are currently available. 
 
+-----
 
-Toy models
+Toy Models
 ----------
 
-The package provides users with two toy models. These models can be used to acquaintance
+The package provides users with two toy models. These models can be used to acquaintance 
 oneself with **respy**'s functionalities and can be encountered in the tutorials.
+
 
 .. raw:: html
 
@@ -46,6 +68,7 @@ These models are excellent examples to use for learning and prototyping: They
 include a small number of available choices and a low number of periods such
 that they are computationally feasible.
 
+------
 
 Keane and Wolpin (1994)
 -----------------------
@@ -78,6 +101,7 @@ while school only awards experience. In the home option, individuals gain neithe
 nor experience. The plot below shows the choice patterns for the three parametrizations.
 The model considers a time horizon of 40 periods.
 
+------
 
 Keane and Wolpin (1997)
 -----------------------
@@ -111,6 +135,7 @@ consider a life-cycle of 50 periods. These models are decidedly larger than the 
 models and require a considerable amount of computation power to solve, especially the
 extended model.
 
+------
 
 Keane and Wolpin (2000)
 -----------------------
