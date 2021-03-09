@@ -34,6 +34,8 @@ Developers
 
 - `Annica Gehlen <https://github.com/amageh>`_ (MSM interface)
 - `Moritz Mendel <https://github.com/mo2561057>`_ (Flexible choice sets, MSM interface)
+- `Maximilian Blesch <https://github.com/Max Blesch>`_ (Exogenous processes)
+
 
 Contributors
 ~~~~~~~~~~~~
