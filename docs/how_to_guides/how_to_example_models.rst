@@ -78,7 +78,7 @@ Below are the example models that are currently available.
       - Keane, M. P., & Wolpin, K. I. (1994). The Solution and Estimation of Discrete Choice
       Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence.
       *The Review of Economics and Statistics*, 648-672.
-      
+
       In the study, Keane and Wolpin (1994) develop an approximate solution method which
       consists of Monte Carlo integration with simulation and an interpolation approach to
       ease the computational burden of solving the DCDP model. They utilize one model with
@@ -106,7 +106,7 @@ Below are the example models that are currently available.
       from the National Longitudinal Survey of Youth (NLSY). The study includes a "basic"
       model parametrization that is very similar to the model of Keane and Wolpin (1994) and
       and "extended" parametrization that improves on the empirical fit of the basic model.
-      
+
       - Keane, M. P., & Wolpin, K. I. (1997). The Career Decisions of Young Men. 
       *Journal of Political Economy*, 105(3), 473-522.
       

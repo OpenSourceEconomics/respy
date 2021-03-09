@@ -91,6 +91,20 @@ about implementing and estimating your own model with **respy**.
             </div>
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                <a href="how_to_covariates.html" class="index-link">
+                    <div class="card text-center shadow h-100">
+                        <div class="card-header">Covariates</div>
+                            <div class="card-body flex-fill">
+                                <p class="card-text">
+                                    Use Covariates to define complex payoff
+                                    structures.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
                 <a href="how_to_hyperbolic_discounting.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Hyperbolic Discounting</div>
@@ -177,6 +191,7 @@ about implementing and estimating your own model with **respy**.
     how_to_simulation
     how_to_finite_mixture
     how_to_initial_conditions
+    how_to_covariates
     how_to_hyperbolic_discounting
     how_to_numerical_integration
     how_to_likelihood
