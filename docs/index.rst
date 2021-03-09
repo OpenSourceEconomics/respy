@@ -3,45 +3,46 @@
 respy
 =====
 
-.. image:: https://anaconda.org/opensourceeconomics/respy/badges/version.svg
-    :target: https://anaconda.org/OpenSourceEconomics/respy
-
-.. image:: https://anaconda.org/opensourceeconomics/respy/badges/platforms.svg
-    :target: https://anaconda.org/OpenSourceEconomics/respy
-
-.. image:: https://readthedocs.org/projects/respy/badge/?version=latest
-    :target: https://respy.readthedocs.io/en/latest
-
-.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
-    :target: https://opensource.org/licenses/MIT
-
-.. image:: https://github.com/OpenSourceEconomics/respy/workflows/Continuous%20Integration%20Workflow/badge.svg?branch=main
-    :target: https://github.com/OpenSourceEconomics/respy/actions?query=branch%3Amain
-
-.. image:: https://codecov.io/gh/OpenSourceEconomics/respy/branch/main/graph/badge.svg
-  :target: https://codecov.io/gh/OpenSourceEconomics/respy
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/psf/black
-
-----
-
 **respy** is an open source framework written in Python for the simulation and
 estimation of some :term:`finite-horizon` :term:`discrete choice` :term:`dynamic
 programming` models.
 
-With conda available on your path, installing **respy** is as simple as typing
+
+.. raw:: html
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12 d-flex install-block">
+                <div class="card install-card shadow w-100">
+                <div class="card-header">
+                    Installation
+                </div>
+                <div class="card-body">
+                    <p class="card-text">With conda available on your path, installing <b>respy</b> is as simple as typing</p>
 
 .. code-block:: bash
 
-    $ conda config --add channels conda-forge
-    $ conda install -c opensourceeconomics respy
+   $ conda config --add channels conda-forge
+   $ conda install -c opensourceeconomics respy
 
+.. raw:: html
+
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+This documentation provides guides and background information on the usage and 
+development of **respy** as well as the underlying class of economic models. 
+The package can be used to learn and teach about structrual econometric modeling but is 
+also designed to support a flexible and fast implementation of original research 
+projects.
 
 .. raw:: html
 
   <header>
-    <h1>Introduction</h1>
+    <h1>Getting started</h1>
   </header>
     <div class="container" class="index-container">
         <div class="row">
@@ -200,7 +201,6 @@ With conda available on your path, installing **respy** is as simple as typing
             </div>
         </div>
     </div>
-
 
 .. toctree::
    :maxdepth: 1
