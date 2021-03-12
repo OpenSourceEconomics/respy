@@ -13,10 +13,11 @@ programming` models.
     <div class="container">
         <div class="row">
             <div class="col-12 d-flex install-block">
+            <a href="tutorials/index.html" class="index-link">
                 <div class="card install-card shadow w-100">
                 <div class="card-header">
                     Installation
-                </div>
+                </div></a>
                 <div class="card-body">
                     <p class="card-text">With conda available on your path, installing <b>respy</b> is as simple as typing</p>
 
