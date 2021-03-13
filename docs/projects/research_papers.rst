@@ -5,7 +5,7 @@ Here is a list of research papers using **respy**.
 
 ----
 
-Eisenhauer, P., Janys, L. and Gabler, J. (2021) `Structural models for policy-making: 
+Eisenhauer, P., Janys, L. and Gabler, J. (2021). `Structural models for policy-making: 
 Coping with parametric uncertainty <https://arxiv.org/abs/2103.01115>`_. *Working Paper*.
 
 The ex-ante evaluation of policies using structural microeconometric models is based
