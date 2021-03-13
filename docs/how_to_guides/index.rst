@@ -61,7 +61,7 @@ about implementing and estimating your own model with **respy**.
 
     <div class="container" class="index-container">
         <div class="row">
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="how_to_finite_mixture.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Unobeserved Hetereogeneity</div>
@@ -75,7 +75,7 @@ about implementing and estimating your own model with **respy**.
                 </a>
             </div>
 
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="how_to_initial_conditions.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Initial Conditions</div>
@@ -90,7 +90,7 @@ about implementing and estimating your own model with **respy**.
                 </a>
             </div>
 
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="how_to_covariates.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Covariates</div>
@@ -104,7 +104,7 @@ about implementing and estimating your own model with **respy**.
                 </a>
             </div>
 
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="how_to_hyperbolic_discounting.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Hyperbolic Discounting</div>
@@ -124,7 +124,7 @@ about implementing and estimating your own model with **respy**.
 
     <div class="container" class="index-container">
         <div class="row">
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="how_to_likelihood.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Maximum Likelihood</div>
@@ -138,7 +138,7 @@ about implementing and estimating your own model with **respy**.
                 </a>
             </div>
             
-           <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+           <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="how_to_msm.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Method of Simulated Moments</div>
@@ -152,7 +152,7 @@ about implementing and estimating your own model with **respy**.
                 </a>
             </div>
 
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="how_to_msm_estimation_exercise.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Estimation Exercise MSM</div>
@@ -165,7 +165,7 @@ about implementing and estimating your own model with **respy**.
                     </div>
                 </a>
             </div>
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="how_to_numerical_integration.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Numerical Integration</div>

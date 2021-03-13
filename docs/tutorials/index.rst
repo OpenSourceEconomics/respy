@@ -65,7 +65,7 @@ you will find several cross-references to the theoretical concepts behind the mo
 
     <div class="container" class="index-container">
         <div class="row">
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="tutorial_experience.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Experience</div>
@@ -79,7 +79,7 @@ you will find several cross-references to the theoretical concepts behind the mo
                 </a>
             </div>
 
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="tutorial_observables.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Observables</div>
@@ -93,7 +93,7 @@ you will find several cross-references to the theoretical concepts behind the mo
                 </a>
             </div>
 
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="tutorial_impatient_robinson.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Impatient Robinson</div>
@@ -106,7 +106,7 @@ you will find several cross-references to the theoretical concepts behind the mo
                 </a>
             </div>
 
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <a href="tutorial_exogenous_processes.html" class="index-link">
                     <div class="card text-center shadow h-100">
                         <div class="card-header">Exogenous Processes</div>
