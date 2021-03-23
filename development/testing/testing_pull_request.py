@@ -3,9 +3,9 @@ import socket
 
 import click
 from click.testing import CliRunner
+from testing.regression import run
 
 import respy as rp
-from testing.regression import run
 
 
 def run_pull_request_tests():

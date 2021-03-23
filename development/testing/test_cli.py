@@ -1,5 +1,4 @@
 from click.testing import CliRunner
-
 from testing.regression import create
 from testing.regression import investigate
 from testing.regression import run
