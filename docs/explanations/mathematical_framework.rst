@@ -138,8 +138,8 @@ resulting numerical errors and computational instabilities.
        The use of quasi Monte-Carlo methods mitigates numerical errors and
        dramatically reduces the time to solve the model.
 
-       A How-to guide is provided in <a href="../how_to_guides/numerical_
-       integration.html">Improving Numerical Integration Methods</a>.
+       A How-to guide is provided in <a href="../how_to_guides/how_to_numerical_
+       integration.html">Numerical Integration</a>.
    </div>
 
 

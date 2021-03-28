@@ -11,7 +11,7 @@ Glossary
         action at every point in time. In :term:`dynamic programming <dynamic programming>`, backwards induction
         is one of the most frequently used methods for solving the Bellman Equation. 
 
-    bluecollar occupation
+    blue-collar occupation
         Occupation related to manual work that might involved skilled or unskilled labor. Blue-collar occupations
         typically involve manufacturing, agriculture, construction, mining, among others.
 

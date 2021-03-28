@@ -119,9 +119,9 @@ the authors provide a comparison of alternative weighting matrices.
     <p class="d-flex flex-row gs-torefguide">
         <span class="badge badge-info">To How-to guide</span></p>
     <p>The implementation of MSM estimation in <b><i>respy</i></b> is extensively
-       described in the tutorial on<a href="../how_to_guides/msm.html">Methods
-       of Simulated Moments (MSM)</a> and the tutorial on<a
-       href="../how_to_guides/msm_estimation_exercise.html">How to Estimate
+       described in the guide on<a href="../how_to_guides/how_to_msm.html">Methods
+       of Simulated Moments (MSM)</a> and the guide on<a
+       href="../how_to_guides/how_to_msm_estimation_exercise.html">How to Estimate
        Model Parameters with MSM</a></p>
    </div>
 

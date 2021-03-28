@@ -42,7 +42,7 @@ endowments
     <p class="d-flex flex-row gs-torefguide">
         <span class="badge badge-info">To How-to guide</span></p>
     <p>An explanation how to set and change initial conditions in <b><i>
-    respy</i></b> is provided in<a href="../how_to_guides/initial_conditions.html">
+    respy</i></b> is provided in<a href="../how_to_guides/how_to_initial_conditions.html">
     Initial Conditions</a> </p>
    </div>
 
