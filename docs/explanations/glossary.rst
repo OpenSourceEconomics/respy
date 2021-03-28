@@ -26,7 +26,7 @@ Glossary
 
     discounted utility
         The utility associated with a future point in time :math:`t+1` but perceived at time 
-        :math:`t. Future utility is discounted back to the present using a discount factor which
+        :math:`t`. Future utility is discounted back to the present using a discount factor which
         captures the notion of impatience in individual preferences.
         
     discrete choice
