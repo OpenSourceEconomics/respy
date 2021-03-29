@@ -21,7 +21,7 @@ dependencies:
   - line_profiler
   - matplotlib
   - mkl
-  - nbsphinx=0.4.2
+  - nbsphinx
   - numba
   - numexpr
   - numpydoc
@@ -41,11 +41,12 @@ dependencies:
   - snakeviz
   - sphinx
   - sphinx-autobuild
-  - sphinxcontrib-bibtex
-  - sphinx-autoapi<1.6.0
+  - sphinxcontrib-bibtex<2.0.0
+  - sphinx-autoapi
   - pydata-sphinx-theme>=0.3.0
   - tox-conda
   - pip:
     - apprise
     - bump2version
     - pytest-randomly
+    - sphinx-tabs

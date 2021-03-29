@@ -5,6 +5,25 @@ Here is a list of research papers using **respy**.
 
 ----
 
+Eisenhauer, P., Janys, L. and Gabler, J. (2021). `Structural models for policy-making: 
+Coping with parametric uncertainty <https://arxiv.org/abs/2103.01115>`_. *Working Paper*.
+
+The ex-ante evaluation of policies using structural microeconometric models is based
+on estimated parameters as a stand-in for the truth. This practice ignores uncertainty 
+in the counterfactual policy predictions of the model. We develop an approach that deals
+with parametric uncertainty and properly frames model-informed
+policy-making as a decision problem under uncertainty. We use the seminal human
+capital investment model by Keane and Wolpin (1997) as a well-known, influential,
+and empirically-grounded test case. We document considerable uncertainty in their
+policy predictions and highlight the resulting policy recommendations from using
+different formal rules on decision-making under uncertainty.
+
+Contact: `@peisenha <https://github.com/peisenha>`_, `@LJanys
+<https://github.com/LJanys>`_, `@janosg
+<https://github.com/janosg>`_
+
+----
+
 Bhuller, M., Eisenhauer, P. and Mendel, M. (2020). The Option Value of Education.
 *Working Paper*.
 

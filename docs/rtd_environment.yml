@@ -7,7 +7,10 @@ dependencies:
   - nbsphinx
   - numpydoc
   - sphinx
-  - sphinx-autoapi<1.6.0
+  - sphinx-autobuild
+  - sphinx-autoapi
   - sphinxcontrib-bibtex<2.0.0
   - pydata-sphinx-theme>=0.3.0
   - parso>=0.8.1
+  - pip:
+    - sphinx-tabs

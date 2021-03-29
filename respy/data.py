@@ -33,11 +33,11 @@ def create_kw_97(params, options):
     optim_paras, options = process_params_and_options(params, options)
 
     dtypes = {
-        "Identifier": np.int,
-        "Age": np.int,
+        "Identifier": int,
+        "Age": int,
         "Experience_School": np.uint8,
         "Choice": "category",
-        "Wage": np.float,
+        "Wage": float,
     }
 
     df = pd.read_csv(
