@@ -40,6 +40,7 @@ extensions = [
     "nbsphinx",
     "numpydoc",
     "autoapi.extension",
+    "sphinx_tabs.tabs",
 ]
 
 autodoc_mock_imports = [
@@ -117,7 +118,7 @@ autosummary_generate = True
 # Configuration for autoapi
 autoapi_type = "python"
 autoapi_dirs = ["../respy"]
-autoapi_ignore = ["../respy/tests/*"]
+autoapi_ignore = ["*/tests/*"]
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -128,6 +129,15 @@ html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
     "github_url": "https://github.com/OpenSourceEconomics/respy",
+    "twitter_url": "https://twitter.com/open_econ",
 }
 
 html_css_files = ["css/custom.css"]
+
+html_logo = "_static/images/respy-logo.svg"
+
+
+html_sidebars = {
+    "index": ["sidebar-search-bs.html", "custom-intro.html"],
+    "about_us": ["sidebar-search-bs.html", "custom-about-us.html"],
+}
