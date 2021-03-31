@@ -30,7 +30,7 @@ def get_moment_errors_func(
     calc_moments,
     replace_nans,
     empirical_moments,
-    weighting_matrix,
+    weighting_matrix=None,
     n_simulation_periods=None,
     return_scalar=True,
 ):
