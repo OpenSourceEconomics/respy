@@ -11,6 +11,8 @@ releases are available on `Anaconda.org
 - :gh:`381` Implements exogenous processes (:ghuser:`MaxBlesch`, :ghuser:`mo2561057`).
 - :gh:`383` Fixes simulation with data and adds tests (:ghuser:`janosg`).
 - :gh:`387` Fixes issue in documenation build (:ghuser:`amageh`).
+- :gh:`389` Adjust criterion functions to return a scalar value or dictionary with
+  additional information (:ghuser:`amageh`).
 - :gh:`391` Adds how-to guide on example models and specifying a model (:ghuser:`amageh`;
   model specification guide draws on work by :ghuser:`tobiasraabe`
   and :ghuser:`rafaelsuchy`). Fixes bug in model validation for shock parameters.

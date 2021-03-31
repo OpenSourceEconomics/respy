@@ -27,6 +27,7 @@ def msm_args(worker_id, request):
     df = simulate(params)
 
     if request.param:
+        # List inputs are correctly processed.
         calc_moments = [_calc_wage_mean, _calc_choice_freq]
         empirical_moments = [
             _replace_nans(_calc_wage_mean(df)),
@@ -35,6 +36,7 @@ def msm_args(worker_id, request):
         weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
     else:
+        # Dictionary inputs are correctly processed.
         calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
         empirical_moments = {
             "Choices": _replace_nans(_calc_choice_freq(df)),
@@ -129,6 +131,9 @@ def test_return_output_dict_for_msm(msm_args):
     assert isinstance(outputs["root_contributions"], np.ndarray)
     assert isinstance(outputs["simulated_moments"], (dict, list))
     assert isinstance(df, pd.DataFrame)
+
+    # squared root_contributions produce scalar value.
+    assert outputs["value"] == np.sum(outputs["root_contributions"] ** 2)
 
     # Simulated moments mirror empirical moments.
     assert df.loc[df.kind == "simulated"].shape == df.loc[df.kind == "empirical"].shape
