@@ -10,7 +10,7 @@ repos:
     -   id: debug-statements
     -   id: end-of-file-fixer
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v2.11.0
+    rev: v2.12.0
     hooks:
     -   id: pyupgrade
         args: [--py36-plus]
@@ -28,7 +28,7 @@ repos:
     -   id: blacken-docs
         additional_dependencies: [black]
 -   repo: https://github.com/PyCQA/flake8
-    rev: 3.9.0
+    rev: 3.9.1
     hooks:
     -   id: flake8
         additional_dependencies: [
