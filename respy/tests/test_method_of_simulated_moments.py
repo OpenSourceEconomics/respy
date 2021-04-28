@@ -1,6 +1,7 @@
 """Test the msm interface of respy."""
 import copy
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -11,10 +12,9 @@ from respy.simulate import get_simulate_func
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.fixture(scope="module")
-def msm_args(worker_id):
+@pytest.fixture(scope="module", params=[True, False])
+def msm_args(worker_id, request):
     """Provides example input for testing method of simulated moments."""
-    calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
 
     params, options = get_example_model("kw_94_one", with_data=False)
     options["n_periods"] = 3
@@ -26,12 +26,23 @@ def msm_args(worker_id):
     simulate = get_simulate_func(params, options)
     df = simulate(params)
 
-    empirical_moments = {
-        "Choices": _replace_nans(_calc_choice_freq(df)),
-        "Mean Wage": _replace_nans(_calc_wage_mean(df)),
-    }
+    if request.param:
+        # List inputs are correctly processed.
+        calc_moments = [_calc_wage_mean, _calc_choice_freq]
+        empirical_moments = [
+            _replace_nans(_calc_wage_mean(df)),
+            _replace_nans(_calc_choice_freq(df)),
+        ]
+        weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
-    weighting_matrix = get_diag_weighting_matrix(empirical_moments)
+    else:
+        # Dictionary inputs are correctly processed.
+        calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
+        empirical_moments = {
+            "Choices": _replace_nans(_calc_choice_freq(df)),
+            "Mean Wage": _replace_nans(_calc_wage_mean(df)),
+        }
+        weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
     return (
         params,
@@ -56,8 +67,8 @@ def test_msm_zero(msm_args, return_scalar):
         assert weighted_sum_squared_errors(msm_args[0]) == 0
     else:
         out = weighted_sum_squared_errors(msm_args[0])
-        assert isinstance(out, pd.Series)
-        assert (out == 0).all()
+        assert isinstance(out["root_contributions"], np.ndarray)
+        assert (out["root_contributions"] == 0).all()
 
 
 @pytest.mark.end_to_end
@@ -107,36 +118,25 @@ def test_randomness_msm(model_or_seed):
 
 
 @pytest.mark.integration
-def test_return_simulated_moments_for_msm(msm_args):
-    """Return_simulated_moments."""
-    weighted_sum_squared_errors = get_moment_errors_func(
-        *msm_args, return_simulated_moments=True
-    )
-    fval, simulated_moments = weighted_sum_squared_errors(msm_args[0])
+def test_return_output_dict_for_msm(msm_args):
+    """Return dictionary with function value, weighted moment errors (log contributions),
+    simulated moments and comparison plot data."""
+    weighted_errors = get_moment_errors_func(*msm_args, return_scalar=False)
 
-    assert isinstance(fval, float)
-    assert isinstance(simulated_moments, (dict, list, pd.DataFrame, pd.Series))
+    outputs = weighted_errors(msm_args[0])
+    df = outputs["comparison_plot_data"]
 
-
-@pytest.mark.integration
-def test_return_comparison_plot_data_for_msm(msm_args):
-    """Return_comparison_plot_data."""
-    weighted_errors = get_moment_errors_func(
-        *msm_args, return_scalar=False, return_comparison_plot_data=True
-    )
-    moment_errors, df = weighted_errors(msm_args[0])
-
-    assert isinstance(moment_errors, pd.Series)
+    assert isinstance(outputs, dict)
+    assert isinstance(outputs["value"], float)
+    assert isinstance(outputs["root_contributions"], np.ndarray)
+    assert isinstance(outputs["simulated_moments"], (dict, list))
     assert isinstance(df, pd.DataFrame)
 
+    # squared root_contributions produce scalar value.
+    assert outputs["value"] == np.sum(outputs["root_contributions"] ** 2)
 
-@pytest.mark.integration
-def test_multiple_returns_msm(msm_args):
-    """Raise error if moments and comparison plot data is requested."""
-    with pytest.raises(ValueError, match="Can only return either"):
-        get_moment_errors_func(
-            *msm_args, return_simulated_moments=True, return_comparison_plot_data=True
-        )
+    # Simulated moments mirror empirical moments.
+    assert df.loc[df.kind == "simulated"].shape == df.loc[df.kind == "empirical"].shape
 
 
 def _calc_choice_freq(df):
