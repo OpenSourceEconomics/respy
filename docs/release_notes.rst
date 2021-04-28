@@ -19,6 +19,8 @@ releases are available on `Anaconda.org
 - :gh:`395` Adds guides and tutorials for exogenous proccesses, covariates, and maximum 
   likelihood estimation. Improves structure and appearance of documentation. 
   (:ghuser:`MaxBlesch`, :ghuser:`amageh`).
+- :gh:`406` More information in example models guide (:ghuser:`carolinalvarez`, 
+  :ghuser:`amageh`).
 
 
 2.0.0 - 2019-2020
