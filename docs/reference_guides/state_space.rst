@@ -153,7 +153,7 @@ objects and indices are created along the way.
     indices that refer to a group of states such as the numeration of the
     ``dense_period_choice_cores`` are referred to as keys.
 
-
+ADD all the conversion objects here!
 
 Communication
 -------------
@@ -187,3 +187,4 @@ solution.
     This method allows to store information at a certain point of a state space object.
     It is the api that a dense period choice core uses to store information about the
     expected value functions.
+    
