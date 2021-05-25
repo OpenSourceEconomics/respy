@@ -686,7 +686,7 @@ def load_objects(topic, complex_, options):
 
 def _create_file_name_from_complex_index(topic, complex_):
     """Create a file name from a complex index."""
-    choice = "".join([str(int(x)) for x in complex_[1]])
+    choice = "".join(str(int(x)) for x in complex_[1])
     if len(complex_) == 3:
         file_name = f"{topic}_{complex_[0]}_{choice}_{complex_[2]}.parquet"
     elif len(complex_) == 2:
