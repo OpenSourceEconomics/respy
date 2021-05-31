@@ -622,7 +622,7 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
     choices = optim_paras["choices"]
     # Create combinations of starting values
     initial_experiences_combinations = itertools.product(
-        *[choices[choice]["start"] for choice in optim_paras["choices_w_exp"]]
+        *(choices[choice]["start"] for choice in optim_paras["choices_w_exp"])
     )
 
     maximum_exp = np.array(
