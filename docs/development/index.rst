@@ -55,7 +55,7 @@ for contributors.
                         <div class="card-body flex-fill">
                             <h5 class="card-title">Releases</h5>
                             <p class="card-text">
-                                Informatio on version numbering and how 
+                                Information on version numbering and how 
                                 to release a new version.
                             </p>
                         </div>
