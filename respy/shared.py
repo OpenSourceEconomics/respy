@@ -114,11 +114,11 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
         draws = np.random.standard_normal(shape)
 
     elif monte_carlo_sequence == "halton":
-        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
+        distribution = cp.MvNormal(mu=np.zeros(n_choices), sigma=np.eye(n_choices))
         draws = distribution.sample(n_points, rule="H").T.reshape(shape)
 
     elif monte_carlo_sequence == "sobol":
-        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
+        distribution = cp.MvNormal(mu=np.zeros(n_choices), sigma=np.eye(n_choices))
         draws = distribution.sample(n_points, rule="S").T.reshape(shape)
 
     else:

@@ -7,13 +7,13 @@ dependencies:
   - pip
   - anaconda-client
   - bottleneck
-  - chaospy
+  - chaospy>=4.2.3
   - click
   - codecov
   - conda-build
   - conda-verify
   - doc8
-  - estimagic>=0.0.30
+  - estimagic>0.0.31
   - fastparquet
   - hypothesis
   - joblib
