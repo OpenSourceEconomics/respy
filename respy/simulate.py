@@ -447,6 +447,7 @@ def _simulate_single_period(
         df[f"flow_utility_{choice}"] = flow_utilities[:, i]
         df[f"value_function_{choice}"] = value_functions[:, i]
         df[f"continuation_value_{choice}"] = continuation_values[:, i]
+        df[f"shock_reward_{choice}"] = draws_shock_transformed[:, i]
 
     # Check if there is an exogenous process
     if optim_paras["exogenous_processes"]:
