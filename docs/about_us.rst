@@ -68,7 +68,7 @@ an issue on Github, writing an `email`_ to or join our `zulipchat group
 
       |OSE| |space| |TRA| |space| |UniBonn| |space| |DIW|
 
-      .. |OSE| image:: https://raw.githubusercontent.com/OpenSourceEconomics/ose-corporate-design/master/logos/OSE_logo_RGB.svg
+      .. |OSE| image::https://raw.githubusercontent.com/OpenSourceEconomics/ose-logos/main/OSE_Bonn_logo_RGB.svg
         :width: 20%
         :target: https://open-econ.org
 
