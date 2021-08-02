@@ -140,6 +140,6 @@ html_logo = "_static/images/respy-logo.svg"
 
 
 html_sidebars = {
-    "index": ["sidebar-search", "custom-intro"],
-    "about_us": ["sidebar-search", "custom-about-us"],
+    "index": ["search-field", "custom-intro"],
+    "about_us": ["search-field", "custom-about-us"],
 }
