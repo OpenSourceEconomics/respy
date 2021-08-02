@@ -7,7 +7,6 @@ dependencies:
   - pip
   - anaconda-client
   - bottleneck
-  - chaospy>=4.2.3
   - click
   - codecov
   - conda-build
@@ -50,3 +49,4 @@ dependencies:
     - bump2version
     - pytest-randomly
     - sphinx-tabs
+    - chaospy>=4.2.3
