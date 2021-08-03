@@ -18,9 +18,9 @@ requirements:
     - python >=3.6
   run:
     - python >=3.6
-    - chaospy
+    - chaospy >=4.2.3
     - click
-    - estimagic >=0.0.30
+    - estimagic >=0.1.2
     - hypothesis
     - joblib
     - fastparquet

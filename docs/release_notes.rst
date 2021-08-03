@@ -21,6 +21,7 @@ releases are available on `Anaconda.org
   (:ghuser:`MaxBlesch`, :ghuser:`amageh`).
 - :gh:`406` More information in example models guide (:ghuser:`carolinalvarez`, 
   :ghuser:`amageh`).
+- :gh:`414` Fix bug in simulate that added untransformed shocks to df (:ghuser:`amageh`).
 
 
 2.0.0 - 2019-2020
