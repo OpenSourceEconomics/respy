@@ -112,7 +112,7 @@ you will find several cross-references to the theoretical concepts behind the mo
                         <div class="card-header">Exogenous Processes</div>
                         <div class="card-body flex-fill">
                             <p class="card-text">
-                                We introduce exogenous processes such as childrearing 
+                                We introduce exogenous processes such as child rearing 
                                     or health conditions to our model.
                             </p>
                         </div>
