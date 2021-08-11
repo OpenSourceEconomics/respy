@@ -18,7 +18,7 @@ copyright = f"2015-{dt.datetime.now().year}, The respy Development Team"  # noqa
 author = "The respy Development Team"
 
 # The full version, including alpha/beta/rc tags.
-release = "2.1.0"
+release = "2.1.1"
 version = ".".join(release.split(".")[:2])
 
 # -- General configuration ------------------------------------------------
@@ -67,6 +67,8 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "python": ("https://docs.python.org/3.8", None),
 }
+
+bibtex_bibfiles = ["explanations/refs.bib"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -138,6 +140,6 @@ html_logo = "_static/images/respy-logo.svg"
 
 
 html_sidebars = {
-    "index": ["sidebar-search-bs.html", "custom-intro.html"],
-    "about_us": ["sidebar-search-bs.html", "custom-about-us.html"],
+    "index": ["search-field", "custom-intro"],
+    "about_us": ["search-field", "custom-about-us"],
 }

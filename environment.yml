@@ -7,13 +7,12 @@ dependencies:
   - pip
   - anaconda-client
   - bottleneck
-  - chaospy
   - click
   - codecov
   - conda-build
   - conda-verify
   - doc8
-  - estimagic>=0.0.30
+  - estimagic>=0.1.2
   - fastparquet
   - hypothesis
   - joblib
@@ -41,12 +40,13 @@ dependencies:
   - snakeviz
   - sphinx
   - sphinx-autobuild
-  - sphinxcontrib-bibtex<2.0.0
+  - sphinxcontrib-bibtex>=2.0.0
   - sphinx-autoapi
-  - pydata-sphinx-theme>=0.3.0
+  - pydata-sphinx-theme>=0.6.0
   - tox-conda
   - pip:
     - apprise
     - bump2version
     - pytest-randomly
     - sphinx-tabs
+    - chaospy>=4.2.3

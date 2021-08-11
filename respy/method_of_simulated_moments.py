@@ -292,6 +292,8 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
         }
 
         flat_weights = _flatten_index(weights)
+        flat_empirical_moments = _flatten_index(empirical_moments)
+        flat_weights = flat_weights.reindex_like(flat_empirical_moments)
 
     return np.diag(flat_weights)
 
@@ -369,10 +371,10 @@ def _flatten_index(moments):
     pandas.DataFrame
 
     """
-    moments = copy.deepcopy(moments)
     data_flat = []
 
     for name, series_or_df in moments.items():
+        series_or_df = series_or_df.copy(deep=True)
         series_or_df.index = series_or_df.index.map(str)
         # Unstack pandas.DataFrames and pandas.Series to add
         # columns/name to index.
