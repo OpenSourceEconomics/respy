@@ -277,6 +277,7 @@ def test_dense_choice_cores():
     point_constr = {"n_periods": 6, "observables": [3], "n_lagged_choices": 1}
 
     params, options = generate_random_model(point_constr=point_constr)
+    options["monte_carlo_sequence"] = "sobol"
 
     # Add some inadmissible states
     optim_paras, _ = process_params_and_options(params, options)

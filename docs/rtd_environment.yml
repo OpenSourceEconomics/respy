@@ -9,8 +9,8 @@ dependencies:
   - sphinx
   - sphinx-autobuild
   - sphinx-autoapi
-  - sphinxcontrib-bibtex<2.0.0
-  - pydata-sphinx-theme<0.6.0
+  - sphinxcontrib-bibtex>=2.0.0
+  - pydata-sphinx-theme>=0.6.0
   - parso>=0.8.1
   - pip:
     - sphinx-tabs

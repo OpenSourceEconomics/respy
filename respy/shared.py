@@ -6,15 +6,18 @@ import from respy itself. This is to prevent circular imports.
 """
 import shutil
 
-import chaospy as cp
 import numba as nb
 import numpy as np
 import pandas as pd
 
 from respy._numba import array_to_tuple
+from respy.config import CHAOSPY_INSTALLED
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
+
+if CHAOSPY_INSTALLED:
+    import chaospy as cp
 
 
 @nb.njit
@@ -109,18 +112,19 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
     n_points = np.prod(shape[:-1])
 
     np.random.seed(seed)
-
     if monte_carlo_sequence == "random":
         draws = np.random.standard_normal(shape)
 
-    elif monte_carlo_sequence == "halton":
-        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
-        draws = distribution.sample(n_points, rule="H").T.reshape(shape)
-
-    elif monte_carlo_sequence == "sobol":
-        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
-        draws = distribution.sample(n_points, rule="S").T.reshape(shape)
-
+    elif monte_carlo_sequence in ["sobol", "halton"]:
+        if CHAOSPY_INSTALLED:
+            rule = monte_carlo_sequence[0].capitalize()
+            distribution = cp.MvNormal(mu=np.zeros(n_choices), sigma=np.eye(n_choices))
+            draws = distribution.sample(n_points, rule=rule).T.reshape(shape)
+        else:
+            raise ImportError(
+                "Install the package chaospy to use 'sobol' and 'halton' "
+                "in options['monte_carlo_sequence']."
+            )
     else:
         raise NotImplementedError
 
