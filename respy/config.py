@@ -3,6 +3,14 @@ from pathlib import Path
 
 import numpy as np
 
+# Check if chaospy is installed.
+try:
+    import chaospy  # noqa
+except ImportError:
+    CHAOSPY_INSTALLED = False
+else:
+    CHAOSPY_INSTALLED = True
+
 # Obtain the root directory of the package. Do not import respy which creates a circular
 # import.
 ROOT_DIR = Path(__file__).parent
@@ -58,7 +66,7 @@ DEFAULT_OPTIONS = {
     "solution_seed": 3,
     "core_state_space_filters": [],
     "negative_choice_set": {},
-    "monte_carlo_sequence": "sobol",
+    "monte_carlo_sequence": "random",
     "cache_compression": "snappy",
 }
 

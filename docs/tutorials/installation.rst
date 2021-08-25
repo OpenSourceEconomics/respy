@@ -47,6 +47,17 @@ path, installing **respy** is as simple as typing
 in a command shell. The whole package repository can be found under
 https://anaconda.org/OpenSourceEconomics/respy.
 
+
+If you want to use different numerical integration methods implemented in **respy** you
+also need to additionally install the package
+`chaospy <https://chaospy.readthedocs.io>`_ as it is not added automatically as a
+package dependency.
+
+.. code-block:: bash
+
+    $ pip install chaospy
+
+
 As **respy** relies heavily on ``pandas``, you might also want to install their
 `recommended dependencies <https://pandas.pydata.org/pandas-docs/stable/getting_started/
 install.html#recommended-dependencies>`_ to speed up internal calculations done with

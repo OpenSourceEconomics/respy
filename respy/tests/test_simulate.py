@@ -178,3 +178,36 @@ def test_apply_law_of_motion(i):
     )
 
     assert new_df.equals(expected)
+
+
+@pytest.mark.parametrize("model", ["robinson_crusoe_basic", "kw_94_one"])
+def test_data_variables(model):
+    """Value function components in df add up to internally computed values."""
+    _, _, df = rp.get_example_model(model)
+
+    for choice in df.Choice.unique():
+        choice = choice.capitalize()
+        # Shocks in working choices are already included in the wage.
+        df["Shock_Nonpec"] = np.where(
+            df[f"Wage_{choice}"].isna(), df[f"Shock_Reward_{choice}"], 0
+        )
+        df[f"Flow_Utility_{choice}_"] = (
+            df[f"Wage_{choice}"].fillna(0)
+            + df[f"Nonpecuniary_Reward_{choice}"]
+            + df["Shock_Nonpec"]
+        )
+        df[f"Value_Function_{choice}_"] = (
+            df[f"Flow_Utility_{choice}_"]
+            + df["Discount_Rate"] * df[f"Continuation_Value_{choice}"]
+        )
+
+        pd.testing.assert_series_equal(
+            df[f"Flow_Utility_{choice}_"],
+            df[f"Flow_Utility_{choice}"],
+            check_names=False,
+        )
+        pd.testing.assert_series_equal(
+            df[f"Value_Function_{choice}_"],
+            df[f"Value_Function_{choice}"],
+            check_names=False,
+        )
