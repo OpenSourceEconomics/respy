@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from respy.config import CHAOSPY_INSTALLED
 from respy.config import EXAMPLE_MODELS
 from respy.config import INDEXER_INVALID_INDEX
 from respy.config import KEANE_WOLPIN_1994_MODELS
@@ -274,58 +275,61 @@ def test_dense_choice_cores():
     where this is not the case!
 
     """
-    point_constr = {"n_periods": 6, "observables": [3], "n_lagged_choices": 1}
+    if CHAOSPY_INSTALLED:
+        point_constr = {"n_periods": 6, "observables": [3], "n_lagged_choices": 1}
 
-    params, options = generate_random_model(point_constr=point_constr)
-    options["monte_carlo_sequence"] = "sobol"
+        params, options = generate_random_model(point_constr=point_constr)
+        options["monte_carlo_sequence"] = "sobol"
 
-    # Add some inadmissible states
-    optim_paras, _ = process_params_and_options(params, options)
+        # Add some inadmissible states
+        optim_paras, _ = process_params_and_options(params, options)
 
-    # Solve the base model
-    solve = get_solve_func(params, options)
-    state_space = solve(params)
+        # Solve the base model
+        solve = get_solve_func(params, options)
+        state_space = solve(params)
 
-    # Retrieve index
-    edu_start = np.random.choice(list(optim_paras["choices"]["edu"]["start"].keys()))
-    state = (3, 0, 3, edu_start, 1)
-    core_ix = state_space.indexer[state]
+        # Retrieve index
+        edu_start = np.random.choice(
+            list(optim_paras["choices"]["edu"]["start"].keys())
+        )
+        state = (3, 0, 3, edu_start, 1)
+        core_ix = state_space.indexer[state]
 
-    # Choose dense covar
-    pos = np.random.choice(range(len(state_space.dense)))
+        # Choose dense covar
+        pos = np.random.choice(range(len(state_space.dense)))
 
-    # Get indices
-    dense_combination = list(state_space.dense.keys())[pos]
-    dense_index = state_space.dense_covariates_to_dense_index[dense_combination]
-    ix = (
-        state_space.core_key_and_dense_index_to_dense_key[core_ix[0], dense_index],
-        core_ix[1],
-    )
+        # Get indices
+        dense_combination = list(state_space.dense.keys())[pos]
+        dense_index = state_space.dense_covariates_to_dense_index[dense_combination]
+        ix = (
+            state_space.core_key_and_dense_index_to_dense_key[core_ix[0], dense_index],
+            core_ix[1],
+        )
 
-    unrestricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
+        unrestricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
 
-    # Impose some restriction
-    options["negative_choice_set"] = {"a": ["period == 4 & exp_b ==4"]}
+        # Impose some restriction
+        options["negative_choice_set"] = {"a": ["period == 4 & exp_b ==4"]}
 
-    # Solve the restricted model
-    solve = get_solve_func(params, options)
-    state_space = solve(params)
-    core_ix = state_space.indexer[state]
+        # Solve the restricted model
+        solve = get_solve_func(params, options)
+        state_space = solve(params)
+        core_ix = state_space.indexer[state]
 
-    # Get indices
-    dense_combination = list(state_space.dense.keys())[pos]
-    dense_index = state_space.dense_covariates_to_dense_index[dense_combination]
-    ix = (
-        state_space.core_key_and_dense_index_to_dense_key[core_ix[0], dense_index],
-        core_ix[1],
-    )
+        # Get indices
+        dense_combination = list(state_space.dense.keys())[pos]
+        dense_index = state_space.dense_covariates_to_dense_index[dense_combination]
+        ix = (
+            state_space.core_key_and_dense_index_to_dense_key[core_ix[0], dense_index],
+            core_ix[1],
+        )
 
-    # Check some features of the state_space
-    restricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
+        # Check some features of the state_space
+        restricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
 
-    for i in [0, 2, 3]:
-        assert restricted_cont[i] == unrestricted_cont[i]
-    assert restricted_cont[1] != unrestricted_cont[1]
+        for i in [0, 2, 3]:
+            assert restricted_cont[i] == unrestricted_cont[i]
+        assert restricted_cont[1] != unrestricted_cont[1]
 
 
 @pytest.mark.end_to_end

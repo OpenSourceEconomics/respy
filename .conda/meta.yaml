@@ -15,9 +15,9 @@ build:
 
 requirements:
   host:
-    - python >=3.6
+    - python >=3.7
   run:
-    - python >=3.6
+    - python >=3.7
     - click
     - estimagic >=0.1.2
     - hypothesis
@@ -25,7 +25,7 @@ requirements:
     - fastparquet
     - mkl
     - numba >=0.42
-    - numpy
+    - numpy>=1.21.0
     - pandas >=0.24
     - pytest
     - python-snappy

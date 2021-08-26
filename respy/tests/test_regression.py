@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 import pytest
 
+from respy.config import CHAOSPY_INSTALLED
 from respy.config import TEST_RESOURCES_DIR
 from respy.config import TOL_REGRESSION_TESTS
 from respy.likelihood import get_log_like_func
@@ -37,8 +38,10 @@ def regression_vault():
 def test_single_regression(regression_vault, index):
     """Run a single regression test."""
     params, options, exp_val = regression_vault[index]
-    crit_val = compute_log_likelihood(params, options)
 
-    assert np.isclose(
-        crit_val, exp_val, rtol=TOL_REGRESSION_TESTS, atol=TOL_REGRESSION_TESTS
-    )
+    if CHAOSPY_INSTALLED or options["monte_carlo_sequence"] == "random":
+        crit_val = compute_log_likelihood(params, options)
+
+        assert np.isclose(
+            crit_val, exp_val, rtol=TOL_REGRESSION_TESTS, atol=TOL_REGRESSION_TESTS
+        )
