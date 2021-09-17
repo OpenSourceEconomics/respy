@@ -238,6 +238,7 @@ def moment_errors(
     if not return_scalar:
         out = {
             "value": out,
+            "moment_errors":moment_errors, 
             "root_contributions": moment_errors @ np.sqrt(weighting_matrix),
             "comparison_plot_data": _create_comparison_plot_data_msm(
                 empirical_moments, simulated_moments
