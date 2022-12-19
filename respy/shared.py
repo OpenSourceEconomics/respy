@@ -456,7 +456,7 @@ def calculate_expected_value_functions(
     The underlying process in this function is called `Monte Carlo integration
     <https://en.wikipedia.org/wiki/Monte_Carlo_integration>`_. The goal is to
     approximate an integral by evaluating the integrand at randomly chosen points. In
-    this setting, one wants to approximate the expected maximum utility of the current
+    this setting, one wants to approximate the m maximum utility of the current
     state.
 
     Note that ``wages`` have the same length as ``nonpecs`` despite that wages are only
@@ -589,8 +589,8 @@ def pandas_dot(x, beta, out=None):
     if not received_out:
         out = np.zeros(x.shape[0])
 
-    for covariate, beta in beta.items():
-        out += beta * x[covariate].values
+    for covariate, beta_ in beta.items():
+        out += beta_ * x[covariate].values
 
     if not received_out:
         return out

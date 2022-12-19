@@ -9,10 +9,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
-from estimagic.optimization.utilities import chol_params_to_lower_triangular_matrix
-from estimagic.optimization.utilities import cov_params_to_matrix
-from estimagic.optimization.utilities import robust_cholesky
-from estimagic.optimization.utilities import sdcorr_params_to_matrix
+from estimagic.utilities import chol_params_to_lower_triangular_matrix
+from estimagic.utilities import cov_params_to_matrix
+from estimagic.utilities import robust_cholesky
+from estimagic.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import MAX_FLOAT
@@ -189,7 +189,7 @@ def _parse_exogenous_processes(optim_paras, params):
     names = _parse_observable_or_exog_process_names(params, "exogenous_process")
 
     for exog_proc in names:
-        regex_pattern = fr"\bexogenous_process_{exog_proc}_([0-9a-z_]+)\b"
+        regex_pattern = rf"\bexogenous_process_{exog_proc}_([0-9a-z_]+)\b"
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, regex_pattern
         )
@@ -205,7 +205,7 @@ def _parse_observables(optim_paras, params):
     names = _parse_observable_or_exog_process_names(params, "observable")
 
     for observable in names:
-        regex_pattern = fr"\bobservable_{observable}_([0-9a-z_]+)\b"
+        regex_pattern = rf"\bobservable_{observable}_([0-9a-z_]+)\b"
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, regex_pattern
         )
@@ -286,7 +286,7 @@ def _parse_choice_parameters(optim_paras, params):
 def _parse_initial_and_max_experience(optim_paras, params, options):
     """Process initial experience distributions and maximum experience."""
     for choice in optim_paras["choices_w_exp"]:
-        regex_for_levels = fr"\binitial_exp_{choice}_([0-9]+)\b"
+        regex_for_levels = rf"\binitial_exp_{choice}_([0-9]+)\b"
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, regex_for_levels
         )
@@ -470,7 +470,7 @@ def _infer_choices_with_prefix(params, prefix):
     """
     return sorted(
         params.index.get_level_values(0)
-        .str.extract(fr"\b{prefix}_([A-Za-z_]+)\b", expand=False)
+        .str.extract(rf"\b{prefix}_([A-Za-z_]+)\b", expand=False)
         .dropna()
         .unique()
     )
@@ -544,7 +544,7 @@ def _parse_lagged_choices(optim_paras, options, params):
     # Add existing lagged choice parameters to ``optim_paras``.
     for lag in range(1, n_lc_covariates + 1):
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
-            params, fr"lagged_choice_{lag}_([A-Za-z_]+)"
+            params, rf"lagged_choice_{lag}_([A-Za-z_]+)"
         )
 
         # If there are no parameters for the specific lag, assume equiprobable choices.

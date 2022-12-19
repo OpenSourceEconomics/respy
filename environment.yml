@@ -12,7 +12,7 @@ dependencies:
   - conda-build
   - conda-verify
   - doc8
-  - estimagic>=0.1.2
+  - estimagic=0.4.3
   - fastparquet
   - hypothesis
   - joblib
@@ -49,4 +49,4 @@ dependencies:
     - bump2version
     - pytest-randomly
     - sphinx-tabs
-    - chaospy>=4.2.3
+    - chaospy==3.3.8

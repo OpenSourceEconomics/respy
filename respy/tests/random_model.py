@@ -4,9 +4,9 @@ import copy
 
 import numpy as np
 import pandas as pd
-from estimagic.optimization.utilities import cov_matrix_to_params
-from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
-from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
+from estimagic.utilities import cov_matrix_to_params
+from estimagic.utilities import cov_matrix_to_sdcorr_params
+from estimagic.utilities import number_of_triangular_elements_to_dimension
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import ROOT_DIR
@@ -264,7 +264,7 @@ def _update_nested_dictionary(dict_, other):
 
     """
     for key, value in other.items():
-        if isinstance(value, collections.Mapping):
+        if isinstance(value, collections.abc.Mapping):
             dict_[key] = _update_nested_dictionary(dict_.get(key, {}), value)
         else:
             dict_[key] = value

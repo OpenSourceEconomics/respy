@@ -1,6 +1,6 @@
 """Everything related to conditional draws for the maximum likelihood estimation."""
 import numpy as np
-from estimagic.optimization.utilities import robust_cholesky
+from estimagic.utilities import robust_cholesky
 from numba import guvectorize
 
 from respy.config import MAX_FLOAT
@@ -177,7 +177,7 @@ def update_mean_and_evaluate_likelihood(
             invariant
             - log_wage_observed
             - np.log(sigma)
-            - shock ** 2 / (2 * sigma_squared)
+            - shock**2 / (2 * sigma_squared)
         )
     else:
         for i in range(n_choices):
