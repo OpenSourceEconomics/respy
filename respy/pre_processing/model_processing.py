@@ -9,10 +9,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
-from estimagic.optimization.utilities import chol_params_to_lower_triangular_matrix
-from estimagic.optimization.utilities import cov_params_to_matrix
-from estimagic.optimization.utilities import robust_cholesky
-from estimagic.optimization.utilities import sdcorr_params_to_matrix
+from estimagic.utilities import chol_params_to_lower_triangular_matrix
+from estimagic.utilities import cov_params_to_matrix
+from estimagic.utilities import robust_cholesky
+from estimagic.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import MAX_FLOAT
