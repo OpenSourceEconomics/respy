@@ -81,7 +81,7 @@ def test_msm_nonzero(msm_args):
     msm_params = get_moment_errors_func(*msm_args)
 
     # 2. Lower number of periods in the simulated dataset.
-    msm_periods = get_moment_errors_func(n_simulation_periods=4, *msm_args)
+    msm_periods = get_moment_errors_func(*msm_args, n_simulation_periods=4)
 
     # 3. Different simulation seed for the simulated dataset.
     options = copy.deepcopy(msm_args[1])
