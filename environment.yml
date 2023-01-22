@@ -49,4 +49,4 @@ dependencies:
     - bump2version
     - pytest-randomly
     - sphinx-tabs
-    - chaospy==3.3.8
+    - chaospy
