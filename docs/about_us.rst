@@ -10,6 +10,11 @@ an issue on Github, writing an `email`_ to or join our `zulipchat group
 .. _email: research-codes-respy.9b46528f81292a712fa4855ff362f40f.show-sender@streams.zulipchat.com
 
 
+.. note::
+    **respy** is not under development anymore and only inactively maintained since 2021.
+    Check out our `GitHub organization <https://github.com/OpenSourceEconomics>`_
+    to find projects that are currently under development.
+
 .. tabs::
 
    .. tab:: Team
