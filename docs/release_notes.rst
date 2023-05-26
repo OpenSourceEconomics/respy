@@ -6,7 +6,14 @@ chronological order. We follow `semantic versioning <https://semver.org/>`_ and 
 releases are available on `Anaconda.org
 <https://anaconda.org/opensourceeconomics/respy>`_.
 
-2.1.0 - 2020-
+
+.. note::
+    **respy** is not under development anymore and only inactively maintained since 2021.
+    Check out our `GitHub organization <https://github.com/OpenSourceEconomics>`_ to find
+    projects that are currently under development.
+
+
+2.1.0 - 2020
 -------------
 - :gh:`381` Implements exogenous processes (:ghuser:`MaxBlesch`, :ghuser:`mo2561057`).
 - :gh:`383` Fixes simulation with data and adds tests (:ghuser:`janosg`).
