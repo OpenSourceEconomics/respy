@@ -26,10 +26,9 @@ respy
 
 ----
 
-.. note::
-    **respy** is not under development anymore and only inactively maintained since 2021.
-    Check out our `GitHub organization <https://github.com/OpenSourceEconomics>`_ to find
-    projects that are currently under development.
+*Note: respy is not under development anymore and only inactively maintained since 2021.
+Check out our* `GitHub organization <https://github.com/OpenSourceEconomics>`_ *to find  projects
+that are currently under development.*
 
 **respy** is an open source framework written in Python for the simulation and
 estimation of some finite-horizon discrete choice dynamic programming models. The group
