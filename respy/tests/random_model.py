@@ -4,9 +4,9 @@ import copy
 
 import numpy as np
 import pandas as pd
-from estimagic.optimization.utilities import cov_matrix_to_params
-from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
-from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
+from estimagic.utilities import cov_matrix_to_params
+from estimagic.utilities import cov_matrix_to_sdcorr_params
+from estimagic.utilities import number_of_triangular_elements_to_dimension
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import ROOT_DIR
