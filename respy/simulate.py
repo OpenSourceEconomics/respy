@@ -211,7 +211,10 @@ def simulate(
         index_to_complex = state_space.get_attribute_from_period(
             "dense_key_to_complex", period
         )
-        continuation_values, lt_wages = state_space._get_continuation_values_and_lt_wages(period=period)
+        continuation_values, lt_wages = state_space.get_continuation_values_and_lt_wages(
+            period=period)
+        #if period > 0:
+        #    breakpoint()
 
         current_df_extended = _simulate_single_period(
             current_df,
@@ -390,7 +393,7 @@ def _simulate_single_period(
     """
     choice_set = get_choice_set_from_complex(complex_tuple)
     valid_choices = select_valid_choices(optim_paras["choices"], choice_set)
-
+    #breakpoint()
     n_wages_raw = len(optim_paras["choices_w_wage"])
     n_wages = sum(choice_set[:n_wages_raw])
 
@@ -403,6 +406,8 @@ def _simulate_single_period(
         wages = wages[period_indices]
         nonpecs = nonpecs[period_indices]
         continuation_values = continuation_values[period_indices]
+        lt_wages = lt_wages[period_indices]
+        
     except IndexError as e:
         raise Exception(
             "Simulated individuals could not be mapped to their corresponding states in"
@@ -448,10 +453,9 @@ def _simulate_single_period(
         df[f"flow_utility_{choice}"] = flow_utilities[:, i]
         df[f"value_function_{choice}"] = value_functions[:, i]
         df[f"continuation_value_{choice}"] = continuation_values[:, i]
+        
         df[f"continuation_wage_{choice}"] = lt_wages[:, i]
-        df[f"lt_wage_{choice}"] = lt_wages[:, i] + optim_paras["beta_delta"]*lt_wages[:, i]
-        
-        
+        df[f"lt_wage_{choice}"] = lt_wages[:, i] + optim_paras["delta"]*lt_wages[:, i]
         df[f"shock_reward_{choice}"] = draws_shock_transformed[:, i]
 
     # Check if there is an exogenous process

@@ -186,7 +186,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         # Handle myopic individuals. Check interpolation!
         if optim_paras["delta"] == 0:
             period_expected_value_functions = {k: 0 for k in dense_keys_in_period}
-
+            period_expected_lifetime_wages = {k: 0 for k in dense_keys_in_period}
         elif any_interpolated:
             period_expected_value_functions = kw_94_interpolation(
                 state_space,
@@ -200,8 +200,9 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
             wages = state_space.get_attribute_from_period("wages", period)
             nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-            continuation_values = state_space.get_continuation_values(period)
-            continuation_wages = state_space.get_lt_wages(period)
+            continuation_values, continuation_wages = state_space.get_continuation_values_and_lt_wages(
+                period)
+            
 
             (
                 period_expected_value_functions,
@@ -219,7 +220,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             "expected_value_functions", period_expected_value_functions
         )
         state_space.set_attribute_from_keys(
-            "expected_lifetime_wages", period_expected_lifetime_wages
+            "expected_lt_wages", period_expected_lifetime_wages
         )
     return state_space
 

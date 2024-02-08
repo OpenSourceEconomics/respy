@@ -196,13 +196,13 @@ class StateSpace:
         for index, indices in self.dense_key_to_core_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
 
-    def create_arrays_for_lifetime_wages(self):
+    def create_arrays_for_expected_lifetime_wages(self):
         """Create a container for expected value functions."""
-        self.expected_lifetime_wages = Dict.empty(
+        self.expected_lt_wages = Dict.empty(
             key_type=nb.types.int64, value_type=nb.types.float64[:]
         )
         for index, indices in self.dense_key_to_core_indices.items():
-            self.expected_lifetime_wages[index] = np.zeros(len(indices))
+            self.expected_lt_wages[index] = np.zeros(len(indices))
 
     def create_objects_for_exogenous_processes(self):
         """Create mappings for the implementation of the exogenous processes."""
@@ -304,7 +304,7 @@ class StateSpace:
         return continuation_values
 
 
-    def get_continiation_values_and_lt_wages(self, period):
+    def get_continuation_values_and_lt_wages(self, period):
         """Copy of get_contination values for lifetime wages."""
         if period == self.n_periods - 1:
             shapes = self.get_attribute_from_period("base_draws_sol", period)
@@ -313,10 +313,14 @@ class StateSpace:
                 key: np.zeros((states[key].shape[0], shapes[key].shape[1]))
                 for key in shapes
             }
+            lt_wages = {
+                key: np.zeros((states[key].shape[0], shapes[key].shape[1]))
+                for key in shapes
+            } 
         else:
             child_indices = self.get_attribute_from_period("child_indices", period)
             expected_lt_wages = self.get_attribute_from_period(
-                "expected_value_functions", period + 1
+                "expected_lt_wages", period + 1
             )
             subset_expected_lt_wages = Dict.empty(
                 key_type=nb.types.int64, value_type=nb.types.float64[:]
@@ -993,7 +997,7 @@ def _get_continuation_values_and_lt_wages(
             dense_choice = core_index_and_dense_vector_to_dense_index[idx]
 
             continuation_values[i, j] = expected_value_functions[dense_choice][row_idx]
-            lt_wages[i, j] = expected_value_functions[dense_choice][row_idx]
+            lt_wages[i, j] = expected_lt_wages[dense_choice][row_idx]
 
 
     return continuation_values, lt_wages

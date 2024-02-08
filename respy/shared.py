@@ -91,7 +91,7 @@ def aggregate_keane_wolpin_utility_w_wage(wage, nonpec, continuation_value, cont
     """
     flow_utility = wage * draw + nonpec
     alternative_specific_value_function = flow_utility + delta * continuation_value
-    alternative_specific_lt_wage_function = wage*draw + delta*continuation_wage
+    alternative_specific_lt_wage_function = wage * draw + delta*continuation_wage
 
     return alternative_specific_value_function, alternative_specific_lt_wage_function, flow_utility
 
@@ -475,13 +475,20 @@ def create_state_space_columns(optim_paras):
 
 
 @nb.guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, f8[:]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (),() -> (),()",
+    ["f8[:], f8[:], f8[:], f8[:], f8[:, :], f8, f8[:], f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_choices), (n_draws, n_choices), () -> (),()",
     nopython=True,
     target="parallel",
 )
 def calculate_expected_value_functions(
-    wages, nonpecs, continuation_values, continuation_wages, draws, delta, expected_value_functions, expected_lifetime_wages
+    wages,
+    nonpecs,
+    continuation_values,
+    continuation_wages,
+    draws,
+    delta,
+    expected_value_functions,
+    expected_lifetime_wages
 ):
     r"""Calculate the expected maximum of value functions for a set of unobservables.
 
@@ -536,13 +543,14 @@ def calculate_expected_value_functions(
         choosen_lifetime_wages = 0 
 
         for j in range(n_choices):
-            value_function, _, lifetime_wages= aggregate_keane_wolpin_utility_w_wage(
+            value_function, lt_wages, _= aggregate_keane_wolpin_utility_w_wage(
                 wages[j], nonpecs[j], continuation_values[j], continuation_wages[j], draws[i, j], delta
             )
 
             if value_function > max_value_functions:
                 max_value_functions = value_function
-                choosen_lifetime_wages = lifetime_wages[j]
+                choosen_lifetime_wages = lt_wages
+
         expected_value_functions[0] += max_value_functions
         expected_lifetime_wages[0] += choosen_lifetime_wages
         
