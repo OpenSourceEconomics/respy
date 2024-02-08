@@ -57,6 +57,44 @@ def aggregate_keane_wolpin_utility(wage, nonpec, continuation_value, draw, delta
 
     return alternative_specific_value_function, flow_utility
 
+@nb.njit
+def aggregate_keane_wolpin_utility_w_wage(wage, nonpec, continuation_value, continuation_wage, draw, delta):
+    """Calculate the utility of Keane and Wolpin models.
+
+    Note that the function works for working and non-working alternatives as wages are
+    set to one for non-working alternatives such that the draws enter the utility
+    function additively.
+
+    Parameters
+    ----------
+    wage : float
+        Value of the wage component. Note that for non-working alternatives this value
+        is actually zero, but to simplify computations it is set to one.
+    nonpec : float
+        Value of the non-pecuniary component.
+    continuation_value : float
+        Value of the continuation value which is the expected present-value of the
+        following state.
+    draw : float
+        The shock which enters the enters the reward of working alternatives
+        multiplicatively and of non-working alternatives additively.
+    delta : float
+        The discount factor to calculate the present value of continuation values.
+
+    Returns
+    -------
+    alternative_specific_value_function : float
+        The expected present value of an alternative.
+    flow_utility : float
+        The immediate reward of an alternative.
+
+    """
+    flow_utility = wage * draw + nonpec
+    alternative_specific_value_function = flow_utility + delta * continuation_value
+    alternative_specific_lt_wage_function = wage*draw + delta*continuation_wage
+
+    return alternative_specific_value_function, alternative_specific_lt_wage_function, flow_utility
+
 
 def create_base_draws(shape, seed, monte_carlo_sequence):
     """Create a set of draws from the standard normal distribution.
@@ -438,12 +476,12 @@ def create_state_space_columns(optim_paras):
 
 @nb.guvectorize(
     ["f8[:], f8[:], f8[:], f8[:, :], f8, f8[:]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), () -> ()",
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (),() -> (),()",
     nopython=True,
     target="parallel",
 )
 def calculate_expected_value_functions(
-    wages, nonpecs, continuation_values, draws, delta, expected_value_functions
+    wages, nonpecs, continuation_values, continuation_wages, draws, delta, expected_value_functions, expected_lifetime_wages
 ):
     r"""Calculate the expected maximum of value functions for a set of unobservables.
 
@@ -495,18 +533,23 @@ def calculate_expected_value_functions(
     for i in range(n_draws):
 
         max_value_functions = 0
+        choosen_lifetime_wages = 0 
 
         for j in range(n_choices):
-            value_function, _ = aggregate_keane_wolpin_utility(
-                wages[j], nonpecs[j], continuation_values[j], draws[i, j], delta
+            value_function, _, lifetime_wages= aggregate_keane_wolpin_utility_w_wage(
+                wages[j], nonpecs[j], continuation_values[j], continuation_wages[j], draws[i, j], delta
             )
 
             if value_function > max_value_functions:
                 max_value_functions = value_function
-
+                choosen_lifetime_wages = lifetime_wages[j]
         expected_value_functions[0] += max_value_functions
+        expected_lifetime_wages[0] += choosen_lifetime_wages
+        
 
     expected_value_functions[0] /= n_draws
+    expected_lifetime_wages[0] /= n_draws
+    
 
 
 def convert_dictionary_keys_to_dense_indices(dictionary):

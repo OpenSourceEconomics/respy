@@ -211,7 +211,7 @@ def simulate(
         index_to_complex = state_space.get_attribute_from_period(
             "dense_key_to_complex", period
         )
-        continuation_values = state_space.get_continuation_values(period=period)
+        continuation_values, lt_wages = state_space._get_continuation_values_and_lt_wages(period=period)
 
         current_df_extended = _simulate_single_period(
             current_df,
@@ -219,6 +219,7 @@ def simulate(
             wages,
             nonpecs,
             continuation_values,
+            lt_wages,
             optim_paras=optim_paras,
             options=options,
         )
@@ -373,7 +374,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 @split_and_combine_df
 @parallelize_across_dense_dimensions
 def _simulate_single_period(
-    df, complex_tuple, wages, nonpecs, continuation_values, optim_paras, options
+    df, complex_tuple, wages, nonpecs, continuation_values, lt_wages, optim_paras, options
 ):
     """Simulate individuals in a single period.
 
@@ -447,6 +448,10 @@ def _simulate_single_period(
         df[f"flow_utility_{choice}"] = flow_utilities[:, i]
         df[f"value_function_{choice}"] = value_functions[:, i]
         df[f"continuation_value_{choice}"] = continuation_values[:, i]
+        df[f"continuation_wage_{choice}"] = lt_wages[:, i]
+        df[f"lt_wage_{choice}"] = lt_wages[:, i] + optim_paras["beta_delta"]*lt_wages[:, i]
+        
+        
         df[f"shock_reward_{choice}"] = draws_shock_transformed[:, i]
 
     # Check if there is an exogenous process

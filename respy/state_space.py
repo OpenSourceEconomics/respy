@@ -124,6 +124,8 @@ class StateSpace:
         self._create_conversion_dictionaries()
         self.base_draws_sol = self.create_draws(options)
         self.create_arrays_for_expected_value_functions()
+        self.create_arrays_for_expected_lifetime_wages()
+        
 
         if len(self.optim_paras["exogenous_processes"]) > 0:
             self.create_objects_for_exogenous_processes()
@@ -193,6 +195,14 @@ class StateSpace:
         )
         for index, indices in self.dense_key_to_core_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
+
+    def create_arrays_for_lifetime_wages(self):
+        """Create a container for expected value functions."""
+        self.expected_lifetime_wages = Dict.empty(
+            key_type=nb.types.int64, value_type=nb.types.float64[:]
+        )
+        for index, indices in self.dense_key_to_core_indices.items():
+            self.expected_lifetime_wages[index] = np.zeros(len(indices))
 
     def create_objects_for_exogenous_processes(self):
         """Create mappings for the implementation of the exogenous processes."""
@@ -274,7 +284,9 @@ class StateSpace:
                 self.get_attribute_from_period("dense_key_to_core_indices", period),
                 child_indices,
                 self.core_key_and_dense_index_to_dense_key,
-                bypass={"expected_value_functions": subset_expected_value_functions},
+                bypass={
+                    "expected_value_functions": subset_expected_value_functions,
+                    },
             )
 
             if len(self.optim_paras["exogenous_processes"]) > 0:
@@ -290,6 +302,80 @@ class StateSpace:
                 )
 
         return continuation_values
+
+
+    def get_continiation_values_and_lt_wages(self, period):
+        """Copy of get_contination values for lifetime wages."""
+        if period == self.n_periods - 1:
+            shapes = self.get_attribute_from_period("base_draws_sol", period)
+            states = self.get_attribute_from_period("dense_key_to_core_indices", period)
+            continuation_values = {
+                key: np.zeros((states[key].shape[0], shapes[key].shape[1]))
+                for key in shapes
+            }
+        else:
+            child_indices = self.get_attribute_from_period("child_indices", period)
+            expected_lt_wages = self.get_attribute_from_period(
+                "expected_value_functions", period + 1
+            )
+            subset_expected_lt_wages = Dict.empty(
+                key_type=nb.types.int64, value_type=nb.types.float64[:]
+            )
+            expected_value_functions = self.get_attribute_from_period(
+                "expected_value_functions", period + 1
+            )
+            subset_expected_value_functions = Dict.empty(
+                key_type=nb.types.int64, value_type=nb.types.float64[:]
+            )
+            
+            for key, value in expected_lt_wages.items():
+                subset_expected_lt_wages[key] = value
+            
+            for key, value in expected_value_functions.items():
+                subset_expected_value_functions[key] = value
+
+            transit_choice_sets = (
+                "transit_key_to_choice_set"
+                if hasattr(self, "transit_key_to_choice_set")
+                else "dense_key_to_choice_set"
+            )
+
+            continuation_values, lt_wages = _get_continuation_values_and_lt_wages(
+                self.get_attribute_from_period("dense_key_to_complex", period),
+                self.get_attribute_from_period(transit_choice_sets, period),
+                self.get_attribute_from_period("dense_key_to_core_indices", period),
+                child_indices,
+                self.core_key_and_dense_index_to_dense_key,
+                bypass={"expected_value_functions": subset_expected_lt_wages,
+                        "expected_lt_wages": subset_expected_lt_wages,
+                        },
+            )
+
+            if len(self.optim_paras["exogenous_processes"]) > 0:
+                continuation_values = weight_continuation_values(
+                    self.get_attribute_from_period("dense_key_to_complex", period),
+                    self.options,
+                    bypass={
+                        "continuation_values": continuation_values,
+                        "transit_key_to_choice_set": self.get_attribute_from_period(
+                            transit_choice_sets, period
+                        ),
+                    },
+                )
+                lt_wages = weight_continuation_values(
+                    self.get_attribute_from_period("dense_key_to_complex", period),
+                    self.options,
+                    bypass={
+                        "continuation_values": lt_wages,
+                        "transit_key_to_choice_set": self.get_attribute_from_period(
+                            transit_choice_sets, period
+                        ),
+                    },
+                )
+
+        return continuation_values, lt_wages
+
+
 
     def collect_child_indices(self):
         """Collect for each state the indices of its child states.
@@ -861,6 +947,56 @@ def _get_continuation_values(
             continuation_values[i, j] = expected_value_functions[dense_choice][row_idx]
 
     return continuation_values
+
+@parallelize_across_dense_dimensions
+def _get_continuation_values_and_lt_wages(
+    dense_complex_index,
+    choice_set,
+    core_indices,
+    child_indices,
+    core_index_and_dense_vector_to_dense_index,
+    expected_value_functions,
+    expected_lt_wages
+):
+    """Get continuation values from child states.
+
+    The continuation values are the discounted expected value functions from child
+    states. This method allows to retrieve continuation values that were obtained in the
+    model solution. In particular the function assigns continuation values to state
+    choice combinations by using the child indices created in
+    :func:`_collect_child_indices`.
+
+    Returns
+    -------
+    continuation_values : numpy.ndarray
+        Array with shape ``(n_states, n_choices)``. Maps core_key and choice into
+        continuation value.
+
+    """
+    if len(dense_complex_index) == 3:
+        period, _, dense_idx = dense_complex_index
+    elif len(dense_complex_index) == 2:
+        period, _ = dense_complex_index
+        dense_idx = 0
+
+    n_choices = sum_over_numba_boolean_unituple(choice_set)
+
+    n_states = core_indices.shape[0]
+
+    continuation_values = np.zeros((len(core_indices), n_choices))
+    lt_wages = np.zeros((len(core_indices), n_choices))
+    
+    for i in range(n_states):
+        for j in range(n_choices):
+            core_idx, row_idx = child_indices[i, j]
+            idx = (core_idx, dense_idx)
+            dense_choice = core_index_and_dense_vector_to_dense_index[idx]
+
+            continuation_values[i, j] = expected_value_functions[dense_choice][row_idx]
+            lt_wages[i, j] = expected_value_functions[dense_choice][row_idx]
+
+
+    return continuation_values, lt_wages
 
 
 @parallelize_across_dense_dimensions

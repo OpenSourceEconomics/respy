@@ -201,20 +201,37 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             wages = state_space.get_attribute_from_period("wages", period)
             nonpecs = state_space.get_attribute_from_period("nonpecs", period)
             continuation_values = state_space.get_continuation_values(period)
-            period_expected_value_functions = _full_solution(
-                wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras
+            continuation_wages = state_space.get_lt_wages(period)
+
+            (
+                period_expected_value_functions,
+                period_expected_lifetime_wages,
+            ) = _full_solution(
+                wages,
+                nonpecs,
+                continuation_values,
+                continuation_wages,
+                period_draws_emax_risk,
+                optim_paras,
             )
 
         state_space.set_attribute_from_keys(
             "expected_value_functions", period_expected_value_functions
         )
-
+        state_space.set_attribute_from_keys(
+            "expected_lifetime_wages", period_expected_lifetime_wages
+        )
     return state_space
 
 
 @parallelize_across_dense_dimensions
 def _full_solution(
-    wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras
+    wages,
+    nonpecs,
+    continuation_values,
+    continuation_wages,
+    period_draws_emax_risk,
+    optim_paras,
 ):
     """Calculate the full solution of the model.
 
@@ -222,12 +239,16 @@ def _full_solution(
     state and not only a subset of states.
 
     """
-    period_expected_value_functions = calculate_expected_value_functions(
+    (
+        period_expected_value_functions,
+        period_expected_lifetime_wages,
+    ) = calculate_expected_value_functions(
         wages,
         nonpecs,
         continuation_values,
+        continuation_wages,
         period_draws_emax_risk,
         optim_paras["delta"],
     )
 
-    return period_expected_value_functions
+    return period_expected_value_functions, period_expected_lifetime_wages

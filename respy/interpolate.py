@@ -325,7 +325,7 @@ def _compute_lhs_variable(
         Discount factor.
 
     """
-    expected_value_functions = calculate_expected_value_functions(
+    expected_value_functions, _ = calculate_expected_value_functions(
         wages[not_interpolated],
         nonpec[not_interpolated],
         continuation_values[not_interpolated],
