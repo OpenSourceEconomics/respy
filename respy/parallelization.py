@@ -31,6 +31,7 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
         def wrapper_parallelize_across_dense_dimensions(*args, **kwargs):
             bypass = kwargs.pop("bypass", {})
             dense_keys = _infer_dense_keys_from_arguments(args, kwargs)
+
             if dense_keys:
                 args_, kwargs_ = _broadcast_arguments(args, kwargs, dense_keys)
 
@@ -38,7 +39,6 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
                     joblib.delayed(func)(*args_[idx], **kwargs_[idx], **bypass)
                     for idx in dense_keys
                 )
-
                 # Re-order multiple return values from list of tuples to tuple of lists
                 # to tuple of dictionaries to set as state space attributes.
                 if isinstance(out[0], tuple):
@@ -110,8 +110,10 @@ def _infer_dense_keys_from_arguments(args, kwargs):
 
 def _is_dictionary_with_integer_keys(candidate):
     """Infer whether the argument is a dictionary with integer keys."""
-    return isinstance(candidate, dict) and all(
-        isinstance(key, int) for key in candidate
+    return (
+        isinstance(candidate, dict)
+        and len(candidate) > 0
+        and all(isinstance(key, int) for key in candidate)
     )
 
 

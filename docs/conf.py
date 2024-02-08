@@ -18,7 +18,7 @@ copyright = f"2015-{dt.datetime.now().year}, The respy Development Team"  # noqa
 author = "The respy Development Team"
 
 # The full version, including alpha/beta/rc tags.
-release = "2.0.0"
+release = "2.1.1"
 version = ".".join(release.split(".")[:2])
 
 # -- General configuration ------------------------------------------------
@@ -36,9 +36,11 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
+    "sphinxcontrib.bibtex",
     "nbsphinx",
     "numpydoc",
     "autoapi.extension",
+    "sphinx_tabs.tabs",
 ]
 
 autodoc_mock_imports = [
@@ -56,7 +58,7 @@ autodoc_mock_imports = [
 
 extlinks = {
     "ghuser": ("https://github.com/%s", "@"),
-    "gh": ("https://github.com/OpenSourceEconomics/respy/pulls/%s", "#"),
+    "gh": ("https://github.com/OpenSourceEconomics/respy/pull/%s", "#"),
 }
 
 intersphinx_mapping = {
@@ -65,6 +67,8 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "python": ("https://docs.python.org/3.8", None),
 }
+
+bibtex_bibfiles = ["explanations/refs.bib"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -116,7 +120,7 @@ autosummary_generate = True
 # Configuration for autoapi
 autoapi_type = "python"
 autoapi_dirs = ["../respy"]
-autoapi_ignore = ["../respy/tests/*"]
+autoapi_ignore = ["*/tests/*"]
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -127,6 +131,15 @@ html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
     "github_url": "https://github.com/OpenSourceEconomics/respy",
+    "twitter_url": "https://twitter.com/open_econ",
 }
 
 html_css_files = ["css/custom.css"]
+
+html_logo = "_static/images/respy-logo.svg"
+
+
+html_sidebars = {
+    "index": ["search-field", "custom-intro"],
+    "about_us": ["search-field", "custom-about-us"],
+}

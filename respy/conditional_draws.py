@@ -177,7 +177,7 @@ def update_mean_and_evaluate_likelihood(
             invariant
             - log_wage_observed
             - np.log(sigma)
-            - shock ** 2 / (2 * sigma_squared)
+            - shock**2 / (2 * sigma_squared)
         )
     else:
         for i in range(n_choices):

@@ -1,29 +1,80 @@
-/* Remove execution count for notebook cells. */
 div.prompt {
     display: none;
+}
+
+/* General */
+
+h1, h2, h3, h4, h5 {
+    color: #004385 !important;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+/*a {
+    color: #0C619F !important;
+}*/
+
+a:hover {
+    color: #187FB9 !important;
+}
+
+a:active {
+    color: #187FB9 !important;
+}
+
+a.headerlink {
+    color: #004385 !important;
+}
+
+a.headerlink:hover {
+    color: #fff !important;
+    background-color: #187FB9 !important;
+}
+
+/* color for naigation bar when item has been selected */
+.navbar-light .navbar-nav .active>.nav-link {
+    color: #187FB9 !important;
+}
+
+/* color for sidebar item when it has been selected */
+
+.bd-sidebar .nav .active > a {
+    color: #187FB9 !important;
+}
+
+/* toc on right of page, color when item is selected */
+.toc-entry > .nav-link.active {
+  color: #187FB9;
+  border-left: 2px solid #187FB9;
 }
 
 /* Getting started index page */
 
 .intro-card {
-    background: #fff;
-    border-radius: 0;
-    padding: 30px 10px 10px 10px;
+    padding: 40px 10px 20px 10px;
     margin: 10px 0px;
     max-height: 85%;
+
 }
 
 .intro-card .card-text {
     margin: 20px 0px;
+
 }
 
-div#index-container {
+.card-img-top + .card-body {
+    padding-top: 0;
+}
+
+div.index-container {
     padding-bottom: 20px;
 }
 
-a#index-link {
-    color: #333;
-    text-decoration: none;
+a.index-link {
+  color: #333;
+  text-decoration: none;
 }
 
 /* reference to user guide */
@@ -33,16 +84,16 @@ a#index-link {
 }
 
 .gs-torefguide .badge {
-    background-color: #130654;
+    background-color: #004C8D;
     margin: 10px 10px 10px 0px;
     padding: 5px;
 }
 
 .gs-torefguide a {
     margin-left: 5px;
-    color: #130654;
-    border-bottom: 1px solid #FFCA00f3;
-    box-shadow: 0px -10px 0px #FFCA00f3 inset;
+    color: #004C8D;
+    border-bottom: 1px solid #fff79c;
+    box-shadow: 0px -15px 0px #fff79c inset;
 }
 
 .gs-torefguide p {
@@ -54,5 +105,56 @@ a#index-link {
     color: grey;
     text-decoration: none;
     border-bottom: 1px solid #b2ff80f3;
-    box-shadow: 0px -10px 0px #b2ff80f3 inset;
+    box-shadow: 0px -15px 0px #b2ff80f3 inset;
+}
+
+.blue { color: #004C8D; }
+
+.boldblue {
+  font-weight: bold;
+  color: #004C8D;
+}
+
+.centerblue {
+  text-align: center;
+  color: #004C8D;
+}
+
+.orange { color: orange; }
+
+.verbatimblue {
+  font-weight: verbatim;
+  color: #004C8D;
+}
+
+.boldcenterblue {
+  font-weight: bold;
+  text-align: center;
+  color: #004C8D;
+}
+
+/* card tweaks */
+
+.shadow {
+  box-shadow: 0 .5rem 0 rgba(0,0,0,.15) !important;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.shadow:hover {
+    box-shadow: 0.3rem 0.7rem 0 rgba(0,0,0,.2) !important;
+    transform: translate(-0.3rem,-0.2rem);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-header {
+  font-weight: bold;
+  font-size: 1.1em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 78px
+}
+
+.col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-10, .col-11, .col-12, .col-auto, .col-lg, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-auto, .col-md, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12, .col-md-auto, .col-sm, .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-auto, .col-xl, .col-xl-1, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-10, .col-xl-11, .col-xl-12, .col-xl-auto {
+  padding: 15px;
 }

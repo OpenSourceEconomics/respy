@@ -6,8 +6,27 @@ chronological order. We follow `semantic versioning <https://semver.org/>`_ and 
 releases are available on `Anaconda.org
 <https://anaconda.org/opensourceeconomics/respy>`_.
 
-2.0.0 - 2019-
+2.1.0 - 2020-
 -------------
+- :gh:`381` Implements exogenous processes (:ghuser:`MaxBlesch`, :ghuser:`mo2561057`).
+- :gh:`383` Fixes simulation with data and adds tests (:ghuser:`janosg`).
+- :gh:`387` Fixes issue in documenation build (:ghuser:`amageh`).
+- :gh:`389` Adjust criterion functions to return a scalar value or dictionary with
+  additional information (:ghuser:`amageh`).
+- :gh:`391` Adds how-to guide on example models and specifying a model (:ghuser:`amageh`;
+  model specification guide draws on work by :ghuser:`tobiasraabe`
+  and :ghuser:`rafaelsuchy`). Fixes bug in model validation for shock parameters.
+- :gh:`395` Adds guides and tutorials for exogenous proccesses, covariates, and maximum 
+  likelihood estimation. Improves structure and appearance of documentation. 
+  (:ghuser:`MaxBlesch`, :ghuser:`amageh`).
+- :gh:`406` More information in example models guide (:ghuser:`carolinalvarez`, 
+  :ghuser:`amageh`).
+- :gh:`414` Fix bug in simulate that added untransformed shocks to df. Removes
+  chaospy from conda dependencies(:ghuser:`amageh`).
+
+
+2.0.0 - 2019-2020
+-----------------
 
 - :gh:`177` removes all Fortran files and ensures that all tests still run through
   (:ghuser:`tobiasraabe`).
@@ -99,6 +118,8 @@ releases are available on `Anaconda.org
 - :gh:`363` enables msm function to return simulated moments or comparison plot data for
   use with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_
   (:ghuser:`amageh`).
+- :gh:`366` adds comprehensive, exemplary explanation of model from 
+  Keane and Wolpin (1997) to documentation (:ghuser:`bekauf`, :ghuser:`rafaelsuchy`). 
 - :gh:`369` adds second set of parameters for kw_97 models (:ghuser:`amageh`).
 - :gh:`371` changes the names of the criterion functions for maximum likelihood and msm
   estimation. Makes replacement functions optional for estimation with

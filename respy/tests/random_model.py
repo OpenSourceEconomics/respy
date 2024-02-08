@@ -264,7 +264,7 @@ def _update_nested_dictionary(dict_, other):
 
     """
     for key, value in other.items():
-        if isinstance(value, collections.Mapping):
+        if isinstance(value, collections.abc.Mapping):
             dict_[key] = _update_nested_dictionary(dict_.get(key, {}), value)
         else:
             dict_[key] = value

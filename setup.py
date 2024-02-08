@@ -9,7 +9,7 @@ DESCRIPTION = (
     "respy is a Python package for the simulation and estimation of a prototypical "
     "finite-horizon dynamic discrete choice model."
 )
-EMAIL = "respy.9b46528f81292a712fa4855ff362f40f.show-sender@streams.zulipchat.com"
+EMAIL = "research-codes-respy.9b46528f81292a712fa4855ff362f40f.show-sender@streams.zulipchat.com"  # noqa
 README = Path("README.rst").read_text()
 PROJECT_URLS = {
     "Bug Tracker": "https://github.com/OpenSourceEconomics/respy/issues",
@@ -20,7 +20,7 @@ PROJECT_URLS = {
 
 setup(
     name="respy",
-    version="2.0.0",
+    version="2.1.1",
     description=DESCRIPTION,
     long_description=DESCRIPTION + "\n\n" + README,
     long_description_content_type="text/x-rst",
