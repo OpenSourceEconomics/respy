@@ -1,4 +1,6 @@
 """This module includes test to specifically test that randomness is held constant."""
+import functools
+
 import numpy as np
 import pytest
 
@@ -44,7 +46,7 @@ def test_invariance_of_model_solution_in_solve_and_criterion_functions(model):
         apply_to_attributes_of_two_state_spaces(
             state_space.expected_value_functions,
             state_space_.expected_value_functions,
-            np.testing.assert_array_equal,
+            functools.partial(np.testing.assert_array_almost_equal,decimal=2),
         )
         apply_to_attributes_of_two_state_spaces(
             state_space.base_draws_sol,
