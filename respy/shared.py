@@ -453,7 +453,7 @@ def calculate_value_functions_flow_utilities_and_lt_wages(
     aggregate_keane_wolpin_utility
 
     """
-    value_function[0], continuation_wage[0], flow_utility[0] = aggregate_keane_wolpin_utility_w_wage(
+    value_function[0], lt_wage[0], flow_utility[0] = aggregate_keane_wolpin_utility_w_wage(
         wage, nonpec, continuation_value,continuation_wage, draw, delta
     )
 
