@@ -433,6 +433,32 @@ def calculate_value_functions_and_flow_utilities(
     )
 
 
+@nb.guvectorize(
+    ["f8, f8, f8, f8, f8, f8, f8[:], f8[:], f8[:]"],
+    "(), (), (), (), (), () -> (), (), ()",
+    nopython=True,
+    target="parallel",
+)
+def calculate_value_functions_flow_utilities_and_lt_wages(
+    wage, nonpec, continuation_value, continuation_wage, draw, delta, value_function, lt_wage, flow_utility
+):
+    """Calculate the choice-specific value functions and flow utilities.
+
+    To apply :func:`aggregate_keane_wolpin_utility` to arrays with arbitrary dimensions,
+    this function uses :func:`numba.guvectorize`. One cannot use :func:`numba.vectorize`
+    because it does not support multiple return values.
+
+    See also
+    --------
+    aggregate_keane_wolpin_utility
+
+    """
+    value_function[0], continuation_wage[0], flow_utility[0] = aggregate_keane_wolpin_utility_w_wage(
+        wage, nonpec, continuation_value,continuation_wage, draw, delta
+    )
+
+
+
 def create_core_state_space_columns(optim_paras):
     """Create internal column names for the core state space."""
     return [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]] + [
