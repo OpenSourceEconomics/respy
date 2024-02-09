@@ -350,7 +350,7 @@ class StateSpace:
                 self.get_attribute_from_period("dense_key_to_core_indices", period),
                 child_indices,
                 self.core_key_and_dense_index_to_dense_key,
-                bypass={"expected_value_functions": subset_expected_lt_wages,
+                bypass={"expected_value_functions": subset_expected_value_functions,
                         "expected_lt_wages": subset_expected_lt_wages,
                         },
             )

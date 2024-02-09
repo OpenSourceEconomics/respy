@@ -240,6 +240,7 @@ def _full_solution(
     state and not only a subset of states.
 
     """
+    #breakpoint()
     (
         period_expected_value_functions,
         period_expected_lifetime_wages,
