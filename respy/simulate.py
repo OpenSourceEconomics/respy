@@ -421,6 +421,7 @@ def _simulate_single_period(
     )
 
     draws_wage = df[[f"meas_error_wage_{c}" for c in valid_choices]].to_numpy()
+    
     value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
         wages,
         nonpecs,

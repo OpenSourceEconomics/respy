@@ -91,7 +91,7 @@ def aggregate_keane_wolpin_utility_w_wage(wage, nonpec, continuation_value, cont
     """
     flow_utility = wage * draw + nonpec
     alternative_specific_value_function = flow_utility + delta * continuation_value
-    alternative_specific_lt_wage_function = wage * draw + delta*continuation_wage
+    alternative_specific_lt_wage_function = (wage-1) * draw + delta*continuation_wage
 
     return alternative_specific_value_function, alternative_specific_lt_wage_function, flow_utility
 
@@ -536,6 +536,7 @@ def calculate_expected_value_functions(
     n_draws, n_choices = draws.shape
 
     expected_value_functions[0] = 0
+    expected_lifetime_wages[0] = 0
 
     for i in range(n_draws):
 
