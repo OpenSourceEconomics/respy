@@ -1,4 +1,5 @@
 """Test the msm interface of respy."""
+
 import copy
 
 import numpy as np

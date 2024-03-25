@@ -1,4 +1,5 @@
 """Test functions to ensure the validity of data."""
+
 import numpy as np
 
 from respy.shared import generate_column_dtype_dict_for_estimation

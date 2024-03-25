@@ -1,4 +1,5 @@
 """Everything related to validate the model."""
+
 import numba as nb
 import numpy as np
 

@@ -1,4 +1,5 @@
 """Everything related to the original data from Keane and Wolpin (1997)."""
+
 import numpy as np
 import pandas as pd
 

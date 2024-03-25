@@ -1,4 +1,5 @@
 """Utils for the inclusion of exogenous processes."""
+
 import functools
 
 import numpy as np
