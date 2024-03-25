@@ -1,4 +1,5 @@
 """Process model specification files or objects."""
+
 import copy
 import itertools
 import os
@@ -802,9 +803,9 @@ def _convert_labels_in_formulas_to_codes(options, optim_paras):
 
     for choice in optim_paras["choices"]:
         for i, formula in enumerate(options["negative_choice_set"].get(choice, [])):
-            options["negative_choice_set"][choice][
-                i
-            ] = _replace_choices_and_observables_in_formula(formula, optim_paras)
+            options["negative_choice_set"][choice][i] = (
+                _replace_choices_and_observables_in_formula(formula, optim_paras)
+            )
 
     return options
 

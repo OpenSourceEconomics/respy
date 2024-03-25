@@ -1,4 +1,5 @@
 """Test model generation."""
+
 import io
 import textwrap
 
