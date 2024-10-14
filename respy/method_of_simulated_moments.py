@@ -15,6 +15,7 @@ References
        of Asset Prices. Econometrica, 61(4), 929-952.
 
 """
+
 import copy
 import functools
 

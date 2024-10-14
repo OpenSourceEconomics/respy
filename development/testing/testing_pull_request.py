@@ -1,4 +1,5 @@
 """Run a series of tests that are required for any pull request to be merged."""
+
 import socket
 
 import click

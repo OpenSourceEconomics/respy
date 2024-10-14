@@ -1,4 +1,5 @@
 """Run a few regression tests."""
+
 import pickle
 
 import numpy as np
