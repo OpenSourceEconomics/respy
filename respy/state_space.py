@@ -1,4 +1,5 @@
 """Everything related to the state space of a structural model."""
+
 import itertools
 
 import numba as nb
