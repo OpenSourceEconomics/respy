@@ -1,4 +1,5 @@
 """This module contains the code for approximate solutions to the DCDP."""
+
 import warnings
 
 import numba as nb
