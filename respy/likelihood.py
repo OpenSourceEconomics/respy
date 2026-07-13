@@ -1,4 +1,5 @@
 """Everything related to the estimation with maximum likelihood."""
+
 import warnings
 from functools import partial
 

@@ -1,9 +1,9 @@
 """The general package information for respy."""
+
 from pathlib import Path
 
 from setuptools import find_packages
 from setuptools import setup
-
 
 DESCRIPTION = (
     "respy is a Python package for the simulation and estimation of a prototypical "

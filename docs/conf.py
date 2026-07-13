@@ -2,7 +2,6 @@ import datetime as dt
 import os
 import sys
 
-
 # Set variable so that todos are shown in local build
 on_rtd = os.environ.get("READTHEDOCS") == "True"
 

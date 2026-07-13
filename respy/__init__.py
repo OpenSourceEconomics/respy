@@ -9,6 +9,7 @@ Include only imports which should be available using
     rp.<func>
 
 """
+
 import pytest
 
 from respy.config import ROOT_DIR
@@ -21,7 +22,6 @@ from respy.method_of_simulated_moments import get_moment_errors_func  # noqa: F4
 from respy.simulate import get_simulate_func  # noqa: F401
 from respy.solve import get_solve_func  # noqa: F401
 from respy.tests.random_model import add_noise_to_params  # noqa: F401
-
 
 __all__ = [
     "get_example_model",
