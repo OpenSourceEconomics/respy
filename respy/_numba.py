@@ -1,4 +1,5 @@
 """Special functions for using numba."""
+
 import warnings
 
 import numba as nb
