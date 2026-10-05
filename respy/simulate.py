@@ -1,4 +1,5 @@
 """Everything related to the simulation of data with structural models."""
+
 import functools
 import warnings
 
