@@ -1,4 +1,5 @@
 """Auxiliary and plotting functions for the respy tutorial numerical integration."""
+
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 

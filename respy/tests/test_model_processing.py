@@ -1,4 +1,5 @@
 """Test model generation."""
+
 import io
 import textwrap
 
@@ -144,17 +145,13 @@ def test_convert_labels_in_covariates_to_codes():
 @pytest.mark.precise
 def test_parse_observables():
     params = pd.read_csv(
-        io.StringIO(
-            textwrap.dedent(
-                """
+        io.StringIO(textwrap.dedent("""
                 category,name,value
                 observable_fishing_grounds_rich_grounds,probability,0.5
                 observable_fishing_grounds_poor_grounds,probability,0.5
                 observable_ability_low_middle,probability,0.5
                 observable_ability_high,probability,0.5
-                """
-            )
-        ),
+                """)),
         index_col=["category", "name"],
     )["value"]
     optim_paras = _parse_exogenous_processes({}, params)

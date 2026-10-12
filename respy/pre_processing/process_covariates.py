@@ -1,4 +1,5 @@
 """This module comprises all functions which process the definition of covariates."""
+
 import copy
 
 

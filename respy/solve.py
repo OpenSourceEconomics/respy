@@ -1,4 +1,5 @@
 """Everything related to the solution of a structural model."""
+
 import functools
 
 import numpy as np
