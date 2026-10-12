@@ -1,4 +1,5 @@
 """This module includes code to configure pytest."""
+
 import os
 
 import numpy as np

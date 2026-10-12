@@ -1,4 +1,5 @@
 """This module contains the code to control parallel execution."""
+
 import functools
 
 import joblib
