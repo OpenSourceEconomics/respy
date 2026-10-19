@@ -11,16 +11,12 @@ from respy.pre_processing.process_covariates import remove_irrelevant_covariates
 @pytest.mark.precise
 def test_identify_relevant_covariates():
     params = pd.read_csv(
-        io.StringIO(
-            dedent(
-                """
+        io.StringIO(dedent("""
                 category,name,value
                 wage_a,constant,1
                 nonpec_b,upper_upper,1
                 wage_c,upper_upper_with_spacing_problem,1
-                """
-            )
-        ),
+                """)),
         index_col=["category", "name"],
     )
 
