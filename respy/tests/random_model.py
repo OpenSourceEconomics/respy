@@ -1,4 +1,5 @@
 """This module contains the functions for the generation of random requests."""
+
 import collections
 import copy
 
@@ -25,7 +26,6 @@ from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import normalize_probabilities
 from respy.simulate import _random_choice
 from respy.simulate import get_simulate_func
-
 
 _BASE_COVARIATES = {
     "not_any_exp_a": "exp_a == 0",
